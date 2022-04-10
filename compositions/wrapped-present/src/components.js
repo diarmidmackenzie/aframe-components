@@ -1,7 +1,13 @@
+const CONFIG = {    
+    boxColor: 'red',
+    ribbonColor: 'gold',
+    giftUrl: './assets/sample-image.png',
+    message: 'Happy Birthday!'
+}
 
 AFRAME.registerComponent('box-material', {
     init() {
-        this.el.setAttribute("material", "color: red; side: double")
+        this.el.setAttribute("material", `color: ${CONFIG.boxColor}; side: double`)
     }
 })
 
@@ -16,7 +22,7 @@ AFRAME.registerComponent('ribbon', {
 
 AFRAME.registerComponent('ribbon-material', {
     init() {
-        this.el.setAttribute("material", "color: gold; side: double; metalness: 0.5; roughness:0.2")        
+        this.el.setAttribute("material", `color: ${CONFIG.ribbonColor}; side: double; metalness: 0.5; roughness:0.2`)        
     }
 })
 
@@ -119,3 +125,19 @@ AFRAME.registerComponent('adaptive-screen-display', {
         }        
     }
 });
+
+AFRAME.registerComponent('custom-src', {
+    init() {
+        this.el.setAttribute("src", CONFIG.giftUrl)        
+    }
+})
+
+AFRAME.registerComponent('custom-text-geometry', {
+    init() {
+        this.el.setAttribute("text-geometry", `value: ${message}; font: #optimerBoldFont; size: 0.8`)
+
+        // factor of 3.9 seems to give decent alignment with the chosen font.
+        const leftPos = -message.length / 3.9;
+        this.el.setAttribute('position', `${leftPos} 6.25 -9`)
+    }
+})
