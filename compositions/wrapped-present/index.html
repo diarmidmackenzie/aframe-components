@@ -1,0 +1,129 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="./lib/FontLoader.js"></script>
+    <script src="./lib/TextGeometry.js"></script>    
+    <script src="./src/components.js"></script>    
+    <script src="https://unpkg.com/aframe-text-geometry-component@^0.5.0/dist/aframe-text-geometry-component.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/screen-display@latest/src/screen-display.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/screen-display@latest/src/blend-transforms.min.js"></script>
+  </head>
+  <body>
+
+    <a-scene vr-mode-ui="enabled: false"
+             click-listener
+             renderer="colorManagement:true">
+
+        <a-assets>
+            <a-asset-item id="optimerBoldFont" src="https://rawgit.com/mrdoob/three.js/dev/examples/fonts/optimer_bold.typeface.json"></a-asset-item>
+            <img id="gift" src="./assets/sample-image.png">
+        </a-assets>
+
+      <a-entity id="camera" camera position="0 1.6 0" look-controls wasd-controls>
+        <a-entity id="screen-position"
+                 adaptive-screen-display                 
+                 visible = false>        
+        </a-entity>
+      </a-entity>
+
+      <a-entity id = "mainMessage"
+        text-geometry="value: Happy Birthday!; font: #optimerBoldFont; size: 0.8"
+        position="-4 6.25 -9"
+        rotation="0 0 0"
+        material="color: #E8D2B1">
+      </a-entity>
+      <a-entity id = "mainMessage"
+      text-geometry="value: Click or tap; font: #optimerBoldFont; size: 0.8"
+      position="-2.8 4.75 -9"
+      rotation="0 0 0"
+      material="color: #E8D2B1">
+      </a-entity>
+      <a-entity id = "mainMessage"
+      text-geometry="value: the screen; font: #optimerBoldFont; size: 0.8"
+      position="-2.5 3.25 -9"
+      rotation="0 0 0"
+      material="color: #E8D2B1">
+      </a-entity>
+
+      <a-entity id="box" position="0 1 -2">
+        <a-plane id="base" position="0 -0.5 0" rotation="90 0 0" box-material>          
+          <a-plane ribbon></a-plane>
+          <a-plane ribbon rotation="0 0 90"></a-plane>
+        </a-plane>
+
+        <a-entity id="back-pivot" position="0 -0.5 -0.5"
+                  animation__open="property:rotation; to: -90 0 0; startEvents:open-box"
+                  animation__close="property:rotation; to: 0 0 0; startEvents:close-box">
+          <a-plane id="back" position="0 0.5 0" rotation="0 180 0" box-material>
+            <a-plane ribbon>            
+            </a-plane>
+
+            <a-entity id="top-pivot" position="0 0.5 0" rotation="180 0 0"
+                  animation__open="property:rotation; to: 270 0 0; startEvents:open-top"
+                  animation__close="property:rotation; to: 180 0 0; startEvents:close-top">
+              <a-plane id="top" position="0 0 0.5" rotation="90 0 0"  box-material>          
+                <a-plane ribbon></a-plane>
+                <a-plane ribbon rotation="0 0 90"></a-plane>
+                <a-entity geometry="primitive:rosette" ribbon-material></a-entity>
+                <a-text id="top-text" position="0 0 0" color="white" rotation="0 180 0" wrapCount="10" width="4"
+                        align="center" value="Click again\nto open"></a-text>
+              </a-plane>
+            </a-entity>
+          </a-plane>
+        </a-entity>
+
+        <a-entity id="left-pivot" position="-0.5 -0.5 0"
+                 animation__open="property:rotation; to: 0 0 90; startEvents:open-box"
+                 animation__close="property:rotation; to: 0 0 0; startEvents:close-box">
+          <a-plane id="left" position="0 0.5 0" rotation="0 -90 0" box-material>          
+            <a-plane ribbon>            
+            </a-plane>
+          </a-plane>
+        </a-entity>
+        <a-entity id="right-pivot" position="0.5 -0.5 0"
+                  animation__open="property:rotation; to: 0 0 -90; startEvents:open-box"
+                  animation__close="property:rotation; to: 0 0 0; startEvents:close-box">
+          <a-plane id="right" position="0 0.5 0" rotation="0 90 0"  box-material>          
+            <a-plane ribbon>            
+            </a-plane>
+          </a-plane>
+        </a-entity>
+        <a-entity id="front-pivot" position="0 -0.5 0.5"
+                  animation__open="property:rotation; to: 90 0 0; startEvents:open-box"
+                  animation__close="property:rotation; to: 0 0 0; startEvents:close-box">
+          <a-plane id="front" position="0 0.5 0" rotation="0 0 0"  box-material>          
+            <a-plane ribbon>            
+            </a-plane>
+          </a-plane>
+        </a-entity>
+
+        <a-entity id="start-position"
+                  animation="property:rotation; easing: linear;
+                             from: 0 0 0; to: 0 360 0;
+                             loop:true; autoplay:true; dur:4000;
+                             resumeEvents:back-to-box
+                             pauseEvents:picture-to-screen"
+                  position = "0 -0.1 0"
+                  visible = false>
+        </a-entity>
+        
+
+        <a-plane id="picture" material="side: double; color: white" 
+                 width="0.5"
+                 height="0.71"
+                 blend-transforms="objectA:#start-position;objectB:#screen-position;percentage:0"
+                 animation__out="property: blend-transforms.percentage; to: 100; dur: 3000; easing: easeOutCubic; startEvents:picture-to-screen"
+                 animation__back="property: blend-transforms.percentage; to: 0; dur: 3000; easing: easeInCubic; startEvents:back-to-box; pauseEvents:close-box">
+          <a-image
+            width="0.5"
+            height="0.71"
+            src="#gift" position="0 0 0.001">
+          </a-image>
+          <a-text id="top-text" position="0 0 0" color="black" rotation="0 180 0" wrapCount="10" width="2"
+                        align="center" value="Click\nto view"></a-text>
+        </a-plane>
+      </a-entity>
+
+</a-scene>
+
+</body>
