@@ -1,4 +1,4 @@
-AFRAME.registerComponent("ngon-wireframe", {
+AFRAME.registerComponent("polygon-wireframe", {
 
     schema: {
         color: { type: 'color', default: 'grey' },
@@ -12,7 +12,7 @@ AFRAME.registerComponent("ngon-wireframe", {
 
         const baseGeometry = this.el.getObject3D('mesh').geometry
         if (!baseGeometry) {
-            console.warn("ngon-wireframe: no base geometry found")
+            console.warn("polygon-wireframe: no base geometry found")
         };
 
         const edges = new THREE.EdgesGeometry( baseGeometry );
