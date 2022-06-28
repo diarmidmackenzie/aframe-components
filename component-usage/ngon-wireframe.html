@@ -9,7 +9,7 @@
         <a-sky color="black">
         </a-sky>
         <a-entity id="top-row"
-                  position="0 2.5 -3">
+                  position="0 2.5 -4">
             
             <a-text id="upper-caption"
                 position="0 1 0"
@@ -25,6 +25,7 @@
             <a-cylinder id="octagon-prism-reference"
                 radius="0.5"
                 segments-radial="8"
+                segments-height="1"
                 position="0 0 0 "
                 material="wireframe:true">
             </a-cylinder>
@@ -39,7 +40,7 @@
 
 
         <a-entity id="bottom-row"
-                  position="0 0.5 -3">
+                  position="0 0.5 -4">
 
             <a-text id="lower-caption"
                 position="0 1 0"
@@ -51,20 +52,38 @@
                 position="-2 0 0"
                 ngon-wireframe="color:red">
             </a-box>
+            <a-text
+                position="-2 -1 0"
+                value="dashed: false"
+                align="center">
+            </a-text>
 
             <a-cylinder id="octagon-prism"
                 radius="0.5"
                 segments-radial="8"
+                segments-height="1"
                 position="0 0 0"
-                ngon-wireframe="color:yellow">
+                ngon-wireframe="color:yellow; dashed:true">
             </a-cylinder>
+            <a-text
+                position="0 -1 0"
+                value="dashed: true"
+                align="center">
+            </a-text>
 
             <a-dodecahedron id="docdecahedron"
                 radius="0.6"
                 rotation="30 0 0"
                 position="2 0 0"
-                ngon-wireframe="color:cyan">
+                ngon-wireframe="color:cyan; dashed: true; dashSize: 1">
             </a-dodecahedron>
+
+            <a-text
+                position="2 -1 0"
+                value="dashed: true;\ndashSize: 1"
+                align="center">
+            </a-text>
+
         </a-entity>
 
     </a-scene>
