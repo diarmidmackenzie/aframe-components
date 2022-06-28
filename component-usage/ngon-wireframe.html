@@ -1,0 +1,74 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="../components/ngon-wireframe.js"></script>
+  </head>
+  <body>
+
+    <a-scene>
+        <a-sky color="black">
+        </a-sky>
+        <a-entity id="top-row"
+                  position="0 2.5 -3">
+            
+            <a-text id="upper-caption"
+                position="0 1 0"
+                value="Upper row shows regular rendering with 'material=wireframe:true'"
+                align="center">
+            </a-text>
+
+            <a-box id="box-reference"
+                position="-2 0 0"
+                material="wireframe:true">
+            </a-box>
+
+            <a-cylinder id="octagon-prism-reference"
+                radius="0.5"
+                segments-radial="8"
+                position="0 0 0 "
+                material="wireframe:true">
+            </a-cylinder>
+
+            <a-dodecahedron id="docdecahedron-reference"
+                radius="0.6"
+                rotation="30 0 0"
+                position="2 0 0 "
+                material="wireframe:true">
+            </a-dodecahedron>
+        </a-entity>
+
+
+        <a-entity id="bottom-row"
+                  position="0 0.5 -3">
+
+            <a-text id="lower-caption"
+                position="0 1 0"
+                value="Lower row shows rendering with 'ngon-wireframe'"
+                align="center">
+            </a-text>
+
+            <a-box id="box"
+                position="-2 0 0"
+                ngon-wireframe="color:red">
+            </a-box>
+
+            <a-cylinder id="octagon-prism"
+                radius="0.5"
+                segments-radial="8"
+                position="0 0 0"
+                ngon-wireframe="color:yellow">
+            </a-cylinder>
+
+            <a-dodecahedron id="docdecahedron"
+                radius="0.6"
+                rotation="30 0 0"
+                position="2 0 0"
+                ngon-wireframe="color:cyan">
+            </a-dodecahedron>
+        </a-entity>
+
+    </a-scene>
+
+</a-scene>
+
+</body>
