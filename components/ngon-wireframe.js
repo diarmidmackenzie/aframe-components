@@ -1,7 +1,7 @@
 AFRAME.registerComponent("ngon-wireframe", {
 
     schema: {
-        color: { type: 'color', default: 'white'}
+        color: { type: 'color', default: 'grey'}
     },
 
     init() {
