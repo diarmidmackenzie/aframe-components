@@ -2,12 +2,15 @@
   <head>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="../components/ngon-wireframe.js"></script>
+    <script src="../components/scale-on-hover.js"></script>
   </head>
   <body>
 
     <a-scene>
         <a-sky color="black">
         </a-sky>
+        <a-entity cursor="rayOrigin:mouse" raycaster="objects:[raycastable]">
+        </a-entity>
         <a-entity id="top-row"
                   position="0 2.5 -4">
             
@@ -18,11 +21,13 @@
             </a-text>
 
             <a-box id="box-reference"
+                scale-on-hover
                 position="-2 0 0"
                 material="wireframe:true">
             </a-box>
 
             <a-cylinder id="octagon-prism-reference"
+                scale-on-hover
                 radius="0.5"
                 segments-radial="8"
                 segments-height="1"
@@ -31,6 +36,7 @@
             </a-cylinder>
 
             <a-dodecahedron id="docdecahedron-reference"
+                scale-on-hover
                 radius="0.6"
                 rotation="30 0 0"
                 position="2 0 0 "
@@ -49,6 +55,7 @@
             </a-text>
 
             <a-box id="box"
+                scale-on-hover
                 position="-2 0 0"
                 ngon-wireframe="color:red">
             </a-box>
@@ -59,6 +66,7 @@
             </a-text>
 
             <a-cylinder id="octagon-prism"
+                scale-on-hover
                 radius="0.5"
                 segments-radial="8"
                 segments-height="1"
@@ -71,7 +79,8 @@
                 align="center">
             </a-text>
 
-            <a-dodecahedron id="docdecahedron"
+            <a-dodecahedron id="dodecahedron"
+                scale-on-hover
                 radius="0.6"
                 rotation="30 0 0"
                 position="2 0 0"
@@ -84,10 +93,13 @@
                 align="center">
             </a-text>
 
+            <a-text id="lower-caption"
+                position="0 -2 0"
+                value="Raycasting still works against the whole mesh: try hovering with the mouse"
+                align="center">
+            </a-text>
         </a-entity>
-
     </a-scene>
-
 </a-scene>
 
 </body>
