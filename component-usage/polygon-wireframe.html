@@ -1,0 +1,105 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="../components/polygon-wireframe.js"></script>
+    <script src="../components/scale-on-hover.js"></script>
+  </head>
+  <body>
+
+    <a-scene>
+        <a-sky color="black">
+        </a-sky>
+        <a-entity cursor="rayOrigin:mouse" raycaster="objects:[raycastable]">
+        </a-entity>
+        <a-entity id="top-row"
+                  position="0 2.5 -4">
+            
+            <a-text id="upper-caption"
+                position="0 1 0"
+                value="Upper row shows regular rendering with 'material=wireframe:true'"
+                align="center">
+            </a-text>
+
+            <a-box id="box-reference"
+                scale-on-hover
+                position="-2 0 0"
+                material="wireframe:true">
+            </a-box>
+
+            <a-cylinder id="octagon-prism-reference"
+                scale-on-hover
+                radius="0.5"
+                segments-radial="8"
+                segments-height="1"
+                position="0 0 0 "
+                material="wireframe:true">
+            </a-cylinder>
+
+            <a-dodecahedron id="docdecahedron-reference"
+                scale-on-hover
+                radius="0.6"
+                rotation="30 0 0"
+                position="2 0 0 "
+                material="wireframe:true">
+            </a-dodecahedron>
+        </a-entity>
+
+
+        <a-entity id="bottom-row"
+                  position="0 0.5 -4">
+
+            <a-text id="lower-caption"
+                position="0 1 0"
+                value="Lower row shows rendering with 'polygon-wireframe'"
+                align="center">
+            </a-text>
+
+            <a-box id="box"
+                scale-on-hover
+                position="-2 0 0"
+                polygon-wireframe="color:red">
+            </a-box>
+            <a-text
+                position="-2 -1 0"
+                value="dashed: false"
+                align="center">
+            </a-text>
+
+            <a-cylinder id="octagon-prism"
+                scale-on-hover
+                radius="0.5"
+                segments-radial="8"
+                segments-height="1"
+                position="0 0 0"
+                polygon-wireframe="color:yellow; dashed:true">
+            </a-cylinder>
+            <a-text
+                position="0 -1 0"
+                value="dashed: true"
+                align="center">
+            </a-text>
+
+            <a-dodecahedron id="dodecahedron"
+                scale-on-hover
+                radius="0.6"
+                rotation="30 0 0"
+                position="2 0 0"
+                polygon-wireframe="color:cyan; dashed: true; dashSize: 1">
+            </a-dodecahedron>
+
+            <a-text
+                position="2 -1 0"
+                value="dashed: true;\ndashSize: 1"
+                align="center">
+            </a-text>
+
+            <a-text id="lower-caption"
+                position="0 -1.6 0"
+                value="Raycasting works against the whole mesh, not just the lines - try hovering with the mouse"
+                align="center">
+            </a-text>
+        </a-entity>
+    </a-scene>
+</a-scene>
+
+</body>
