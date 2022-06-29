@@ -100,44 +100,56 @@ const _vector = new THREE.Vector3();
     }
   }) */
 
-  AFRAME.registerComponent('exhibit', {
+  AFRAME.registerComponent('adjusted-model', {
 
     schema: {    
       gltfModel : {type : 'selector'},
-      trueDimension: {type: 'number'}
+      dimension: {type: 'number'},
+      center: {type: 'boolean', default: true}
     },
   
     init() {
       this.bbox = new THREE.Box3();
       this.modelDimension = 0;
-      
-      this.el.addEventListener('model-loaded', () => this.onModelLoaded())
+
+      this.adjuster = document.createElement('a-entity')
+      this.adjuster.setAttribute("id", `${this.el.id}-adjuster`)
+      this.el.appendChild(this.adjuster)
+
+      this.model = document.createElement('a-entity')
+      this.model.addEventListener('model-loaded', () => this.onModelLoaded())
   
-      this.el.setAttribute('gltf-model', `#${this.data.gltfModel.id}`)
+      this.model.setAttribute('gltf-model', `#${this.data.gltfModel.id}`)
+      this.adjuster.appendChild(this.model)
     },
   
     onModelLoaded() {
   
       this.getModelBBox()
       
-      const modelScaleFactor = this.data.trueDimension / this.modelDimension
-  
-      this.el.setAttribute('scale', `${modelScaleFactor}
-                                     ${modelScaleFactor}
-                                     ${modelScaleFactor}`)
-  
-  
+      const modelScaleFactor = this.data.dimension / this.modelDimension
+    
       this.box = document.createElement('a-box')
-      // match box to model, and it will be scaled together with it.
+      
+      // Match box to model - we'll scale & re-position both using the adjuster
       const boxDim = this.modelDimension
       this.box.object3D.scale.set(boxDim, boxDim, boxDim)
       this.bbox.getCenter(this.box.object3D.position)
-      this.el.object3D.worldToLocal(this.box.object3D.position)
-  
-      this.box.setAttribute('material', {wireframe: true})
+      this.adjuster.object3D.worldToLocal(this.box.object3D.position)
+
+      this.adjuster.object3D.scale.set(modelScaleFactor,
+                                       modelScaleFactor,
+                                       modelScaleFactor)
+
+      console.log("Box position relative to adjuster", this.box.object3D.position)
+      console.log("Box scale", this.box.object3D.scale)
+      this.adjuster.object3D.position.copy(this.box.object3D.position)
+      this.adjuster.object3D.position.multiplyScalar(-this.adjuster.object3D.scale.x)
+
+      this.box.setAttribute('polygon-wireframe', "")
       
       //this.box.setAttribute('clickable-object', `#${this.el.id}`)
-      this.el.appendChild(this.box)
+      this.adjuster.appendChild(this.box)
     },
     
     // get the largest dimension of the model.  
@@ -145,7 +157,9 @@ const _vector = new THREE.Vector3();
   
       // compute a precise bounding box for this object.  This will handle the case where the
       // GLTF model includes multiple meshes.
-      this.bbox.setFromObject(this.el.object3D, true)
+      console.log("Setting Bounding Box for ", this.el.id)
+      this.bbox.setFromObject(this.model.object3D, true)
+      console.log("Got Bounding Box for ", this.el.id)
       const boxSize = new THREE.Vector3()
   
       boxSize.subVectors(this.bbox.max, this.bbox.min)
