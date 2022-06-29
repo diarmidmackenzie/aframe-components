@@ -104,14 +104,15 @@ const _vector = new THREE.Vector3();
 
     schema: {    
       gltfModel : {type : 'selector'},
-      basis: {type: 'boolean', oneOf: 'box, sphere', default: 'box'}, // sphere not yet implemented
+      basis: {type: 'string', oneOf: 'box, sphere', default: 'box'}, // sphere not yet implemented
       dimension: {type: 'number'},
-      center: {type: 'boolean', default: 'true'},
-      showBounds: {type: 'boolean', oneOf: 'box, cube, sphere', default: 'cube'} // box, sphere not yet implemented
+      center: {type: 'boolean', default: true},
+      showBounds: {type: 'string', oneOf: 'box, cube, sphere', default: 'cube'} // box, sphere not yet implemented
     },
   
     init() {
       this.bbox = new THREE.Box3();
+      this.boxSize = new THREE.Vector3()
       this.modelDimension = 0;
 
       // Entity structure looks like:
@@ -149,14 +150,22 @@ const _vector = new THREE.Vector3();
         this.adjuster.object3D.position.multiplyScalar(-this.adjuster.object3D.scale.x)
       }
       
-      if (this.data.showBounds) {
+      if ((this.data.showBounds === 'box') ||
+          (this.data.showBounds === 'cube')) {
         this.box = document.createElement('a-box')
 
         // Just match box to model - adjuster handles scale and position
         this.bbox.getCenter(this.box.object3D.position)
         this.adjuster.object3D.worldToLocal(this.box.object3D.position)
-        const boxDim = this.modelDimension
-        this.box.object3D.scale.set(boxDim, boxDim, boxDim)
+
+        if (this.data.showBounds === 'cube') {
+            const boxDim = this.modelDimension
+            this.box.object3D.scale.set(boxDim, boxDim, boxDim)
+        }
+        else {
+            this.box.object3D.scale.set(this.boxSize.x, this.boxSize.y, this.boxSize.z)
+        }
+        
         this.box.setAttribute('polygon-wireframe', "")
         
         //this.box.setAttribute('clickable-object', `#${this.el.id}`)
@@ -171,15 +180,13 @@ const _vector = new THREE.Vector3();
       // compute a precise bounding box for this object.  This will handle the case where the
       // GLTF model includes multiple meshes.
       this.bbox.setFromObject(this.model.object3D, true)
-
-      const boxSize = new THREE.Vector3()
   
-      boxSize.subVectors(this.bbox.max, this.bbox.min)
+      this.boxSize.subVectors(this.bbox.max, this.bbox.min)
   
       // Record the max dimension of the box (to save recomputing it from the BBox)
-      this.modelDimension = Math.max(boxSize.x,
-                                     boxSize.y,
-                                     boxSize.z)
+      this.modelDimension = Math.max(this.boxSize.x,
+                                     this.boxSize.y,
+                                     this.boxSize.z)
     }
   })
   
