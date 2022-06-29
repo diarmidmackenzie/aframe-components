@@ -1,0 +1,11 @@
+Model Information:
+* title:	Tyrannosaurus Rex
+* source:	https://sketchfab.com/3d-models/tyrannosaurus-rex-9eade2f07a8d4ae1aac8f53e5a3d0a7a
+* author:	AVINAS (https://sketchfab.com/AVINAS)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Tyrannosaurus Rex" (https://sketchfab.com/3d-models/tyrannosaurus-rex-9eade2f07a8d4ae1aac8f53e5a3d0a7a) by AVINAS (https://sketchfab.com/AVINAS) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
