@@ -104,14 +104,24 @@ const _vector = new THREE.Vector3();
 
     schema: {    
       gltfModel : {type : 'selector'},
+      basis: {type: 'boolean', oneOf: 'box, sphere', default: 'box'}, // sphere not yet implemented
       dimension: {type: 'number'},
-      center: {type: 'boolean', default: true}
+      center: {type: 'boolean', default: 'true'},
+      showBounds: {type: 'boolean', oneOf: 'box, cube, sphere', default: 'cube'} // box, sphere not yet implemented
     },
   
     init() {
       this.bbox = new THREE.Box3();
       this.modelDimension = 0;
 
+      // Entity structure looks like:
+      // -- this.el - has scale of 1, 1, 1.  Scale, position and rotation can be set directly without breakign adjustment
+      //    |--this.adjuster  - has scale & position to adjust the model as required
+      //       |--this.model  - the model loaded up with position & center as encoded in the GLTF
+      //       |--this.box    - the geometry of the bounding box    (if desired)
+      //       (not yet implemented)
+      //       |--this.sphere - the geometry of the bounding sphere (if desired)
+      //       |--this.ring   - the geometry of the ring used to render an outline of the bounding sphere (if desired)
       this.adjuster = document.createElement('a-entity')
       this.adjuster.setAttribute("id", `${this.el.id}-adjuster`)
       this.el.appendChild(this.adjuster)
@@ -126,30 +136,33 @@ const _vector = new THREE.Vector3();
     onModelLoaded() {
   
       this.getModelBBox()
-      
-      const modelScaleFactor = this.data.dimension / this.modelDimension
-    
-      this.box = document.createElement('a-box')
-      
-      // Match box to model - we'll scale & re-position both using the adjuster
-      const boxDim = this.modelDimension
-      this.box.object3D.scale.set(boxDim, boxDim, boxDim)
-      this.bbox.getCenter(this.box.object3D.position)
-      this.adjuster.object3D.worldToLocal(this.box.object3D.position)
 
+      // Adjust the scale & position of the adjuster to scale and center the model as desired
+      const modelScaleFactor = this.data.dimension / this.modelDimension
       this.adjuster.object3D.scale.set(modelScaleFactor,
                                        modelScaleFactor,
                                        modelScaleFactor)
 
-      console.log("Box position relative to adjuster", this.box.object3D.position)
-      console.log("Box scale", this.box.object3D.scale)
-      this.adjuster.object3D.position.copy(this.box.object3D.position)
-      this.adjuster.object3D.position.multiplyScalar(-this.adjuster.object3D.scale.x)
-
-      this.box.setAttribute('polygon-wireframe', "")
+      if (this.data.center) {
+        this.bbox.getCenter(this.adjuster.object3D.position)
+        this.adjuster.object3D.worldToLocal(this.adjuster.object3D.position)
+        this.adjuster.object3D.position.multiplyScalar(-this.adjuster.object3D.scale.x)
+      }
       
-      //this.box.setAttribute('clickable-object', `#${this.el.id}`)
-      this.adjuster.appendChild(this.box)
+      if (this.data.showBounds) {
+        this.box = document.createElement('a-box')
+
+        // Just match box to model - adjuster handles scale and position
+        this.bbox.getCenter(this.box.object3D.position)
+        this.adjuster.object3D.worldToLocal(this.box.object3D.position)
+        const boxDim = this.modelDimension
+        this.box.object3D.scale.set(boxDim, boxDim, boxDim)
+        this.box.setAttribute('polygon-wireframe', "")
+        
+        //this.box.setAttribute('clickable-object', `#${this.el.id}`)
+        
+        this.adjuster.appendChild(this.box)
+      }
     },
     
     // get the largest dimension of the model.  
@@ -157,25 +170,16 @@ const _vector = new THREE.Vector3();
   
       // compute a precise bounding box for this object.  This will handle the case where the
       // GLTF model includes multiple meshes.
-      console.log("Setting Bounding Box for ", this.el.id)
       this.bbox.setFromObject(this.model.object3D, true)
-      console.log("Got Bounding Box for ", this.el.id)
+
       const boxSize = new THREE.Vector3()
   
       boxSize.subVectors(this.bbox.max, this.bbox.min)
   
-      // expand the box to be a cube, while maintaining its center.
-      const maxDim = Math.max(boxSize.x,
-                              boxSize.y,
-                              boxSize.z)
-      const expandVector = new THREE.Vector3(maxDim - boxSize.x,
-                                             maxDim - boxSize.y,
-                                             maxDim - boxSize.z)
-      expandVector.multiplyScalar(0.5)
-      this.bbox.expandByVector(expandVector)
-  
-      // also record the max dimension of the box (to save recomputing it from the BBox)
-      this.modelDimension = maxDim;
+      // Record the max dimension of the box (to save recomputing it from the BBox)
+      this.modelDimension = Math.max(boxSize.x,
+                                     boxSize.y,
+                                     boxSize.z)
     }
   })
   
