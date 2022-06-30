@@ -41,12 +41,100 @@ AFRAME.registerComponent('object-parent', {
     }
 });
 
+// Set on an entity to track the orientation of the cursor's ray.
+// Typically set on a enitity that is a child of the camera that the cursor uses.
+AFRAME.registerComponent('cursor-tracker', {
+
+    schema: {
+        cursor: {type: 'selector', default: "#cursor"},
+        sphericalLocalBoundary: {type: 'number', default: 45}
+
+    },
+
+    init() {
+        this.cursor = this.data.cursor
+        this.raycaster = this.cursor.components['raycaster'].raycaster
+        this.forward = new THREE.Vector3(0, 0, -1)
+        this.cameraForward = new THREE.Vector3(0, 0, -1)
+        this.cameraQuaternion = new THREE.Quaternion()
+        
+        
+        this.rayQuaternionLocal = new THREE.Quaternion()
+        this.rayQuaternionLocal.identity()
+        this.rayQuaternionSpherical = new THREE.Quaternion()
+        this.rayQuaternion = new THREE.Quaternion()
+        this.rayQuaternion.identity()
+        this.deltaWorldQuaternion = new THREE.Quaternion()
+        this.lastRayForward = new THREE.Vector3(0, 0, -1)
+        this.spherical = new THREE.Spherical()
+        this.yAxis = new THREE.Vector3(0, 1, 0)
+        this.xAxis = new THREE.Vector3(1, 0, 0)        
+        this.yQuaternion = new THREE.Quaternion()
+        this.xQuaternion = new THREE.Quaternion()
+    },
+
+    update() {
+        this.slbRad = THREE.MathUtils.degToRad(this.data.sphericalLocalBoundary)
+    },
+
+    tick() {
+
+        function setWorldQuaternion(object, quaternion) {
+
+            const parentQuaternion = new THREE.Quaternion()
+            object.parent.getWorldQuaternion(parentQuaternion)
+            parentQuaternion.invert()
+            object.quaternion.multiplyQuaternions(parentQuaternion, quaternion)
+        }
+
+        this.spherical.setFromVector3(this.raycaster.ray.direction)
+
+        const localWeight = Math.abs(this.spherical.phi - Math.PI/2) / (Math.PI/2);
+
+        console.log("localWeight", localWeight)
+
+        // Compute spherical-based     
+        this.xQuaternion.setFromAxisAngle(this.xAxis, this.spherical.phi - Math.PI/2)
+        this.yQuaternion.setFromAxisAngle(this.yAxis, this.spherical.theta)
+        this.rayQuaternionSpherical.multiplyQuaternions(this.yQuaternion, this.xQuaternion)
+        this.rayQuaternionSpherical.normalize()
+        
+        // Compute delta-based
+        this.deltaWorldQuaternion.setFromUnitVectors(this.lastRayForward, this.raycaster.ray.direction)
+        //this.rayQuaternionLocal.copy(this.rayQuaternion)
+        
+        /* Only needed if averaging... 
+        if (this.rayQuaternionLocal.angleTo(this.rayQuaternionSpherical) > (Math.PI / 2)) {
+            this.rayQuaternionLocal.copy(this.rayQuaternionSpherical)
+        } */
+        // On reflection ,averaging is kind of worst of both worlds...
+            
+        this.rayQuaternionLocal.premultiply(this.deltaWorldQuaternion)
+        this.rayQuaternionLocal.normalize()
+
+        
+        //this.rayQuaternion.copy(this.rayQuaternionSpherical)
+        this.rayQuaternion.slerpQuaternions(this.rayQuaternionLocal, this.rayQuaternionSpherical, 0)
+        //this.rayQuaternion.slerpQuaternions(this.rayQuaternionLocal, this.rayQuaternionSpherical, localWeight)
+
+        setWorldQuaternion(this.el.object3D, this.rayQuaternion)
+        this.lastRayForward.copy(this.raycaster.ray.direction)
+
+        /* ... almost working...
+        this.cameraForward.copy(this.forward)
+        this.el.sceneEl.camera.updateMatrix()
+        this.el.sceneEl.camera.getWorldQuaternion(this.cameraQuaternion)
+        this.cameraForward.applyQuaternion(this.cameraQuaternion)
+        this.el.object3D.quaternion.setFromUnitVectors(this.cameraForward, this.raycaster.ray.direction)*/
+    }
+});
+
 // Add this to the same entity as the cursor component.
 AFRAME.registerComponent('mouse-manipulation', {
 
     schema: {
         defaultParent: {type: 'selector'},
-        rotateRate: {type: 'number', default: '45'},
+        rotateRate: {type: 'number', default: 45},
     },
 
     events: {
@@ -68,14 +156,6 @@ AFRAME.registerComponent('mouse-manipulation', {
         // Take a root of this to get a scaling factor.
         this.moveSpeed = 3;
     
-        // set up listeners
-        /*
-        this.triggerUp = this.triggerUp.bind(this)
-        this.triggerDown = this.triggerDown.bind(this)
-        this.el.addEventListener('triggerup', this.triggerUp)
-        this.el.addEventListener('triggerdown', this.triggerDown)
-        */
-    
         // variable to track any grabbed element
         this.grabbedEl = null;
     
@@ -84,7 +164,12 @@ AFRAME.registerComponent('mouse-manipulation', {
         // (this helps with scaling, rotation etc. of grabbed entity)
         this.contactPoint = document.createElement('a-entity')
         this.contactPoint.setAttribute('id', `${this.el.id}-contact-point`)
-        document.querySelector('[camera]').appendChild(this.contactPoint)
+        this.camera = document.querySelector('[cursor-tracker]')
+        this.camera.appendChild(this.contactPoint)
+
+        // for working
+        this.vector1 = new THREE.Vector3()
+        this.vector2 = new THREE.Vector3()
     },
 
     mouseDown(evt) {
@@ -105,25 +190,6 @@ AFRAME.registerComponent('mouse-manipulation', {
         this.contactPoint.object3D.position.copy(grabbedPoint)
         element.setAttribute('object-parent', 'parent', `#${this.el.id}-contact-point`)
     },
-  /*
-    triggerDown(evt) {
-  
-      console.assert(!this.grabbedEl)
-  
-      const intersections = this.getIntersections(evt.target);
-  
-      if (intersections.length === 0)  return;
-  
-      const element = intersections[0]
-  
-      const intersectionData = this.el.components.raycaster.getIntersection(element)
-  
-      // reparent element to this controller.
-      this.grabbedEl = element
-      const grabbedPoint = this.el  .object3D.worldToLocal(intersectionData.point)
-      this.contactPoint.object3D.position.copy(grabbedPoint)
-      element.setAttribute('object-parent', 'parent', `#${this.el.id}-contact-point`)
-    },*/
 
     mouseUp() {
   
@@ -132,17 +198,7 @@ AFRAME.registerComponent('mouse-manipulation', {
         this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.data.defaultParent.id}`)
         this.grabbedEl = null
     },
-  
-    /*
-    triggerUp() {
-  
-      if (!this.grabbedEl) return
-  
-      this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.data.defaultParent.id}`)
-      this.grabbedEl = null
-    },
-    */
-  
+
     getIntersections(cursorEl) {
   
         const els = cursorEl.components.raycaster.intersectedEls
@@ -153,10 +209,11 @@ AFRAME.registerComponent('mouse-manipulation', {
     moveOut(timeDelta) {
       const scalar = Math.pow(this.moveSpeed, timeDelta/1000);
       this.contactPoint.object3D.position.multiplyScalar(scalar)
-    },
+    },*/
   
-    
+      /*
     tick: function(time, timeDelta) {
+      
       
       if (this.el.is("moving-in")) {
         this.moveOut(-timeDelta);

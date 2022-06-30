@@ -15,6 +15,18 @@
                 raycaster="objects: [clickable]; far: Infinity"
                 mouse-manipulation="defaultParent: #container">
       </a-entity>
+      <a-entity camera="active: true" look-controls wasd-controls position="0 1.6 0">
+        <a-entity id="cursor-tracker"
+                  cursor-tracker>
+        </a-entity>
+      </a-entity>
+
+      <a-sphere position = "0 10 0">
+
+      </a-sphere>
+      <a-sphere position = "0 -10 0">
+
+    </a-sphere>
              
       <a-assets>
         <a-asset-item id="trex-model"
