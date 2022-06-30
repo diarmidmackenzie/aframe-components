@@ -107,7 +107,7 @@ const _vector = new THREE.Vector3();
       basis: {type: 'string', oneOf: 'box, sphere', default: 'box'}, // sphere not yet implemented
       dimension: {type: 'number'},
       center: {type: 'boolean', default: true},
-      showBounds: {type: 'string', oneOf: 'box, cube, sphere', default: 'cube'} // box, sphere not yet implemented
+      showBounds: {type: 'string', oneOf: 'none, box, cube, sphere', default: 'none'} // sphere not yet implemented
     },
   
     init() {
@@ -131,6 +131,7 @@ const _vector = new THREE.Vector3();
       this.model.addEventListener('model-loaded', () => this.onModelLoaded())
   
       this.model.setAttribute('gltf-model', `#${this.data.gltfModel.id}`)
+      this.model.setAttribute('clickable', "")
       this.adjuster.appendChild(this.model)
     },
   
@@ -167,8 +168,6 @@ const _vector = new THREE.Vector3();
         }
         
         this.box.setAttribute('polygon-wireframe', "")
-        
-        //this.box.setAttribute('clickable-object', `#${this.el.id}`)
         
         this.adjuster.appendChild(this.box)
       }

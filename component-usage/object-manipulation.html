@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="../components/low-cost-raycasting.js"></script>
+    <script src="../components/polygon-wireframe.js"></script>
+    <script src="../components/mouse-manipulation.js"></script>
+  </head>
+  <body>
+    <a-scene renderer="colorManagement:true" stats
+             background="color:black"
+             stats>
+      <a-entity id="cursor"
+                cursor="rayOrigin: mouse"
+                raycaster="objects: [clickable]; far: Infinity"
+                mouse-manipulation="defaultParent: #container">
+      </a-entity>
+             
+      <a-assets>
+        <a-asset-item id="trex-model"
+           src="../assets/t-rex/scene.gltf"
+           response-type="arraybuffer" crossorigin="anonymous">
+        </a-asset-item>
+        <a-asset-item id="eiffel-model"
+           src="../assets/eiffel/scene.gltf"
+           response-type="arraybuffer" crossorigin="anonymous">
+        </a-asset-item>
+        <a-asset-item id="cell-model"
+           src="../assets/cell/scene.gltf"
+           response-type="arraybuffer" crossorigin="anonymous">
+        </a-asset-item>
+      </a-assets>
+
+      <a-entity id="container"
+                position="0 1 -2">
+          <a-entity id="eiffel" position="-2 0 0"
+                    adjusted-model="gltfModel: #eiffel-model;
+                                            dimension: 1">
+          </a-entity>
+          <a-entity id="trex" position="0 0 0"
+                    adjusted-model="gltfModel: #trex-model;
+                                            dimension: 1">
+          </a-entity>
+          <a-entity id="cell" position="2 0 0"
+                    adjusted-model="gltfModel: #cell-model;
+                                            dimension: 1">
+          </a-entity>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>

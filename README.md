@@ -60,7 +60,6 @@ Examples use the following 3D models
 
 | Object            | Title                      | Artist         | License   | Link                                                         | Modifications                                  |
 | ----------------- | -------------------------- | -------------- | --------- | ------------------------------------------------------------ | ---------------------------------------------- |
-| Coronavirus       | Coronavirus                | Teliri         | CC BY 4.0 | https://sketchfab.com/3d-models/coronavirus-b28f63adc5f04a2aab27e1d7293eba0b | Resolution of textures reduced for performance |
 | Animal Cell       | Animal cell - Downloadable | Lauri Purhonen | CC BY 4.0 | https://sketchfab.com/3d-models/animal-cell-downloadable-ddc40bb0900544959f02d3ff83c32615 | Resolution of textures reduced for performance |
 | Tyrannosaurus Rex | Tyrannosaurus Rex          | AVINAS         | CC BY 4.0 | https://sketchfab.com/3d-models/tyrannosaurus-rex-9eade2f07a8d4ae1aac8f53e5a3d0a7a | Resolution of textures reduced for performance |
 | Eiffel Tower      | (FREE) La tour Eiffel      | SDC            | CC BY 4.0 | https://sketchfab.com/3d-models/free-la-tour-eiffel-8553f94d06e24cb4b0fde1080f281674 | None                                           |
