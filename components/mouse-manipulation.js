@@ -131,8 +131,6 @@ AFRAME.registerComponent('mouse-manipulation', {
             this.grabElToContactPoint(this.cameraContactPoint,
                                       `#${this.el.id}-camera-contact-point`)
         }
-
-        evt.preventDefault()
     },
 
     windowMouseUp(evt) {
@@ -148,16 +146,13 @@ AFRAME.registerComponent('mouse-manipulation', {
         else if (evt.buttons === 0){
             // no button now pressed.
             this.releaseEl()
-
         }
-        else if (evt.button === 1) {
+        else if (evt.button === 0) {
             // left button released, but right or middle button still down 
             // - grab to camera contact point
-            grabEntityToContactPoint(this.cameraContactPoint,
-                `#${this.el.id}-camera-contact-point`)
+            this.grabElToContactPoint(this.cameraContactPoint,
+                                      `#${this.el.id}-camera-contact-point`)
         }
-
-        evt.preventDefault()
     },
 
     remove() {
