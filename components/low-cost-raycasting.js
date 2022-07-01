@@ -100,6 +100,15 @@ const _vector = new THREE.Vector3();
     }
   }) */
 
+  AFRAME.registerComponent('clickable', {
+    schema: {type: 'selector'},
+
+    init() {
+      this.target = this.data
+    }
+
+  })
+
   AFRAME.registerComponent('adjusted-model', {
 
     schema: {    
@@ -131,7 +140,7 @@ const _vector = new THREE.Vector3();
       this.model.addEventListener('model-loaded', () => this.onModelLoaded())
   
       this.model.setAttribute('gltf-model', `#${this.data.gltfModel.id}`)
-      this.model.setAttribute('clickable', "")
+      this.model.setAttribute('clickable', `#${this.el.id}`)
       this.adjuster.appendChild(this.model)
     },
   

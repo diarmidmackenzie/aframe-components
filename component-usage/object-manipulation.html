@@ -4,24 +4,33 @@
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="../components/low-cost-raycasting.js"></script>
     <script src="../components/polygon-wireframe.js"></script>
+    <script src="../components/cursor-tracker.js"></script>
     <script src="../components/mouse-manipulation.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
-    <a-scene renderer="colorManagement:true" stats
-             background="color:black"
-             stats>
+    <div class="text-overlay">
+      Object manipulation by mouse, and/or 6doF controllers<br/> 
+      Mouse controls: left click & drag to move object; mouse wheel to move forward/backwards<br/>  
+      6DoF controls: to be implemented<br/>  
+      Known bugs:
+      - handling of mouseup when not over object (e.g. off screen) needs fixing.
+    </div>
+      <a class="code-link"
+      target="_blank"
+      href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/object-manipulation.html">
+      view code
+    </a>
+    <a-scene renderer="colorManagement:true"
+             stats
+             background="color:black">
       <a-entity id="cursor"
                 cursor="rayOrigin: mouse"
                 raycaster="objects: [clickable]; far: Infinity"
                 mouse-manipulation="defaultParent: #container">
       </a-entity>
       <a-entity camera="active: true" look-controls wasd-controls position="0 1.6 0">
-        <a-entity id="cursor-tracker"
-                  cursor-tracker>
-        </a-entity>
       </a-entity>
-
       <a-sphere position = "0 10 0">
 
       </a-sphere>

@@ -42,6 +42,10 @@ AFRAME.registerComponent('object-parent', {
 });
 
 // Add this to the same entity as the cursor component.
+// To fix:
+// - Must drop object on *all* mouseup events (not just when hitting object)
+// - Move in is moving child in wrong direction (too low)
+// - New control schemme: middle button, right button.
 AFRAME.registerComponent('mouse-manipulation', {
 
     schema: {
@@ -70,18 +74,32 @@ AFRAME.registerComponent('mouse-manipulation', {
     
         // variable to track any grabbed element
         this.grabbedEl = null;
-    
-        // Object used as container for any entity that can be grabbed.
+
+        // We create 2 children beneath the camera
+        // - cursorTracker.  This is set up to match the orientation of the cursor
+        //                   (which does not match the camera, when using rayOrigin: mouse)
+        this.camera = document.querySelector('[camera]')
+        this.cursorTracker = document.createElement('a-entity')
+        this.cursorTracker.setAttribute('cursor-tracker', "")
+        this.camera.appendChild(this.cursorTracker)
+
+        // A container for any entity that can be grabbed.
         // For mouse controls, this is a child of the camera.
-        // (this helps with scaling, rotation etc. of grabbed entity)
+        // (this helps with move in/out, rotation etc. of grabbed entity)
         this.contactPoint = document.createElement('a-entity')
         this.contactPoint.setAttribute('id', `${this.el.id}-contact-point`)
-        this.camera = document.querySelector('[cursor-tracker]')
-        this.camera.appendChild(this.contactPoint)
+        this.cursorTracker.appendChild(this.contactPoint)
 
         // for working
         this.vector1 = new THREE.Vector3()
         this.vector2 = new THREE.Vector3()
+
+        this.mouseWheel = this.mouseWheel.bind(this)
+        window.addEventListener('wheel', this.mouseWheel);
+    },
+
+    remove() {
+        window.removeEventListener('wheel', this.mouseWheel);
     },
 
     mouseDown(evt) {
@@ -97,10 +115,10 @@ AFRAME.registerComponent('mouse-manipulation', {
         const intersectionData = this.el.components.raycaster.getIntersection(element)
     
         // reparent element to the camera.
-        this.grabbedEl = element
+        this.grabbedEl = element.components['clickable'].target
         const grabbedPoint = this.el.object3D.worldToLocal(intersectionData.point)
         this.contactPoint.object3D.position.copy(grabbedPoint)
-        element.setAttribute('object-parent', 'parent', `#${this.el.id}-contact-point`)
+        this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.el.id}-contact-point`)
     },
 
     mouseUp() {
@@ -116,12 +134,18 @@ AFRAME.registerComponent('mouse-manipulation', {
         const els = cursorEl.components.raycaster.intersectedEls
         return els
     },
-  /*
+
+    mouseWheel(evt) {
+
+        if (!this.grabbedEl) return
+        this.moveOut(-evt.deltaY)
+    },
+  
     // Implements moving out or in (in = -ve)
     moveOut(timeDelta) {
       const scalar = Math.pow(this.moveSpeed, timeDelta/1000);
       this.contactPoint.object3D.position.multiplyScalar(scalar)
-    },*/
+    },
   
       /*
     tick: function(time, timeDelta) {
