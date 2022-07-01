@@ -4,8 +4,6 @@ AFRAME.registerComponent('cursor-tracker', {
 
     schema: {
         cursor: {type: 'selector', default: "#cursor"},
-        sphericalLocalBoundary: {type: 'number', default: 45}
-
     },
 
     init() {
@@ -13,10 +11,6 @@ AFRAME.registerComponent('cursor-tracker', {
         this.raycaster = this.cursor.components['raycaster'].raycaster
         this.forward = new THREE.Vector3(0, 0, -1)
         this.localRayVector = new THREE.Vector3();
-    },
-
-    update() {
-        this.slbRad = THREE.MathUtils.degToRad(this.data.sphericalLocalBoundary)
     },
 
     tick() {
