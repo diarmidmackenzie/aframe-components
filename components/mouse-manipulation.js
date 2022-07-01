@@ -116,7 +116,7 @@ AFRAME.registerComponent('mouse-manipulation', {
     
         // reparent element to the camera.
         this.grabbedEl = element.components['clickable'].target
-        const grabbedPoint = this.el.object3D.worldToLocal(intersectionData.point)
+        const grabbedPoint = this.contactPoint.object3D.parent.worldToLocal(intersectionData.point)
         this.contactPoint.object3D.position.copy(grabbedPoint)
         this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.el.id}-contact-point`)
     },
