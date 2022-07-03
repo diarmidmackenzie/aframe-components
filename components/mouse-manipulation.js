@@ -177,12 +177,6 @@ AFRAME.registerComponent('mouse-manipulation', {
             this.grabElToContactPoint(this.cameraContactPoint,
                                       `#${this.el.id}-camera-contact-point`)
         }
-
-        // Mouse movements
-        if (evt.button === 2) {
-            // right button
-            this.endYaw(evt.clientX)
-        }
     },
 
     recordMouseButtonsState(evt) {
