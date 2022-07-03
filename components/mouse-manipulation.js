@@ -352,60 +352,95 @@ AFRAME.registerComponent('mouse-manipulation', {
     }*/
 });
   
-
 AFRAME.registerComponent('mouse-pitch-yaw', {
 
     init: function () {
   
         this.xQuaternion = new THREE.Quaternion();
         this.yQuaternion = new THREE.Quaternion();
-        this.yAxis = new THREE.Vector3();
+        this.yAxis = new THREE.Vector3(0, 1, 0);
         this.xAxis = new THREE.Vector3(1, 0, 0);
-        this.unusedVector = new THREE.Vector3();
     
-        // Mouse 2D controls.
-        this.onMouseUp = this.onMouseUp.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
-        this.onMouseDown = this.onMouseDown.bind(this);
-        document.addEventListener('mouseup', this.onMouseUp);
         document.addEventListener('mousemove', this.onMouseMove);
-        document.addEventListener('mousedown', this.onMouseDown);
     },
-  
-    onMouseDown: function (evt) {
-        this.oldClientX = evt.clientX;
-        this.oldClientY = evt.clientY;
+
+
+    remove() {
+        document.removeEventListener('mousemove', this.onMouseMove);
     },
-  
-    onMouseUp: function (evt) {
-        if (evt.buttons === undefined || evt.buttons !== 0) { return; }
-        this.oldClientX = undefined;
-        this.oldClientY = undefined;
-    },
-  
+    
     onMouseMove: function (evt) {
         this.rotateModel(evt);
     },
   
     rotateModel: function (evt) {
-        var dX;
-        var dY;
+        const dX = evt.movementX;
+        const dY = evt.movementY;
     
-        if (!this.oldClientX) { return; }
-        dX = this.oldClientX - evt.clientX;
-        dY = this.oldClientY - evt.clientY;
-    
-        // xAxis for rotation is fixed.
-        // yAxis comes from target object.
-        this.el.object3D.matrix.extractBasis(this.unusedVector, this.yAxis, this.unusedVector);
-        this.xQuaternion.setFromAxisAngle(this.yAxis, -dX / 400)
-        this.yQuaternion.setFromAxisAngle(this.xAxis, -dY / 400)
+        this.xQuaternion.setFromAxisAngle(this.yAxis, dX / 400)
+        this.yQuaternion.setFromAxisAngle(this.xAxis, dY / 400)
     
         this.el.object3D.quaternion.premultiply(this.xQuaternion);
         this.el.object3D.quaternion.premultiply(this.yQuaternion);
+    }
+});
+
+AFRAME.registerComponent('mouse-roll', {
+
+    init: function () {
+  
+        this.zQuaternion = new THREE.Quaternion();
+        this.zAxis = new THREE.Vector3(0, 0, 1);
     
-        this.oldClientX = evt.clientX;
-        this.oldClientY = evt.clientY;
+        this.onMouseMove = this.onMouseMove.bind(this);
+        document.addEventListener('mousemove', this.onMouseMove);
+    },
+
+    remove() {
+        document.removeEventListener('mousemove', this.onMouseMove);
+    },
+    
+    onMouseMove: function (evt) {
+        this.rotateModel(evt);
+    },
+  
+    rotateModel: function (evt) {
+        const dX = evt.movementX;
+    
+        this.zQuaternion.setFromAxisAngle(this.zAxis, -dX / 400)
+        this.el.object3D.quaternion.premultiply(this.zQuaternion);
+    }
+});
+
+AFRAME.registerComponent('mouse-dolly', {
+
+    init: function () {
+
+        // 1 - no movement; < 1 = reverse movement.
+        this.moveSpeed = 1.3
+  
+        this.zQuaternion = new THREE.Quaternion();
+        this.zAxis = new THREE.Vector3(0, 0, 1);
+    
+        this.onMouseWheel = this.onMouseWheel.bind(this);
+        document.addEventListener('mousewheel', this.onMouseWheel);
+    },
+
+    remove() {
+        document.removeEventListener('mousewheel', this.onMouseWheel);
+    },
+    
+    onMouseWheel: function (evt) {
+        this.dollyModel(evt);
+    },
+  
+    dollyModel: function (evt) {
+
+        const dY = evt.deltaY;
+
+        const scalar = Math.pow(this.moveSpeed, -dY/400);
+        this.el.object3D.position.multiplyScalar(scalar)
     }
 });
   
