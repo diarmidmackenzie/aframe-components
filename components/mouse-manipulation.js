@@ -388,6 +388,10 @@ AFRAME.registerComponent('mouse-pitch-yaw', {
 
 AFRAME.registerComponent('mouse-roll', {
 
+    schema: {
+        slowdownRadius: {type: 'number', default: 50}
+    },
+
     init: function () {
   
         this.zQuaternion = new THREE.Quaternion();
@@ -427,7 +431,18 @@ AFRAME.registerComponent('mouse-roll', {
         this.prevPointer.set(evt.clientX - dX, evt.clientY - dY)
         this.prevPointer.sub(this.modelPos)
 
-        const angle = this.prevPointer.angle() - this.currPointer.angle()
+        let angle = this.prevPointer.angle() - this.currPointer.angle()
+
+        // Normalize to rangw PI -> -PI, so that scaling angle down doesn't give unexpected results.
+        if (angle < (-Math.PI)) angle += (2 * Math.PI)
+        if (angle > (Math.PI)) angle -= (2 * Math.PI)
+        
+        const distanceToCenter = Math.min(this.currPointer.length(), this.prevPointer.length())
+        if (distanceToCenter  < this.data.slowdownRadius) {
+            const scaleFactor = distanceToCenter / this.data.slowdownRadius
+            angle *= scaleFactor
+        }
+        
     
         this.zQuaternion.setFromAxisAngle(this.zAxis, angle)
         this.el.object3D.quaternion.premultiply(this.zQuaternion);
@@ -462,16 +477,16 @@ AFRAME.registerComponent('entity-screen-position', {
     getEntityScreenPosition(vector2) {
 
         this.el.object3D.getWorldPosition(this.vector)
-        console.log("World Position:", this.vector)
+        //console.log("World Position:", this.vector)
         this.vector.project(this.el.sceneEl.camera)
 
-        console.log("Projected vector x, y:", this.vector.x, this.vector.y)
+        //console.log("Projected vector x, y:", this.vector.x, this.vector.y)
 
         const bounds = this.canvasBounds;
-        console.log("Canvas Bounds:", bounds)
+        //console.log("Canvas Bounds:", bounds)
         vector2.set((this.vector.x + 1) * bounds.width / 2,
                      bounds.height - ((this.vector.y + 1) * bounds.height / 2))
-        console.log("Model position on screen:", vector2)
+        //console.log("Model position on screen:", vector2)
 
         return vector2
     }
