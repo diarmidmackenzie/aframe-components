@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+      <script src="../components/mouse-manipulation.js"></script>
+      <link rel="stylesheet" href="/styles.css">
+
+      <script>
+        AFRAME.registerComponent('display-entity-screen-position', {
+
+            schema: {
+              target: {type: 'selector'}
+            },
+
+            init() {
+                this.data.target.setAttribute("entity-screen-position", "")
+                this.screenPos = new THREE.Vector2()
+                this.mouseX = 0
+                this.mouseY = 0
+
+                this.mouseMove = this.mouseMove.bind(this)
+                window.addEventListener('mousemove', this.mouseMove)
+            },
+
+            tick() {
+                this.data.target.components['entity-screen-position'].getEntityScreenPosition(this.screenPos)
+
+                this.screenPos
+                this.el.setAttribute("text", "value", `object: x: ${this.screenPos.x.toFixed(2)}, y: ${this.screenPos.y.toFixed(2)}
+                                                        mouse: x: ${this.mouseX.toFixed(2)}, y: ${this.mouseY.toFixed(2)}`)
+            },
+
+            mouseMove(evt) {
+
+              this.mouseX = evt.clientX
+              this.mouseY = evt.clientY
+            }
+        })  
+      </script>
+  </head>
+  <body>
+    <div class="text-overlay">
+        This example displays the x/y screen position (same co-ordinates as mouse system) of the center of the cube<br/> 
+        Drag with mouse to look around, and use WASD to move<br/>
+        Values are not necessarily valid when the cube is off-screen<br/>
+
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/mouse-object-control.html">
+        view code
+    </a>
+    
+    <a-scene background="color:black">
+      <a-entity camera look-controls wasd-controls position="0 1.6 0">
+        <a-text color="white" position = "0 1 -3" value="Waiting for data..."
+                display-entity-screen-position="target:#box"> 
+        </a-text>
+      </a-entity>
+        <a-box id="box" position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box>      
+    </a-scene>
+  </body>
+</html>

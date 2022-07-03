@@ -395,9 +395,19 @@ AFRAME.registerComponent('mouse-roll', {
     
         this.onMouseMove = this.onMouseMove.bind(this);
         document.addEventListener('mousemove', this.onMouseMove);
+
+        this.currPointer = new THREE.Vector2()
+        this.prevPointer = new THREE.Vector2()
+
+        this.el.setAttribute("entity-screen-position", "")
+
+        this.modelPos = new THREE.Vector2()
+        this.el.components['entity-screen-position'].getEntityScreenPosition(this.modelPos)
     },
+    
 
     remove() {
+        this.el.removeAttribute("entity-screen-position")
         document.removeEventListener('mousemove', this.onMouseMove);
     },
     
@@ -406,10 +416,64 @@ AFRAME.registerComponent('mouse-roll', {
     },
   
     rotateModel: function (evt) {
+
+        this.el.components['entity-screen-position'].getEntityScreenPosition(this.modelPos)
+        console.log("Model position on screen:", this.modelPos)
+
         const dX = evt.movementX;
+        const dY = evt.movementY;
+        this.currPointer.set(evt.clientX, evt.clientY)
+        this.currPointer.sub(this.modelPos)
+        this.prevPointer.set(evt.clientX - dX, evt.clientY - dY)
+        this.prevPointer.sub(this.modelPos)
+
+        const angle = this.prevPointer.angle() - this.currPointer.angle()
     
-        this.zQuaternion.setFromAxisAngle(this.zAxis, -dX / 400)
+        this.zQuaternion.setFromAxisAngle(this.zAxis, angle)
         this.el.object3D.quaternion.premultiply(this.zQuaternion);
+    }
+});
+
+// Make available the screen position of an entity
+AFRAME.registerComponent('entity-screen-position', {
+
+    init: function () {
+  
+        this.vector = new THREE.Vector3()
+
+        // need to keep an up-to-date view of canvs bounds
+        this.canvasBounds = document.body.getBoundingClientRect();
+        this.updateCanvasBounds = AFRAME.utils.debounce(() => {
+            this.canvasBounds = this.el.sceneEl.canvas.getBoundingClientRect()
+          }, 500);
+        
+        window.addEventListener('resize', this.updateCanvasBounds);
+        window.addEventListener('scroll', this.updateCanvasBounds);
+
+        this.getEntityScreenPosition = this.getEntityScreenPosition.bind(this)
+    },
+    
+
+    remove() {
+        window.removeEventListener('resize', this.updateCanvasBounds);
+        window.removeEventListener('scroll', this.updateCanvasBounds);
+    },
+
+    getEntityScreenPosition(vector2) {
+
+        this.el.object3D.getWorldPosition(this.vector)
+        console.log("World Position:", this.vector)
+        this.vector.project(this.el.sceneEl.camera)
+
+        console.log("Projected vector x, y:", this.vector.x, this.vector.y)
+
+        const bounds = this.canvasBounds;
+        console.log("Canvas Bounds:", bounds)
+        vector2.set((this.vector.x + 1) * bounds.width / 2,
+                     bounds.height - ((this.vector.y + 1) * bounds.height / 2))
+        console.log("Model position on screen:", vector2)
+
+        return vector2
     }
 });
 
