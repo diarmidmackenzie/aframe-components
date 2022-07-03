@@ -51,6 +51,7 @@ AFRAME.registerComponent('mouse-manipulation', {
     schema: {
         defaultParent: {type: 'selector'},
         rotateRate: {type: 'number', default: 45},
+        debug: {type: 'boolean', default: true}
     },
 
     events: {
@@ -89,6 +90,11 @@ AFRAME.registerComponent('mouse-manipulation', {
         // (this helps with move in/out, rotation etc. of grabbed entity)
         this.cursorContactPoint = document.createElement('a-entity')
         this.cursorContactPoint.setAttribute('id', `${this.el.id}-cursor-contact-point`)
+        if (this.data.debug) {
+            this.cursorContactPoint.setAttribute('geometry', "primitive:box; height:0.1; width: 0.1; depth:0.1")
+            this.cursorContactPoint.setAttribute('material', "color: blue")
+        }
+        
         this.cursorTracker.appendChild(this.cursorContactPoint)
 
         // A container for any entity that can be grabbed.
@@ -97,6 +103,10 @@ AFRAME.registerComponent('mouse-manipulation', {
         // (this helps with move in/out, rotation etc. of grabbed entity)
         this.cameraContactPoint = document.createElement('a-entity')
         this.cameraContactPoint.setAttribute('id', `${this.el.id}-camera-contact-point`)
+        if (this.data.debug) {
+            this.cameraContactPoint.setAttribute('geometry', "primitive:box; height:0.1; width: 0.1; depth:0.1")
+            this.cameraContactPoint.setAttribute('material', "color: red")
+        }
         this.camera.appendChild(this.cameraContactPoint)
 
         // for working
@@ -106,10 +116,32 @@ AFRAME.registerComponent('mouse-manipulation', {
         this.mouseWheel = this.mouseWheel.bind(this)
         this.windowMouseUp = this.windowMouseUp.bind(this)
         this.windowMouseDown = this.windowMouseDown.bind(this)
+        this.windowMouseMove = this.windowMouseMove.bind(this)
         window.addEventListener('wheel', this.mouseWheel);
         window.addEventListener('mouseup', this.windowMouseUp);
         window.addEventListener('mousedown', this.windowMouseDown);
+        window.addEventListener('mousemove', this.windowMouseMove);
         window.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Quaternions & axes used to manage rotation
+        this.xAxis = new THREE.Vector3(0, 0, 0)
+        this.yAxis = new THREE.Vector3(0, 1, 1)
+        this.zAxis = new THREE.Vector3(0, 0, 1)
+        this.yawQuaternion = new THREE.Quaternion();
+        this.pitchQuaternion = new THREE.Quaternion();
+        this.rollQuaternion = new THREE.Quaternion();
+        this.yawStartQuaternion = new THREE.Quaternion();
+        this.pitchStartQuaternion = new THREE.Quaternion();
+        this.rollStartQuaternion = new THREE.Quaternion();
+        this.deltaQuaternion = new THREE.Quaternion();
+
+        // state of mouse buttons
+        this.lbDown = false
+        this.mbDown = false
+        this.rbDown = false
+
+        // adjustments to control ratio of mouse pixels to radians for otations.
+        this.radiansPerMousePixel = 0.01
     },
 
     windowMouseDown(evt) {
@@ -119,7 +151,9 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (evt.buttons === undefined) return;
         if (!this.grabbedEl) return;
 
-        if (evt.buttons % 2) {
+        this.recordMouseButtonsState(evt)
+
+        if (this.lbDown) {
             // left button is pressed (either just pressed or already down) 
             // - grab to cursor contact point
             this.grabElToContactPoint(this.cursorContactPoint,
@@ -131,6 +165,12 @@ AFRAME.registerComponent('mouse-manipulation', {
             this.grabElToContactPoint(this.cameraContactPoint,
                                       `#${this.el.id}-camera-contact-point`)
         }
+
+        // Mouse movements
+        if (evt.button === 2) {
+            // right button
+            this.startYaw(evt.clientX)
+        }
     },
 
     windowMouseUp(evt) {
@@ -139,7 +179,10 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (evt.buttons === undefined) return;
         if (!this.grabbedEl) return;
 
-        if (evt.buttons % 2) {
+        this.recordMouseButtonsState(evt)
+
+        // Reparenting
+        if (this.lbDown) {
             // left button is still down
             // leave attached to cursor contact point.
         }
@@ -153,6 +196,30 @@ AFRAME.registerComponent('mouse-manipulation', {
             this.grabElToContactPoint(this.cameraContactPoint,
                                       `#${this.el.id}-camera-contact-point`)
         }
+
+        // Mouse movements
+        if (evt.button === 2) {
+            // right button
+            this.endYaw(evt.clientX)
+        }
+    },
+
+    recordMouseButtonsState(evt) {
+        this.lbDown = (evt.buttons & 1)
+        this.mbDown = (evt.buttons & 4)
+        this.rbDown = (evt.buttons & 2)
+    },
+
+    windowMouseMove(evt) {
+
+        let updateRotation = false
+
+        if (this.rbDown) {
+            this.updateYaw(evt.clientX)
+            updateRotation = true
+        }
+
+        if (updateRotation) this.updateRotation()
     },
 
     remove() {
@@ -189,8 +256,11 @@ AFRAME.registerComponent('mouse-manipulation', {
     },
 
     releaseEl() {
+        const contactPoint = this.grabbedEl.object3D.parent
         this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.data.defaultParent.id}`)
         this.grabbedEl = null
+        contactPoint.position.set(0, 0, 0)
+        
     },
 
     mouseUp() {
@@ -214,6 +284,53 @@ AFRAME.registerComponent('mouse-manipulation', {
       const scalar = Math.pow(this.moveSpeed, timeDelta/1000);
       this.cursorContactPoint.object3D.position.multiplyScalar(scalar)
     },
+
+    startYaw(xPos) {
+        this.yawStart = xPos
+        this.yawStartQuaternion.copy(this.cameraContactPoint.object3D.quaternion)
+    },
+
+    updateYaw(xPos) {
+        console.assert(this.yawStart !== null)        
+        const delta = (xPos - this.yawStart) * this.radiansPerMousePixel
+        this.deltaQuaternion.setFromAxisAngle(this.yAxis, delta)
+        if (this.data.debug) logQuaternion("deltaQuaternion", this.deltaQuaternion)
+
+        this.yawQuaternion.copy(this.deltaQuaternion)
+        this.yawQuaternion.multiplyQuaternions(this.yawStartQuaternion, this.deltaQuaternion)
+        if (this.data.debug) logQuaternion("yawQuaternion", this.deltaQuaternion)
+    },
+
+    endYaw(xPos) {
+        this.updateYaw(xPos)
+        this.yawStart = null
+        this.yawStartQuaternion.identity()
+    },
+
+    // update the rotation of the camera contact point, to reflect latest yaw, pitch and roll.
+    updateRotation() {
+
+        const ccpQuaternion = this.cameraContactPoint.object3D.quaternion
+        ccpQuaternion.copy(this.yawQuaternion)
+        ccpQuaternion.multiply(this.pitchQuaternion)
+        ccpQuaternion.multiply(this.rollQuaternion)
+
+        if (this.data.debug) {
+            logQuaternion("yawQuaternion", this.yawQuaternion)
+            logQuaternion("pitchQuaternion", this.pitchQuaternion)
+            logQuaternion("rollQuaternion", this.rollQuaternion)
+            logQuaternion("ccpQuaternion", this.ccpQuaternion)
+        }
+    },
+
+    logQuaternion(text, quat) {
+        
+        const logtext = `${text} w: ${quat.w.toFixed(dp)}, x: ${quat.x.toFixed(dp)}, y: ${quat.y.toFixed(dp)}, z: ${quat.z.toFixed(dp)}\n`
+        const euler = new THREE.Euler(0,0,0)
+        euler.setFromQuaternion(quat);
+        logtext += `Equivalent Euler: x: ${euler.x.toFixed(dp)}, y: ${euler.y.toFixed(dp)}, z: ${euler.z.toFixed(dp)}\n`;
+        console.log(logtext);
+    }
   
       /*
     tick: function(time, timeDelta) {
@@ -233,5 +350,62 @@ AFRAME.registerComponent('mouse-manipulation', {
         this.cursorContactPoint.object3D.rotation.y -= timeDelta * this.rotateRate / 1000;
       }
     }*/
+});
+  
+
+AFRAME.registerComponent('mouse-pitch-yaw', {
+
+    init: function () {
+  
+        this.xQuaternion = new THREE.Quaternion();
+        this.yQuaternion = new THREE.Quaternion();
+        this.yAxis = new THREE.Vector3();
+        this.xAxis = new THREE.Vector3(1, 0, 0);
+        this.unusedVector = new THREE.Vector3();
+    
+        // Mouse 2D controls.
+        this.onMouseUp = this.onMouseUp.bind(this);
+        this.onMouseMove = this.onMouseMove.bind(this);
+        this.onMouseDown = this.onMouseDown.bind(this);
+        document.addEventListener('mouseup', this.onMouseUp);
+        document.addEventListener('mousemove', this.onMouseMove);
+        document.addEventListener('mousedown', this.onMouseDown);
+    },
+  
+    onMouseDown: function (evt) {
+        this.oldClientX = evt.clientX;
+        this.oldClientY = evt.clientY;
+    },
+  
+    onMouseUp: function (evt) {
+        if (evt.buttons === undefined || evt.buttons !== 0) { return; }
+        this.oldClientX = undefined;
+        this.oldClientY = undefined;
+    },
+  
+    onMouseMove: function (evt) {
+        this.rotateModel(evt);
+    },
+  
+    rotateModel: function (evt) {
+        var dX;
+        var dY;
+    
+        if (!this.oldClientX) { return; }
+        dX = this.oldClientX - evt.clientX;
+        dY = this.oldClientY - evt.clientY;
+    
+        // xAxis for rotation is fixed.
+        // yAxis comes from target object.
+        this.el.object3D.matrix.extractBasis(this.unusedVector, this.yAxis, this.unusedVector);
+        this.xQuaternion.setFromAxisAngle(this.yAxis, -dX / 400)
+        this.yQuaternion.setFromAxisAngle(this.xAxis, -dY / 400)
+    
+        this.el.object3D.quaternion.premultiply(this.xQuaternion);
+        this.el.object3D.quaternion.premultiply(this.yQuaternion);
+    
+        this.oldClientX = evt.clientX;
+        this.oldClientY = evt.clientY;
+    }
 });
   
