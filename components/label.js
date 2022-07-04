@@ -75,9 +75,10 @@ AFRAME.registerComponent('face-camera', {
 
     object3DSet(evt) {
 
-        const mesh = this.el.getObject3D(evt.detail.type)
-        mesh.material.depthTest=false;
-        mesh.material.depthWrite=false;
+        const mesh = evt.target.getObject3D(evt.detail.type)
+        mesh.material.depthTest = false;
+        mesh.material.depthWrite = false;
+        
     },
 
     tick: function() {
