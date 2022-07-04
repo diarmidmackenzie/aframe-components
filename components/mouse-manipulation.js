@@ -57,7 +57,9 @@ AFRAME.registerComponent('mouse-manipulation', {
 
     events: {
         mousedown: function(evt) { this.mouseDown(evt) }, 
-        mouseup:  function(evt) { this.mouseUp(evt) }
+        mouseup:  function(evt) { this.mouseUp(evt) },
+        mouseenter: function(evt) { this.mouseEnter(evt) }, 
+        mouseleave:  function(evt) { this.mouseLeave(evt) }
     },
     
     init() {
@@ -70,7 +72,6 @@ AFRAME.registerComponent('mouse-manipulation', {
     
         // variable to track any grabbed element
         this.grabbedEl = null;
-        this.grabbedElWorldPosition = new THREE.Vector3();
 
         // We create 2 children beneath the camera
         // - cursorTracker.  This is set up to match the orientation of the cursor
@@ -239,10 +240,29 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (!this.data.showHints) return
 
         this.hints = document.createElement('a-entity')
-        this.hints.object3D.position.set(0, 1, 0)
         this.hints.setAttribute("label", "overwrite: true")        
         this.el.appendChild(this.hints)
-        
+
+        this.hoverHint = document.createElement('a-entity')
+        this.hoverHint.setAttribute("text", "value", "left to move; right to rotate; middle to roll")
+        this.hoverHint.object3D.position.set(0, 0.2, 0)
+        this.hints.appendChild(this.hoverHint)
+
+        this.lbDownHint = document.createElement('a-entity')
+        this.lbDownHint.setAttribute("text", "value: left; align: center; anchor: center")        
+        this.lbDownHint.object3D.position.set(0, 0.2, 0)
+        this.hints.appendChild(this.lbDownHint)
+
+        this.rbDownHint = document.createElement('a-entity')
+        this.rbDownHint.setAttribute("text", "value: right; align: center; anchor: center")
+        this.rbDownHint.object3D.position.set(0, 0.2, 0)
+        this.hints.appendChild(this.rbDownHint)
+
+        this.mbDownHint = document.createElement('a-entity')
+        this.mbDownHint.setAttribute("text", "value: middle; align: center; anchor: center")
+        this.mbDownHint.object3D.position.set(0, 0.2, 0)
+        this.hints.appendChild(this.mbDownHint)
+
         this.updateHints()
     },
 
@@ -250,17 +270,25 @@ AFRAME.registerComponent('mouse-manipulation', {
 
         if (!this.data.showHints) return
 
+        const show = (x) => { x.object3D.visible = true }
+        const hide = (x) => { x.object3D.visible = false }
+        
+        hide(this.hoverHint)
+        hide(this.lbDownHint)
+        hide(this.rbDownHint)
+        hide(this.mbDownHint)
+        
         if (this.lbDown) {
-            this.hints.setAttribute("text", "value", "left")
+            show(this.lbDownHint)    
         }
         else if (this.rbDown) {
-            this.hints.setAttribute("text", "value", "right")
+            show(this.rbDownHint)
         }
         else if (this.mbDown) {
-            this.hints.setAttribute("text", "value", "middle")
+            show(this.mbDownHint)
         }
         else {
-            this.hints.setAttribute("text", "value", "left to move; right to rotate; middle to roll")
+            show(this.hoverHint)
         }
     },
 
@@ -289,16 +317,17 @@ AFRAME.registerComponent('mouse-manipulation', {
         }
 
         this.grabbedEl = newGrabbedEl
-        this.grabbedEl.object3D.getWorldPosition(this.grabbedElWorldPosition)
+        
     },
 
     grabElToContactPoint(contactPoint, contactPointSelector) {
         // set up a contact point at the position of the grabbed entity
         const pos = contactPoint.object3D.position
-        pos.copy(this.grabbedElWorldPosition)
+        this.grabbedEl.object3D.getWorldPosition(pos)
         contactPoint.object3D.parent.worldToLocal(pos)
         this.grabbedEl.setAttribute('object-parent', 'parent', contactPointSelector)
 
+        this.hints.object3D.position.set(0, 0 , 0)
         contactPoint.object3D.add(this.hints.object3D)
     },
 
@@ -306,13 +335,37 @@ AFRAME.registerComponent('mouse-manipulation', {
         const contactPoint = this.grabbedEl.object3D.parent
         this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.data.defaultParent.id}`)
         this.grabbedEl = null
-        contactPoint.position.set(0, 0, 0)
 
+        this.hints.object3D.position.set(0, 0 , 0)
         this.el.object3D.add(this.hints.object3D)
     },
 
     mouseUp() {
         // all work done on MouseEvent, where we have detail as to *which* button is pressed.
+    },
+
+    mouseEnter(evt) {
+
+        // don't do hover behaviour when another entity is already grabbed.
+        if (this.grabbedEl) return;
+
+        // similar logic to mouseDown - could be commonized
+        // or we could even *only* do some of this processing on mouseenter?
+        const intersections = this.getIntersections(evt.target);
+    
+        if (intersections.length === 0)  return;
+    
+        const element = intersections[0]
+        this.hoverEl = element.components['clickable'].target
+        
+        const contactPoint = this.cursorContactPoint
+        const pos = this.hints.object3D.position
+        this.hoverEl.object3D.getWorldPosition(pos)
+        this.hints.object3D.parent.worldToLocal(pos)
+    },
+
+    mouseLeave(evt) {
+        this.hints.object3D.position.set(0,0,0)
     },
 
     getIntersections(cursorEl) {
