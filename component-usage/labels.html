@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+      <script src="../components/label.js"></script>
+      <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        Fixed size labels that face the camera.
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/labels.html">
+        view code
+    </a>
+    
+    <a-scene background="color:black">
+      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+      <a-entity id="container" position = "0 0 -4" mouse-object-control>
+        <a-box position="-1 0.5 1" rotation="0 45 0" color="#4CC3D9">
+            <a-text position = "-0.5 0 0.5"
+                    material="color:white"
+                    value="CUBE" anchor="center" align="center"
+                    width=2
+                    label="overwrite:true"></a-text>
+        </a-box>
+        <a-sphere position="0 1.25 -1" radius="1.25" color="#EF2D5E">
+            <a-text position = "0 0 1.5"
+                    material="color:white" value="SPHERE" anchor="center" align="center"
+                    width=2
+                    label="overwrite:true"></a-text>
+        </a-sphere>
+
+        <a-cylinder position="1 0.75 1" radius="0.5" height="1.5" color="#FFC65D">
+            <a-text position = "0 0 1.2" 
+                    material="color:white"
+                    value="CYLINDER" anchor="center" align="center"
+                    width=2
+                    label="overwrite:true"></a-text>
+        </a-cylinder>
+        <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" side="double"></a-plane>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
