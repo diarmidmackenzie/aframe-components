@@ -51,7 +51,7 @@ AFRAME.registerComponent('mouse-manipulation', {
     schema: {
         defaultParent: {type: 'selector'},
         rotateRate: {type: 'number', default: 45},
-        debug: {type: 'boolean', default: true}
+        debug: {type: 'boolean', default: false}
     },
 
     events: {
