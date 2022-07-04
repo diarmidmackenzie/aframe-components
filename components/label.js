@@ -63,7 +63,7 @@ AFRAME.registerComponent('face-camera', {
         this.cameraQuaternion = new THREE.Quaternion();
         this.spriteDistanceVector = new THREE.Vector3();
         this.cameraDirectionVector = new THREE.Vector3();
-        this.spriteWorldQuaternion = new THREE.Quaternion();
+        this.parentInverseQuaternion = new THREE.Quaternion();
 
 
         this.object3DSet = this.object3DSet.bind(this)
@@ -88,13 +88,20 @@ AFRAME.registerComponent('face-camera', {
 
             // On an Orthographic camera, we always use Sprite mode, as this matches how other geometry
             // is rendered.
-            this.cameraQuaternion.setFromRotationMatrix(camera.matrixWorld);
 
-            this.el.object3D.updateMatrixWorld();
-            this.el.object3D.parent.getWorldQuaternion(this.spriteWorldQuaternion);
-            this.spriteWorldQuaternion.invert();
-            this.el.object3D.quaternion.copy(this.spriteWorldQuaternion);
-            this.el.object3D.quaternion.multiply(this.cameraQuaternion);
+            setWorldQuaternion = (object, quaternion) => {
+
+                object.updateMatrixWorld()
+                object.parent.getWorldQuaternion(this.parentInverseQuaternion)
+                this.parentInverseQuaternion.invert();
+
+                object.quaternion.copy(quaternion)
+                object.quaternion.premultiply(this.parentInverseQuaternion)
+            }
+
+            // set the world quaternion of this entity  to match the camera
+            this.cameraQuaternion.setFromRotationMatrix(camera.matrixWorld)
+            setWorldQuaternion(this.el.object3D, this.cameraQuaternion)
         }
         else {
             // Can't use getWorldPosition on camera, as it doesn't work in VR mode.
