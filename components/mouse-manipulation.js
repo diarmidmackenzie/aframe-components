@@ -301,6 +301,13 @@ AFRAME.registerComponent('mouse-pitch-yaw', {
     },
   
     rotateModel: function (evt) {
+
+        // get normalized vector perpendicular to camera to use as xAxis (to pitch around)
+        this.xAxis.copy(this.el.object3D.position)
+        this.xAxis.normalize()
+        this.xAxis.cross(this.yAxis)
+        //console.log("xAxis: ", this.xAxis)
+
         var dX = evt.movementX;
         var dY = evt.movementY;
 
@@ -377,8 +384,14 @@ AFRAME.registerComponent('mouse-roll', {
   
     rotateModel: function (evt) {
 
+        // get normalized vector away from camera to use as zAxis (to roll around)
+        this.zAxis.copy(this.el.object3D.position)
+        this.zAxis.multiplyScalar(-1)
+        this.zAxis.normalize()
+        //console.log("zAxis: ", this.zAxis)
+
         this.el.components['entity-screen-position'].getEntityScreenPosition(this.modelPos)
-        console.log("Model position on screen:", this.modelPos)
+        //console.log("Model position on screen:", this.modelPos)
 
         const dX = evt.movementX;
         const dY = evt.movementY;
@@ -399,7 +412,6 @@ AFRAME.registerComponent('mouse-roll', {
             angle *= scaleFactor
         }
         
-    
         this.zQuaternion.setFromAxisAngle(this.zAxis, angle)
         this.el.object3D.quaternion.premultiply(this.zQuaternion);
     }
