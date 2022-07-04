@@ -269,8 +269,19 @@ AFRAME.registerComponent('mouse-manipulation', {
   
 AFRAME.registerComponent('mouse-pitch-yaw', {
 
+    schema: {
+        // whether to only allow rotation on a single axis (whichever moves first)
+        singleAxis : {type: 'boolean', default: true},
+        // Number of mouse pixels movement required to lock onto an axis.
+        threshold : {type: 'number', default: 5}
+    },
+
     init: function () {
   
+        this.axis = null
+        this.cumX = 0
+        this.cumY = 0
+
         this.xQuaternion = new THREE.Quaternion();
         this.yQuaternion = new THREE.Quaternion();
         this.yAxis = new THREE.Vector3(0, 1, 0);
@@ -290,14 +301,44 @@ AFRAME.registerComponent('mouse-pitch-yaw', {
     },
   
     rotateModel: function (evt) {
-        const dX = evt.movementX;
-        const dY = evt.movementY;
+        var dX = evt.movementX;
+        var dY = evt.movementY;
+
+        // constrain to single axis if required.
+        if (this.data.singleAxis) {
+
+            // cumulative movements in X & Y.  Used to measure vs. threshold for
+            // single axis movement.
+            this.cumX += dX
+            this.cumY += dY
+
+            if (!this.axis && 
+                ((Math.abs(this.cumX) > this.data.threshold) ||
+                 (Math.abs(this.cumY) > this.data.threshold))) {
+                this.axis = (Math.abs(this.cumX) > Math.abs(this.cumY)) ? "x" : "y"
+            }
+
+            if (this.axis === "x") {
+                dY = 0
+            }
+            else if (this.axis === "y"){
+                dX = 0
+            }
+            else {
+                // if not locked onto an axis yet, don't allow amny movement.
+                dX = 0
+                dY = 0
+            }
+        }
     
         this.xQuaternion.setFromAxisAngle(this.yAxis, dX / 200)
         this.yQuaternion.setFromAxisAngle(this.xAxis, dY / 200)
     
         this.el.object3D.quaternion.premultiply(this.xQuaternion);
         this.el.object3D.quaternion.premultiply(this.yQuaternion);
+
+        // avoid issues that can result from accumulation of small Floating Point inaccuracies.
+        this.el.object3D.quaternion.normalize()
     }
 });
 
