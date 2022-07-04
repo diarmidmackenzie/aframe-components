@@ -271,7 +271,7 @@ AFRAME.registerComponent('mouse-pitch-yaw', {
 
     schema: {
         // whether to only allow rotation on a single axis (whichever moves first)
-        singleAxis : {type: 'boolean', default: true},
+        singleAxis : {type: 'boolean', default: false},
         // Number of mouse pixels movement required to lock onto an axis.
         threshold : {type: 'number', default: 5}
     },
