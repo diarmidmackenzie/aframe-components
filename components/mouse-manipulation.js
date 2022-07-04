@@ -51,20 +51,15 @@ AFRAME.registerComponent('mouse-manipulation', {
     schema: {
         defaultParent: {type: 'selector'},
         rotateRate: {type: 'number', default: 45},
-        debug: {type: 'boolean', default: false}
+        debug: {type: 'boolean', default: false},
+        showHints: {type: 'boolean', default: true},
     },
 
     events: {
         mousedown: function(evt) { this.mouseDown(evt) }, 
         mouseup:  function(evt) { this.mouseUp(evt) }
     },
-  
-    update: function() {
-  
-        // internally store rotation rate as radians per event
-        this.rotateRate = this.data.rotateRate * Math.PI / 180;
-    },
-  
+    
     init() {
         // cursor must have an ID so that we can refence it when ataching an object-parent
         console.assert(this.el.id)
@@ -129,6 +124,28 @@ AFRAME.registerComponent('mouse-manipulation', {
         this.radiansPerMousePixel = 0.01
     },
 
+    update: function() {
+  
+        // internally store rotation rate as radians per event
+        this.rotateRate = this.data.rotateRate * Math.PI / 180;
+
+        if (this.data.showHints) {
+            this.createHints()
+        }
+        else {
+            this.removeHints()
+        }
+        
+    },
+
+    remove() {
+
+        this.removeHints()
+
+        window.removeEventListener('mouseup', this.windowMouseUp);
+        window.removeEventListener('mousedown', this.windowMouseDown);
+    },
+
     windowMouseDown(evt) {
 
         // we are looking for the original mouseEvent, which has details of buttons pressed
@@ -138,6 +155,7 @@ AFRAME.registerComponent('mouse-manipulation', {
 
         this.recordMouseButtonsState(evt)
         this.updateMouseControls()
+        this.updateHints()
 
         if (this.lbDown) {
             // left button is pressed (either just pressed or already down) 
@@ -161,6 +179,7 @@ AFRAME.registerComponent('mouse-manipulation', {
 
         this.recordMouseButtonsState(evt)
         this.updateMouseControls()
+        this.updateHints()
         
         // Reparenting
         if (this.lbDown) {
@@ -215,8 +234,42 @@ AFRAME.registerComponent('mouse-manipulation', {
         }
     },
 
-    remove() {
-        window.removeEventListener('wheel', this.mouseWheel);
+    createHints() {
+
+        if (!this.data.showHints) return
+
+        this.hints = document.createElement('a-entity')
+        this.hints.object3D.position.set(0, 1, 0)
+        this.hints.setAttribute("label", "overwrite: true")        
+        this.el.appendChild(this.hints)
+        
+        this.updateHints()
+    },
+
+    updateHints() {
+
+        if (!this.data.showHints) return
+
+        if (this.lbDown) {
+            this.hints.setAttribute("text", "value", "left")
+        }
+        else if (this.rbDown) {
+            this.hints.setAttribute("text", "value", "right")
+        }
+        else if (this.mbDown) {
+            this.hints.setAttribute("text", "value", "middle")
+        }
+        else {
+            this.hints.setAttribute("text", "value", "left to move; right to rotate; middle to roll")
+        }
+    },
+
+    removeHints() {
+
+        if (this.hints) {
+            this.hints.parent.removeChild(this.hints)
+            this.hints = null
+        }
     },
 
     // records details of grabbed ovject, but actual grabbing is deferred to be handled on MouseEvent
@@ -245,6 +298,8 @@ AFRAME.registerComponent('mouse-manipulation', {
         pos.copy(this.grabbedElWorldPosition)
         contactPoint.object3D.parent.worldToLocal(pos)
         this.grabbedEl.setAttribute('object-parent', 'parent', contactPointSelector)
+
+        contactPoint.object3D.add(this.hints.object3D)
     },
 
     releaseEl() {
@@ -252,7 +307,8 @@ AFRAME.registerComponent('mouse-manipulation', {
         this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.data.defaultParent.id}`)
         this.grabbedEl = null
         contactPoint.position.set(0, 0, 0)
-        
+
+        this.el.object3D.add(this.hints.object3D)
     },
 
     mouseUp() {
