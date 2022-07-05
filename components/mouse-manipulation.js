@@ -361,11 +361,8 @@ AFRAME.registerComponent('mouse-manipulation-hints', {
     init() {
         this.views = {}
         const views = this.views
-        views.hover = document.createElement('a-entity')
-        views.hover.setAttribute('id', 'hint-hover')
-        views.hover.setAttribute("text", "value", "left to move; right to rotate; middle to roll")
-        views.hover.object3D.position.set(0, 0.2, 0)
-        this.el.appendChild(views.hover)
+
+        this.createHoverView()
 
         views.left = document.createElement('a-entity')
         views.left.setAttribute('id', 'hint-left')
@@ -384,6 +381,65 @@ AFRAME.registerComponent('mouse-manipulation-hints', {
         views.middle.setAttribute("text", "value: middle; align: center; anchor: center")
         views.middle.object3D.position.set(0, 0.2, 0)
         this.el.appendChild(views.middle)
+    },
+
+    createHoverView() {
+
+        const views = this.views
+        views.hover = document.createElement('a-entity')
+        views.hover.setAttribute('id', 'hint-hover')
+        views.hover.object3D.position.set(0, 0.2, 0)
+        this.el.appendChild(views.hover)
+
+        const rows = [["left-mouse", "move-arrows", "left-mouse", "pitch-yaw-arrow"],
+                      ["mouse-wheel", "in-out-arrow", "middle-mouse", "roll"]]
+
+        const rotations = [[0, 0, 0, 0],
+                           [0, 0, 0, 0]]
+        
+        const reflections = [[1, 1, -1, 1],
+                             [1, 1, 1, 1]]
+
+        this.addRowsToView(views.hover, rows, rotations, reflections, "above")
+    },
+
+    addRowsToView(view, rows, rotations, reflections, layout) {
+
+        const spacing = 0.15
+        const imgSize = 0.1
+        const iconsPath = "../assets/icons/"
+
+        function createIcon(iconName, xPos, yPos, rotation, reflect) {
+
+            const icon = document.createElement('a-image')
+            const src = `${iconsPath}${iconName}.svg`
+
+            icon.setAttribute("src", src)
+            icon.object3D.position.set(xPos, yPos, 0)
+            icon.object3D.rotation.set(0, 0, THREE.MathUtils.degToRad(rotation))
+            icon.object3D.scale.set(imgSize * reflect, imgSize, imgSize)
+            view.appendChild(icon)
+        }
+
+        function createRow(row, xStart, yPos, rowIndex) {
+
+            row.forEach((iconName, index) => {
+                createIcon(iconName, xStart + (index * spacing), yPos,
+                           rotations[rowIndex][index],
+                           reflections[rowIndex][index])
+            })
+        }
+
+        if (layout === "above") {
+            // lay rows out in a grid above the entity
+            rows.forEach((row, index) => {
+                createRow(row, -0.3, 0.2 - (index * spacing), index)
+            })
+        }
+        else if (layout === "compass") {
+            // lay rows out at N, S, E & W positions.
+        }
+        
     },
 
     update() {

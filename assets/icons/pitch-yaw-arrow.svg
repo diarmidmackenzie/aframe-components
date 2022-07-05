@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   fill="#ffffff"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   viewBox="0 -50 122.88 123"
+   style="enable-background:new 0 0 122.88 45.59"
+   xml:space="preserve"
+   sodipodi:docname="pitch-yaw-arrow.svg"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+     id="defs424" /><sodipodi:namedview
+     id="namedview422"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     showgrid="false"
+     inkscape:zoom="3.3089431"
+     inkscape:cx="-32.487715"
+     inkscape:cy="74.797297"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Layer_1" /><style
+     type="text/css"
+     id="style415"><![CDATA[
+	.st0{fill-rule:evenodd;clip-rule:evenodd;}
+]]></style><g
+     id="g419"
+     transform="matrix(-1,0,0,1,122.87683,0)"><path
+       class="st0"
+       d="m 105.14,8.16 c 15.07,5.35 14.31,14.26 -6.59,19.42 -4.28,1.06 -8.52,2.04 -13.64,2.64 v 6.07 c 5.9,-0.73 10.92,-2.08 15.85,-3.28 30.37,-7.36 26.92,-20.93 5.06,-27.4 C 92.61,1.71 76.16,0.04 62.46,0 49.59,-0.04 35.04,1.16 22.43,4.38 c -58.73,15 13.09,35.33 42.34,34.21 v 7 L 74.94,35.41 V 33.25 L 64.77,23.09 v 7.47 C 49.84,30.69 -21.76,21.63 23.09,7.06 33.44,3.7 51.73,2.71 62.72,2.73 c 12.21,0.02 30.9,1.34 42.42,5.43 z"
+       id="path417" /></g><g
+     id="g419-6"
+     transform="matrix(0,1,1,0,40.395581,-49.938415)"><path
+       class="st0"
+       d="m 105.14,8.16 c 15.07,5.35 14.31,14.26 -6.59,19.42 -4.28,1.06 -8.52,2.04 -13.64,2.64 v 6.07 c 5.9,-0.73 10.92,-2.08 15.85,-3.28 30.37,-7.36 26.92,-20.93 5.06,-27.4 C 92.61,1.71 76.16,0.04 62.46,0 49.59,-0.04 35.04,1.16 22.43,4.38 c -58.73,15 13.09,35.33 42.34,34.21 v 7 L 74.94,35.41 V 33.25 L 64.77,23.09 v 7.47 C 49.84,30.69 -21.76,21.63 23.09,7.06 33.44,3.7 51.73,2.71 62.72,2.73 c 12.21,0.02 30.9,1.34 42.42,5.43 z"
+       id="path417-0"
+       style="clip-rule:evenodd;fill-rule:evenodd" /></g></svg>
