@@ -262,8 +262,11 @@ AFRAME.registerComponent('mouse-manipulation', {
         else if (this.mbDown) {
             show("middle")
         }
-        else {
+        else if (this.hoverEl) {
             show("hover")
+        }
+        else {
+            show("none")
         }
     },
 
@@ -310,9 +313,14 @@ AFRAME.registerComponent('mouse-manipulation', {
         const contactPoint = this.grabbedEl.object3D.parent
         this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.data.defaultParent.id}`)
         this.grabbedEl = null
-
-        this.hints.object3D.position.set(0, 0 , 0)
+        
         this.el.object3D.add(this.hints.object3D)
+
+        if (this.hoverEl) {
+            const pos = this.hints.object3D.position
+            this.hoverEl.object3D.getWorldPosition(pos)
+            this.hints.object3D.parent.worldToLocal(pos)
+        }
     },
 
     mouseUp() {
@@ -337,10 +345,13 @@ AFRAME.registerComponent('mouse-manipulation', {
         const pos = this.hints.object3D.position
         this.hoverEl.object3D.getWorldPosition(pos)
         this.hints.object3D.parent.worldToLocal(pos)
+
+        this.updateHints()
     },
 
     mouseLeave(evt) {
-        this.hints.object3D.position.set(0,0,0)
+        this.hoverEl = null
+        this.updateHints()
     },
 
     getIntersections(cursorEl) {
