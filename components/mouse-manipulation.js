@@ -470,7 +470,7 @@ AFRAME.registerComponent('mouse-manipulation-hints', {
 
         var xOffset, yOffset
         
-        xOffset = -(rows[0].length * spacing / 2)
+        xOffset = -((rows[0].length - 1) * spacing / 2)
         yOffset = 0.2 + rows.length * spacing / 2 
         
         if (layout === "below") {
