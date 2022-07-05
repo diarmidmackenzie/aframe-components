@@ -363,24 +363,9 @@ AFRAME.registerComponent('mouse-manipulation-hints', {
         const views = this.views
 
         this.createHoverView()
-
-        views.left = document.createElement('a-entity')
-        views.left.setAttribute('id', 'hint-left')
-        views.left.setAttribute("text", "value: left; align: center; anchor: center")        
-        views.left.object3D.position.set(0, 0.2, 0)
-        this.el.appendChild(views.left)
-
-        views.right = document.createElement('a-entity')
-        views.right.setAttribute('id', 'hint-right')
-        views.right.setAttribute("text", "value: right; align: center; anchor: center")
-        views.right.object3D.position.set(0, 0.2, 0)
-        this.el.appendChild(views.right)
-
-        views.middle = document.createElement('a-entity')
-        views.middle.setAttribute('id', 'hint-middle')
-        views.middle.setAttribute("text", "value: middle; align: center; anchor: center")
-        views.middle.object3D.position.set(0, 0.2, 0)
-        this.el.appendChild(views.middle)
+        this.createLeftView()
+        this.createRightView()
+        this.createMiddleView()
     },
 
     createHoverView() {
@@ -388,7 +373,6 @@ AFRAME.registerComponent('mouse-manipulation-hints', {
         const views = this.views
         views.hover = document.createElement('a-entity')
         views.hover.setAttribute('id', 'hint-hover')
-        views.hover.object3D.position.set(0, 0.2, 0)
         this.el.appendChild(views.hover)
 
         const rows = [["left-mouse", "move-arrows", "left-mouse", "pitch-yaw-arrow"],
@@ -403,12 +387,85 @@ AFRAME.registerComponent('mouse-manipulation-hints', {
         this.addRowsToView(views.hover, rows, rotations, reflections, "above")
     },
 
+    createLeftView() {
+
+        const views = this.views
+        views.left = document.createElement('a-entity')
+        views.left.setAttribute('id', 'hint-left')
+        //views.left.setAttribute("text", "value: left; align: center; anchor: center")        
+        this.el.appendChild(views.left)
+
+        const rows = [["mouse-wheel", "in-out-arrow"]]
+        const rotations = [[0, 0]]
+        const reflections = [[1, 1]]
+
+        this.addRowsToView(views.left, rows, rotations, reflections, "below")
+
+        const cRows = [["left-arrow"],
+                       ["left-arrow"],
+                       ["left-arrow"],
+                       ["left-arrow"]]
+        const cRotations = [[270], [90], [0], [180]]
+        const cReflections = [[1], [1], [1], [1]]
+
+        this.addRowsToView(views.left, cRows, cRotations, cReflections, "compass")
+    },
+
+    createRightView() {
+
+        const views = this.views
+        views.right = document.createElement('a-entity')
+        views.right.setAttribute('id', 'hint-right')
+        this.el.appendChild(views.right)
+
+        const rows = [["mouse-wheel", "in-out-arrow"]]
+        const rotations = [[0, 0]]
+        const reflections = [[1, 1]]
+
+        this.addRowsToView(views.right, rows, rotations, reflections, "below")
+
+        const cRows = [["yaw-arrow"],
+                       ["yaw-arrow"],
+                       ["yaw-arrow"],
+                       ["yaw-arrow"]]
+        const cRotations = [[90], [90], [0], [0]]
+        const cReflections = [[1], [-1], [-1], [1]]
+
+        this.addRowsToView(views.right, cRows, cRotations, cReflections, "compass")
+    },
+
+    createMiddleView() {
+
+        const views = this.views
+
+        views.middle = document.createElement('a-entity')
+        views.middle.setAttribute('id', 'hint-middle')
+        this.el.appendChild(views.middle)
+
+        const rows = [["roll"]]
+        const aRotations = [[0]]
+        const bRotations = [[180]]
+        const reflections = [[1]]
+
+        this.addRowsToView(views.middle, rows, aRotations, reflections, "above")
+        this.addRowsToView(views.middle, rows, bRotations, reflections, "below")
+    },
+
     addRowsToView(view, rows, rotations, reflections, layout) {
 
         const spacing = 0.15
         const imgSize = 0.1
         const iconsPath = "../assets/icons/"
 
+        var xOffset, yOffset
+        
+        xOffset = -(rows[0].length * spacing / 2)
+        yOffset = 0.2 + rows.length * spacing / 2 
+        
+        if (layout === "below") {
+            yOffset -= 0.5
+        }
+        
         function createIcon(iconName, xPos, yPos, rotation, reflect) {
 
             const icon = document.createElement('a-image')
@@ -430,16 +487,26 @@ AFRAME.registerComponent('mouse-manipulation-hints', {
             })
         }
 
-        if (layout === "above") {
+        if ((layout === "above") ||
+            (layout === "below"))
+         {
             // lay rows out in a grid above the entity
             rows.forEach((row, index) => {
-                createRow(row, -0.3, 0.2 - (index * spacing), index)
+                createRow(row, xOffset, yOffset - (index * spacing), index)
             })
         }
         else if (layout === "compass") {
             // lay rows out at N, S, E & W positions.
+            console.assert(rows.length == 4)
+
+            const radius = 0.4
+            
+            createRow(rows[0], 0, radius, 0) // N
+            createRow(rows[1], 0, -radius, 1) // S
+            createRow(rows[2], -radius, 0, 2) // E
+            createRow(rows[3], radius, 0, 3) // W
+
         }
-        
     },
 
     update() {
