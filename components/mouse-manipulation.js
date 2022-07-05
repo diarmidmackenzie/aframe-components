@@ -240,28 +240,9 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (!this.data.showHints) return
 
         this.hints = document.createElement('a-entity')
-        this.hints.setAttribute("label", "overwrite: true")        
+        this.hints.setAttribute("label", "overwrite: true")   
+        this.hints.setAttribute("mouse-manipulation-hints", "")
         this.el.appendChild(this.hints)
-
-        this.hoverHint = document.createElement('a-entity')
-        this.hoverHint.setAttribute("text", "value", "left to move; right to rotate; middle to roll")
-        this.hoverHint.object3D.position.set(0, 0.2, 0)
-        this.hints.appendChild(this.hoverHint)
-
-        this.lbDownHint = document.createElement('a-entity')
-        this.lbDownHint.setAttribute("text", "value: left; align: center; anchor: center")        
-        this.lbDownHint.object3D.position.set(0, 0.2, 0)
-        this.hints.appendChild(this.lbDownHint)
-
-        this.rbDownHint = document.createElement('a-entity')
-        this.rbDownHint.setAttribute("text", "value: right; align: center; anchor: center")
-        this.rbDownHint.object3D.position.set(0, 0.2, 0)
-        this.hints.appendChild(this.rbDownHint)
-
-        this.mbDownHint = document.createElement('a-entity')
-        this.mbDownHint.setAttribute("text", "value: middle; align: center; anchor: center")
-        this.mbDownHint.object3D.position.set(0, 0.2, 0)
-        this.hints.appendChild(this.mbDownHint)
 
         this.updateHints()
     },
@@ -270,25 +251,19 @@ AFRAME.registerComponent('mouse-manipulation', {
 
         if (!this.data.showHints) return
 
-        const show = (x) => { x.object3D.visible = true }
-        const hide = (x) => { x.object3D.visible = false }
-        
-        hide(this.hoverHint)
-        hide(this.lbDownHint)
-        hide(this.rbDownHint)
-        hide(this.mbDownHint)
+        const show = (x) => { this.hints.setAttribute("mouse-manipulation-hints", "view", x) }
         
         if (this.lbDown) {
-            show(this.lbDownHint)    
+            show("left")
         }
         else if (this.rbDown) {
-            show(this.rbDownHint)
+            show("right")
         }
         else if (this.mbDown) {
-            show(this.mbDownHint)
+            show("middle")
         }
         else {
-            show(this.hoverHint)
+            show("hover")
         }
     },
 
@@ -375,6 +350,60 @@ AFRAME.registerComponent('mouse-manipulation', {
     }
 
 });
+
+AFRAME.registerComponent('mouse-manipulation-hints', {
+    schema: {
+        view: {type: 'string',
+               oneOf: ['none', 'hover', 'left', 'middle', 'right'],
+               default: 'none'}
+    },
+
+    init() {
+        this.views = {}
+        const views = this.views
+        views.hover = document.createElement('a-entity')
+        views.hover.setAttribute('id', 'hint-hover')
+        views.hover.setAttribute("text", "value", "left to move; right to rotate; middle to roll")
+        views.hover.object3D.position.set(0, 0.2, 0)
+        this.el.appendChild(views.hover)
+
+        views.left = document.createElement('a-entity')
+        views.left.setAttribute('id', 'hint-left')
+        views.left.setAttribute("text", "value: left; align: center; anchor: center")        
+        views.left.object3D.position.set(0, 0.2, 0)
+        this.el.appendChild(views.left)
+
+        views.right = document.createElement('a-entity')
+        views.right.setAttribute('id', 'hint-right')
+        views.right.setAttribute("text", "value: right; align: center; anchor: center")
+        views.right.object3D.position.set(0, 0.2, 0)
+        this.el.appendChild(views.right)
+
+        views.middle = document.createElement('a-entity')
+        views.middle.setAttribute('id', 'hint-middle')
+        views.middle.setAttribute("text", "value: middle; align: center; anchor: center")
+        views.middle.object3D.position.set(0, 0.2, 0)
+        this.el.appendChild(views.middle)
+    },
+
+    update() {
+
+        const show = (x) => { x.object3D.visible = true }
+        const hide = (x) => { x.object3D.visible = false }
+
+        const views = this.views
+
+        hide(views.hover)
+        hide(views.left)
+        hide(views.right)
+        hide(views.middle)
+        
+        const viewToShow = views[this.data.view]
+        if (viewToShow) {
+            show(viewToShow)
+        }
+    }
+})
   
 AFRAME.registerComponent('mouse-pitch-yaw', {
 
