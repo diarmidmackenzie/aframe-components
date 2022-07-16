@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="../components/raycaster-thresholds.js"></script>
+    <script src="../components/hide-on-hover.js"></script>
+  </head>
+  <body>
+
+    <a-scene>
+        <a-sky color="black">
+        </a-sky>
+        <a-entity id="cursor" cursor="rayOrigin:mouse" raycaster="objects:[raycastable]">
+        </a-entity>
+
+        <a-entity position = "0 1 -4"
+                  line__1="start: -1 -1 0; end:  1 -1 0; color: red"
+                  line__2="start:  1 -1 0; end:  1  1 0; color: red"
+                  line__3="start:  1  1 0; end: -1  1 0; color: red"
+                  line__4="start: -1  1 0; end: -1 -1 0; color: red"
+                  hide-on-hover>
+        </a-entity>
+    </a-scene>
+
+    <div style = "position: absolute; top: 0; z-index: 10; color: white; font-size: 20px">
+        <p>By default, raycaster has a threshold of 1m for detecting intersection with a point or line.</p>
+        <p>The raycaster-thresholds component provide more flexibility for A-Frame applications.</p>
+        <input type="checkbox"
+            style="height: 30px; width: 30px"
+            id="raycaster-thresholds"
+            name="raycaster-thresholds"
+            oninput="setRaycasterThresholds(this.checked)">
+        <label for="raycaster-thresholds"> Enable raycaster-thresholds</label><br>
+        <p>When raycaster-threshold is not used, raycaster default of 1m is used, and the box will be hidden whenever the cursor is anywhere near or inside it.</p>
+        <p>When raycaster-thresholds is specified, raycaster-thresholds default of 0.01m is used, and the box will be hidden only when the cursor is on the line</p>
+        <p>Although not shown in this basic example, the "line" and "points" properties of raycaster-threshold can be used to set any desired threshold for raycastin against lines and points.</p>
+    </div>
+            
+    <a style="position: fixed;
+            z-index: 10;
+            right: 50px;
+            top: 50px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            background: white;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            text-decoration: none;
+            text-align: center;
+            color: black;
+            font-family: courier;
+            font-weight: bold"
+            target="_blank"
+            href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/raycaster-thredholds.html">
+            view code
+    </a>
+
+    <script>
+        function setRaycasterThresholds(value) {
+            const cusror = document.getElementById("cursor")
+            if (value) {
+                cursor.setAttribute("raycaster-thresholds", "")
+            }
+            else {
+                cursor.removeAttribute("raycaster-thresholds")
+            }
+        }
+    </script>
+</body>
