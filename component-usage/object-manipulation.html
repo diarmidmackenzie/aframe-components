@@ -7,6 +7,10 @@
     <script src="../components/cursor-tracker.js"></script>
     <script src="../components/mouse-manipulation.js"></script>
     <script src="../components/label.js"></script>
+    <script src="../components/thumbstick-states.js"></script>
+    <script src="../components/laser-manipulation.js"></script>
+    <script src="../components/desktop-vr-controller.js"></script>
+    
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
@@ -32,13 +36,31 @@
                 raycaster="objects: [clickable]; far: Infinity"
                 mouse-manipulation="defaultParent: #container">
       </a-entity>
-      <a-entity camera="active: true" look-controls wasd-controls position="0 1.6 0">
-      </a-entity>
-      <a-sphere position = "0 10 0">
+      <a-entity id="rig" wasd-controls>
+        <a-entity camera="active: true" look-controls position="0 1.6 0">
+        </a-entity>
 
-      </a-sphere>
-      <a-sphere position = "0 -10 0">
-      </a-sphere>
+        <a-entity id="lhand"
+                  position="-0.25 1.1 -0.5"
+                  oculus-touch-controls="hand: left"
+                  desktop-vr-controller>
+        </a-entity>
+
+        <a-entity id="rhand"
+                  position="0.25 1.1 -0.5"
+                  laser-controls="hand: right" raycaster="objects: [clickable]; far: Infinity; lineColor: red; lineOpacity: 0.5"
+                  laser-manipulation="defaultParent: #scale-container"
+                  thumbstick-states__right="controller:#rhand;
+                                            tBindings:moving-in,moving-out,rotating-y-plus,rotating-y-minus"
+                  oculus-touch-controls="hand: right"
+                  desktop-vr-controller>
+        </a-entity>
+
+        <a-sphere id="up-marker" position = "0 10 0">
+        </a-sphere>
+        <a-sphere id="down-marker" position = "0 -10 0">
+        </a-sphere>
+      </a-entity>
              
       <a-assets>
         <a-asset-item id="trex-model"

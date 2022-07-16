@@ -41,6 +41,7 @@ AFRAME.registerComponent('object-parent', {
     }
 });
 
+
 // Add this to the same entity as the cursor component.
 // To fix:
 // - Must drop object on *all* mouseup events (not just when hitting object)
