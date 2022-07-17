@@ -18,8 +18,17 @@ AFRAME.registerComponent('object-parent', {
         if (object.parent === newParent) {
             return;
         }
+
+        objectEl = (o) => {
+            if (o.type === 'Scene') {
+                return (this.el.sceneEl)
+            }
+            else {
+                return o.el
+            }
+        }
     
-        console.log(`Reparenting ${object.el.id} from ${oldParent.el ? oldParent.el.id : "unknown"} to ${newParent.el ? newParent.el.id : "unknown"}`);
+        console.log(`Reparenting ${object.el.id} from ${objectEl(oldParent).id} to ${objectEl(newParent).id}`);
         
         // make sure all matrices are up to date before we do anything.
         // this may be overkill, but ooptimizing for reliability over performance.
@@ -41,7 +50,6 @@ AFRAME.registerComponent('object-parent', {
     }
 });
 
-
 // Add this to the same entity as the cursor component.
 // To fix:
 // - Must drop object on *all* mouseup events (not just when hitting object)
@@ -50,7 +58,6 @@ AFRAME.registerComponent('object-parent', {
 AFRAME.registerComponent('mouse-manipulation', {
 
     schema: {
-        defaultParent: {type: 'selector'},
         rotateRate: {type: 'number', default: 45},
         debug: {type: 'boolean', default: false},
         showHints: {type: 'boolean', default: true},
@@ -64,7 +71,7 @@ AFRAME.registerComponent('mouse-manipulation', {
     },
     
     init() {
-        // cursor must have an ID so that we can refence it when ataching an object-parent
+        // cursor must have an ID so that we can refence it when attaching an object-parent
         console.assert(this.el.id)
     
         // This is a rate per second.  We scale distance by this factor per second.
@@ -155,6 +162,8 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (evt.buttons === undefined) return;
         if (!this.grabbedEl) return;
 
+        if (this.data.debug) console.log("MouseDown:", evt)
+
         this.recordMouseButtonsState(evt)
         this.updateMouseControls()
         this.updateHints()
@@ -179,6 +188,8 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (evt.buttons === undefined) return;
         if (!this.grabbedEl) return;
 
+        if (this.data.debug) console.log("MouseUp:", evt)
+
         this.recordMouseButtonsState(evt)
         this.updateMouseControls()
         this.updateHints()
@@ -187,12 +198,15 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (this.lbDown) {
             // left button is still down
             // leave attached to cursor contact point.
+            if (this.data.debug) console.log("Left button still down")
         }
         else if (evt.buttons === 0){
             // no button now pressed.
+            if (this.data.debug) console.log("No buttons down - releasing")
             this.releaseEl()
         }
         else if (evt.button === 0) {
+            if (this.data.debug) console.log("Left button released, middle or right still down")
             // left button released, but right or middle button still down 
             // - grab to camera contact point
             this.grabElToContactPoint(this.cameraContactPoint,
@@ -204,6 +218,12 @@ AFRAME.registerComponent('mouse-manipulation', {
         this.lbDown = (evt.buttons & 1)
         this.mbDown = (evt.buttons & 4)
         this.rbDown = (evt.buttons & 2)
+
+        if (this.data.debug) {
+            console.log("this.lbDown:", this.lbDown)
+            console.log("this.rbDown:", this.rbDown)
+            console.log("this.mbDown:", this.mbDown)
+        }
     },
 
     updateMouseControls() {
@@ -279,7 +299,7 @@ AFRAME.registerComponent('mouse-manipulation', {
         }
     },
 
-    // records details of grabbed ovject, but actual grabbing is deferred to be handled on MouseEvent
+    // records details of grabbed object, but actual grabbing is deferred to be handled on MouseEvent
     // based on detail about which button is pressed (not avalable on this event)
     mouseDown(evt) {
   
@@ -299,7 +319,46 @@ AFRAME.registerComponent('mouse-manipulation', {
         
     },
 
+    // Ensure an element has a usable ID.
+    // If it has no ID, add one.
+    // If it has an ID but it's not usable to identify the element...
+    // ...log an error (preferable to creating confusion by modifying existing IDs)
+    assureUsableId(el) {
+
+        if (!el.id) {
+            // No ID, just set one
+            el.setAttribute("id", Math.random().toString(36).slice(10))
+        }
+        else {
+            const reference = document.getElementById(el.id)
+            if (reference !== el) {
+                console.error(`Element ID for ${el.id} does not unambiguously identify it.  Check for duplicate IDs.`)
+            }
+        }
+    },
+
+    // Get scene graph parent element of an element.
+    // Includes the case where the parent is the a-scene.
+    getParentEl(el) {
+
+        const parentObject = el.object3D.parent
+
+        if (parentObject.type === 'Scene') {
+            return(this.el.sceneEl)
+        }
+        else {
+            return parentObject.el
+        }
+    },
+
     grabElToContactPoint(contactPoint, contactPointSelector) {
+
+        // Save record of original parent, and make sure it has a usable ID.
+        if (!this.originalParentEl) {
+            this.originalParentEl = this.getParentEl(this.grabbedEl)
+        }
+        this.assureUsableId(this.originalParentEl)
+
         // set up a contact point at the position of the grabbed entity
         const pos = contactPoint.object3D.position
         this.grabbedEl.object3D.getWorldPosition(pos)
@@ -312,8 +371,9 @@ AFRAME.registerComponent('mouse-manipulation', {
 
     releaseEl() {
         const contactPoint = this.grabbedEl.object3D.parent
-        this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.data.defaultParent.id}`)
+        this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.originalParentEl.id}`)
         this.grabbedEl = null
+        this.originalParentEl = null
         
         this.el.object3D.add(this.hints.object3D)
 
@@ -330,9 +390,6 @@ AFRAME.registerComponent('mouse-manipulation', {
 
     mouseEnter(evt) {
 
-        // don't do hover behaviour when another entity is already grabbed.
-        if (this.grabbedEl) return;
-
         // similar logic to mouseDown - could be commonized
         // or we could even *only* do some of this processing on mouseenter?
         const intersections = this.getIntersections(evt.target);
@@ -340,8 +397,14 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (intersections.length === 0)  return;
     
         const element = intersections[0]
+
         this.hoverEl = element.components['clickable'].target
+        if (this.data.debug) console.log("HoverEl set:", this.hoverEl)
         
+        // don't do actual hover display behaviour when another entity is already grabbed.
+        // (but do do the state tracking bits - above).
+        if (this.grabbedEl) return;
+
         const contactPoint = this.cursorContactPoint
         const pos = this.hints.object3D.position
         this.hoverEl.object3D.getWorldPosition(pos)
@@ -352,6 +415,7 @@ AFRAME.registerComponent('mouse-manipulation', {
 
     mouseLeave(evt) {
         this.hoverEl = null
+        if (this.data.debug) console.log("HoverEl cleared")
         this.updateHints()
     },
 
