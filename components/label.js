@@ -8,7 +8,7 @@ AFRAME.registerComponent('label-anchor', {
 
         // whether to show a line, and what color?
         showLine: {type: 'boolean', default: true},
-        lineCOlor: {type: 'color', default: 'white'}
+        lineColor: {type: 'color', default: 'white'}
     },
 
     init() {
@@ -53,7 +53,7 @@ AFRAME.registerComponent('label-anchor', {
         if (this.data.showLine) {
             const pos = this.label.object3D.position
             const vectorString = `${pos.x} ${pos.y} ${pos.z}`
-            this.el.setAttribute("line", `end: ${vectorString}`)
+            this.el.setAttribute("line__label-anchor", `end: ${vectorString}`)
         }
     }
 })
@@ -62,15 +62,16 @@ AFRAME.registerComponent('label', {
 
     schema: {
         // Should the label overwrite objects that are in front of it in space?
-        overwrite: {type: 'boolean', default: false}
+        overwrite: {type: 'boolean', default: false},
+        forceDesktopMode: {type: 'boolean', default: false}
     },
 
     init() {
         this.enterVR = this.enterVR.bind(this)
         this.exitVR = this.exitVR.bind(this)
 
-        this.el.addEventListener('enter-vr', this.enterVR);
-        this.el.addEventListener('exit-vr', this.exitVR);
+        this.el.sceneEl.addEventListener('enter-vr', this.enterVR);
+        this.el.sceneEl.addEventListener('exit-vr', this.exitVR);
     },
 
     update() {
@@ -83,8 +84,8 @@ AFRAME.registerComponent('label', {
     },
 
     enterVR: function() {
-        this.el.setAttribute("face-camera", {fixedSize: false,
-                                             spriteMode: false,
+        this.el.setAttribute("face-camera", {fixedSize: this.data.forceDesktopMode,
+                                             spriteMode: this.data.forceDesktopMode,
                                              overwrite: this.data.overwrite});
     },
 

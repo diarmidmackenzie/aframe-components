@@ -261,7 +261,7 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (!this.data.showHints) return
 
         this.hints = document.createElement('a-entity')
-        this.hints.setAttribute("label", "overwrite: true")   
+        this.hints.setAttribute("label", "overwrite: true; forceDesktopMode: true")   
         this.hints.setAttribute("mouse-manipulation-hints", "")
         this.el.appendChild(this.hints)
 
