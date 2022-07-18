@@ -6,6 +6,8 @@ AFRAME.registerComponent('desktop-vr-controller', {
     init() {
         this.simulateController = this.simulateController.bind(this)
         this.removeController = this.removeController.bind(this)
+        this.keyUp = this.keyUp.bind(this)
+        this.keyDown = this.keyDown.bind(this)
 
         this.el.sceneEl.addEventListener('enter-vr', this.simulateController)
         this.el.sceneEl.addEventListener('exit-vr', this.removeController)
@@ -35,6 +37,22 @@ AFRAME.registerComponent('desktop-vr-controller', {
         scene.emit('controllersupdated');
 
         this.el.setAttribute('clickable', `#${this.el.id}`)
+
+        if (this.controllerData.hand == 'left') {
+            this.keyBindings = {'ShiftLeft' : 'trigger',
+                                 'ControlLeft': 'grip',
+                                 'KeyA': 'abutton',
+                                 'KeyB': 'bbutton'}
+        }
+        else {
+            this.keyBindings = {'ShiftRight' : 'trigger',
+                                'ControlRight': 'grip',
+                                'KeyX': 'xbutton',
+                                'KeyY': 'ybutton'}
+        }
+
+        window.addEventListener('keyup', this.keyUp)
+        window.addEventListener('keydown', this.keyDown)
     },
 
     removeController() {
@@ -50,6 +68,29 @@ AFRAME.registerComponent('desktop-vr-controller', {
         }
         
         this.el.sceneEl.emit('controllersupdated');
+
+        window.removeEventListener('keyup', this.keyUp)
+        window.removeEventListener('keydown', this.keyDown)
+    },
+
+    keyUp(evt) {
+        
+        const binding = this.keyBindings[evt.code]
+
+        if (binding) {
+            this.el.emit(`${binding}up`)
+            this.el.emit(`${binding}changed`)
+        }
+    },
+
+    keyDown(evt) {
+
+        const binding = this.keyBindings[evt.code]
+
+        if (binding) {
+            this.el.emit(`${binding}down`)
+            this.el.emit(`${binding}changed`)
+        }
     }
 })
 
