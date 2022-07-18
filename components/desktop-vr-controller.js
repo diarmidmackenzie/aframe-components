@@ -12,7 +12,7 @@ AFRAME.registerComponent('desktop-vr-controller', {
         this.el.sceneEl.addEventListener('enter-vr', this.simulateController)
         this.el.sceneEl.addEventListener('exit-vr', this.removeController)
 
-        this.labels = []
+        this.labels = {}
     },
 
     simulateController() {
@@ -43,20 +43,20 @@ AFRAME.registerComponent('desktop-vr-controller', {
         if (this.controllerData.hand == 'left') {
             this.keyBindings = {'ShiftLeft' : 'trigger',
                                  'ControlLeft': 'grip',
-                                 'KeyA': 'abutton',
-                                 'KeyB': 'bbutton'}
+                                 'KeyX': 'xbutton',
+                                 'KeyY': 'ybutton'}
 
         }
         else {
             this.keyBindings = {'ShiftRight' : 'trigger',
                                 'ControlRight': 'grip',
-                                'KeyX': 'xbutton',
-                                'KeyY': 'ybutton'}
+                                'KeyA': 'abutton',
+                                'KeyB': 'bbutton'}
 
-            this.createLabel("R-Shift", "trigger")
-            this.createLabel("R-Ctrl", "grip")
-            this.createLabel("A", "abutton")
-            this.createLabel("B", "bbutton")
+            this.labels['trigger'] = this.createLabel("R-Shift", "trigger")
+            this.labels['grip'] = this.createLabel("R-Ctrl", "grip")
+            this.labels['abutton'] = this.createLabel("A", "abutton")
+            this.labels['bbutton'] = this.createLabel("B", "bbutton")
         }
 
         window.addEventListener('keyup', this.keyUp)
@@ -97,7 +97,7 @@ AFRAME.registerComponent('desktop-vr-controller', {
 
         const anchor = document.createElement("a-entity")
         anchor.setAttribute("position", pos)
-        anchor.setAttribute("label-anchor", `offsetVector: ${offset}; lineColor: yellow`)
+        anchor.setAttribute("label-anchor", `offsetVector: ${offset}; lineColor: green`)
         
         const label = document.createElement("a-entity")
         label.setAttribute("label", {overwrite: true, forceDesktopMode: true});
@@ -107,7 +107,7 @@ AFRAME.registerComponent('desktop-vr-controller', {
         this.el.appendChild(anchor)
 
         const button = document.createElement('a-plane')
-        button.setAttribute("width", 0.1)
+        button.setAttribute("width", text.length > 2 ? 0.2 : 0.1)
         button.setAttribute("height", 0.1)
         button.setAttribute("color", "black")
         button.setAttribute("text", `value:${text};
@@ -117,16 +117,16 @@ AFRAME.registerComponent('desktop-vr-controller', {
                                      anchor: center`)
         label.appendChild(button)
 
-        this.labels.push(anchor)
+        return(anchor)
     },
 
     removeLabels() {
 
-        this.labels.forEach((label) => {
+        Object.entries(this.labels).forEach(([key, label]) => {
             label.parentNode.removeChild(label);
         })
 
-        this.labels = []
+        this.labels = {}
     },
 
     removeController() {
@@ -156,6 +156,9 @@ AFRAME.registerComponent('desktop-vr-controller', {
         if (binding) {
             this.el.emit(`${binding}up`)
             this.el.emit(`${binding}changed`)
+
+            this.labels[binding].setAttribute("label-anchor", "lineColor: green")
+            this.labels[binding].querySelector("a-plane").setAttribute("color", "black")
         }
     },
 
@@ -166,6 +169,9 @@ AFRAME.registerComponent('desktop-vr-controller', {
         if (binding) {
             this.el.emit(`${binding}down`)
             this.el.emit(`${binding}changed`)
+
+            this.labels[binding].setAttribute("label-anchor", "lineColor: yellow")
+            this.labels[binding].querySelector("a-plane").setAttribute("color", "grey")
         }
     }
 })
