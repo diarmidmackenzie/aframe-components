@@ -45,6 +45,10 @@ AFRAME.registerComponent('desktop-vr-controller', {
                                  'ControlLeft': 'grip',
                                  'KeyX': 'xbutton',
                                  'KeyY': 'ybutton'}
+            this.labels['trigger'] = this.createLabel("L-Shift", "trigger")
+            this.labels['grip'] = this.createLabel("L-Ctrl", "grip")
+            this.labels['xbutton'] = this.createLabel("X", "xbutton")
+            this.labels['ybutton'] = this.createLabel("Y", "ybutton")
 
         }
         else {
@@ -67,32 +71,63 @@ AFRAME.registerComponent('desktop-vr-controller', {
 
         var pos;
         var offset;
+
+        if (this.controllerData.hand == 'left') {
+
+            switch (positionIdentifier) {
+                case "trigger":
     
-        switch (positionIdentifier) {
-            case "trigger":
-                pos = "-0.015 -0.02 0.01"
-                offset = "-0.1 0 -0.2"
-                break;
+                    pos = "0.015 -0.02 0.01"
+                    offset = "0.1 0 -0.2"
+                    break;
+    
+                case "grip":
+                    pos = "0.015 -0.02 0.06"
+                    offset = "0.25 0 0"
+                    break;
+    
+                case "xbutton":
+                    pos = "0.017 0.005 0.045"
+                    offset = "-0.2 0.2 0"
+                    break;
+    
+                case "ybutton":
+                    pos = "0.022 0.005 0.03"
+                    offset = "-0.15 0.2 -0.1"
+                    break;
 
-            case "grip":
-                pos = "-0.015 -0.02 0.06"
-                offset = "-0.25 0 0"
+                default:
+                    console.error(`unexpected position identifier: ${positionIdentifier}`)
+                    break;
+            }
+        }
+        else {
+            switch (positionIdentifier) {
+                case "trigger":
+    
+                    pos = "-0.015 -0.02 0.01"
+                    offset = "-0.1 0 -0.2"
+                    break;
+    
+                case "grip":
+                    pos = "-0.015 -0.02 0.06"
+                    offset = "-0.25 0 0"
+                    break;
+    
+                case "abutton":
+                    pos = "-0.017 0.005 0.045"
+                    offset = "0.2 0.2 0"
+                    break;
+    
+                case "bbutton":
+                    pos = "-0.022 0.005 0.03"
+                    offset = "0.15 0.2 -0.1"
+                    break;
 
-                break;
-
-            case "abutton":
-                pos = "-0.017 0.005 0.045"
-                offset = "0.2 0.2 0"
-                break;
-
-            case "bbutton":
-                pos = "-0.022 0.005 0.03"
-                offset = "0.15 0.2 -0.1"
-                break;
-
-            default:
-                console.error("unexpected position identifier")
-                break;
+                default:
+                    console.error(`unexpected position identifier: ${positionIdentifier}`)
+                    break;
+            }
         }
 
         const anchor = document.createElement("a-entity")
