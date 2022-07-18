@@ -7,7 +7,8 @@
   </head>
   <body>
     <div class="text-overlay">
-        Fixed size labels that face the camera.
+        <p>Fixed size labels that face the camera.</p>
+        <p>Distanced labels maintain a fixed distance on camera from the point that they label.</p>
     </div>
         <a class="code-link"
         target="_blank"
@@ -31,6 +32,11 @@
                     material="color:white" value="SPHERE" anchor="center" align="center"
                     width=2
                     label="overwrite:true"></a-text>
+            <a-entity position = "0.883 0.883 0" label-anchor="offsetVector: 0.2 0.2 0">
+                <a-text material="color:white" value="DISTANCED LABEL" anchor="left" align="left"
+                        width=2
+                        label="overwrite:true"></a-text>
+            </a-entity>
         </a-sphere>
 
         <a-cylinder position="1 0.75 1" radius="0.5" height="1.5" color="#FFC65D">

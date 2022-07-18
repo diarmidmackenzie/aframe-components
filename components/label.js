@@ -1,4 +1,63 @@
 
+AFRAME.registerComponent('label-anchor', {
+
+    schema: {
+        // vector from the anchor to the label.  When non-zero, a line is drawn from 
+        // the label to this point.
+        offsetVector: {type: 'vec3'},
+
+        // whether to show a line, and what color?
+        showLine: {type: 'boolean', default: true},
+        lineCOlor: {type: 'color', default: 'white'}
+    },
+
+    init() {
+
+        // Find this label that is a child of this label anchor, and position it
+        // with the configured offset.
+        this.label = this.el.querySelector("[label]")
+
+        this.cameraWorldPosition = new THREE.Vector3();
+        this.objectWorldPosition = new THREE.Vector3();
+    },
+
+    update() {
+
+        if (this.data.showLine) {
+            this.el.setAttribute("line__label-anchor", `start: 0 0 0; end: 0 0 0; color: ${this.data.lineColor}`)
+        }
+        else {
+            this.el.removeAttribute("line__label-anchor")
+        }
+    },
+
+    tick() {
+
+        const camera = this.el.sceneEl.camera;
+
+        // if using a perspective camera, we adjust the position of the label based on the distance
+        // from the camera, so that it appears like a fixed distance on camera.
+        var distance = 1;
+        if (camera.isPerspectiveCamera)
+        {
+            // Can't use getWorldPosition on camera, as it doesn't work in VR mode.
+            // See: https://github.com/mrdoob/three.js/issues/18448
+            this.cameraWorldPosition.setFromMatrixPosition(camera.matrixWorld);
+            this.el.object3D.getWorldPosition(this.objectWorldPosition)
+            distance = this.objectWorldPosition.distanceTo(this.cameraWorldPosition)
+        }
+
+        this.label.object3D.position.copy(this.data.offsetVector)
+        this.label.object3D.position.multiplyScalar(distance)
+
+        if (this.data.showLine) {
+            const pos = this.label.object3D.position
+            const vectorString = `${pos.x} ${pos.y} ${pos.z}`
+            this.el.setAttribute("line", `end: ${vectorString}`)
+        }
+    }
+})
+
 AFRAME.registerComponent('label', {
 
     schema: {
