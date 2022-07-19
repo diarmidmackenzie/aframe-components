@@ -250,7 +250,6 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
         const camera = this.el.sceneEl.camera;
 
         this.mouseMove = this.mouseMove.bind(this)
-        this.listeningToMouse = false
         this.startMouseX = undefined
         this.startMouseY = undefined
         this.thumbstickVector = new THREE.Vector2()
@@ -268,43 +267,33 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
         this.stick.setAttribute("radius", this.radius * 0.6)
         this.stick.object3D.position.set(0, 0, 0.00001)
         this.base.appendChild(this.stick)
+
+        window.addEventListener("mousemove", this.mouseMove)
     },
 
     update() {
 
         if (this.data.active) {
-            if (!this.listeningToMouse) {   
-                window.addEventListener("mousemove", this.mouseMove)
-                this.listeningToMouse = true
-            }
-            // set visible here - and extract x/y from cursor??
-            // !!!
+            
+            this.base.setAttribute("screen-display", {xpos: this.startMouseX,
+                                                      ypos: this.startMouseY})
+            this.base.object3D.visible = true;
         }
         else {
-            if (this.listeningToMouse) {
-                window.removeEventListener("mousemove", this.mouseMove)
-                this.listeningToMouse = false
-            }
             this.base.object3D.visible = false;
             this.startMouseX = undefined
             this.startMouseY = undefined
         }
     },
 
+    remove() {
+        window.removeEventListener("mousemove", this.mouseMove)
+    },
+
     mouseMove(evt) {
 
-        if (this.startMouseX === undefined) {
-            // first mouse event - anchor virtual thumbstick
-
-            this.startMouseX = evt.clientX
-            this.startMouseY = evt.clientY
-
-            this.base.object3D.visible = true;
-            this.base.setAttribute("screen-display", {xpos: this.startMouseX,
-                                                      ypos: this.startMouseY})
-        }
-        else {
-            // subsequent mouse event - handle movement.
+        if (this.data.active) {
+            // Thumbstick control active - handle movement.
             xDiff = (evt.clientX - this.startMouseX) / (this.dimension * 0.375)
             yDiff = (evt.clientY - this.startMouseY) / (this.dimension * 0.375)
 
@@ -313,6 +302,11 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
 
             this.updateDisplay()
             this.generateEvents()
+        }
+        else {
+            // Not yet active - just track latest start position.
+            this.startMouseX = evt.clientX
+            this.startMouseY = evt.clientY
         }
     },
 
