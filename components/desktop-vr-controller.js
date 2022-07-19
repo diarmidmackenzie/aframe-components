@@ -44,11 +44,13 @@ AFRAME.registerComponent('desktop-vr-controller', {
             this.keyBindings = {'ShiftLeft' : 'trigger',
                                  'ControlLeft': 'grip',
                                  'KeyX': 'xbutton',
-                                 'KeyY': 'ybutton'}
+                                 'KeyY': 'ybutton',
+                                 'Digit1': 'thumbstick'}
             this.labels['trigger'] = this.createLabel("L-Shift", "trigger")
             this.labels['grip'] = this.createLabel("L-Ctrl", "grip")
             this.labels['xbutton'] = this.createLabel("X", "xbutton")
             this.labels['ybutton'] = this.createLabel("Y", "ybutton")
+            this.labels['thumbstick'] = this.createLabel("1", "thumbstick")
 
         }
         else {
@@ -90,12 +92,17 @@ AFRAME.registerComponent('desktop-vr-controller', {
     
                 case "xbutton":
                     pos = "0.017 0.005 0.045"
-                    offset = "-0.2 0.2 0"
+                    offset = "0.0 0.1 0.1"
                     break;
     
                 case "ybutton":
                     pos = "0.022 0.005 0.03"
-                    offset = "-0.15 0.2 -0.1"
+                    offset = "0.0 0.2 -0.1"
+                    break;
+
+                case "thumbstick":
+                    pos = "0.001 0.015 0.03"
+                    offset = "-0.1 0.2 -0.1"
                     break;
 
                 default:
@@ -205,13 +212,13 @@ AFRAME.registerComponent('desktop-vr-controller', {
                 this.el.emit(`${binding}up`)
                 this.el.emit(`${binding}changed`)
 
-                this.labels[binding].setAttribute("label-anchor", "lineColor: green")
-                this.labels[binding].querySelector("a-plane").setAttribute("color", "black")
             }
             else {
                 this.labels[binding].querySelector("[desktop-vr-thumbstick]").setAttribute("desktop-vr-thumbstick", "active: false")
             }
-            
+
+            this.labels[binding].setAttribute("label-anchor", "lineColor: green")
+            this.labels[binding].querySelector("a-plane").setAttribute("color", "black")
         }
     },
 
