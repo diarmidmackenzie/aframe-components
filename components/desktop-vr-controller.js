@@ -260,6 +260,8 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
         const camera = this.el.sceneEl.camera;
 
         this.mouseMove = this.mouseMove.bind(this)
+        this.mouseDown = this.mouseDown.bind(this)
+        this.mouseUp = this.mouseUp.bind(this)
         this.startMouseX = undefined
         this.startMouseY = undefined
         this.thumbstickVector = new THREE.Vector2()
@@ -283,6 +285,8 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
         this.el.sceneEl.appendChild(this.line)
 
         window.addEventListener("mousemove", this.mouseMove)
+        window.addEventListener("mouseup", this.mouseUp)
+        window.addEventListener("mousedown", this.mouseDown)
     },
 
     update() {
@@ -343,7 +347,23 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
     },
 
     generateEvents() {
-        this.el.emit("thumbstickmoved", this.thumbstickVector)
+        this.data.controller.emit("thumbstickmoved", this.thumbstickVector)
+    },
+
+    mouseDown() {
+        if (this.data.active) {
+            this.stick.setAttribute("material", "color:#888; shader: flat")
+            this.data.controller.emit("thumbstickdown")
+            this.data.controller.emit("thumbstickchanged")
+        }
+    },
+
+    mouseUp() {
+        if (this.data.active) {
+            this.stick.setAttribute("material", "color:#bbb; shader: flat")
+            this.data.controller.emit("thumbstickup")
+            this.data.controller.emit("thumbstickchanged")
+        }
     }
 });
 
