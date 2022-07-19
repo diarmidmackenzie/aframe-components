@@ -55,12 +55,14 @@ AFRAME.registerComponent('desktop-vr-controller', {
             this.keyBindings = {'ShiftRight' : 'trigger',
                                 'ControlRight': 'grip',
                                 'KeyA': 'abutton',
-                                'KeyB': 'bbutton'}
+                                'KeyB': 'bbutton',
+                                'Digit2': 'thumbstick'}
 
             this.labels['trigger'] = this.createLabel("R-Shift", "trigger")
             this.labels['grip'] = this.createLabel("R-Ctrl", "grip")
             this.labels['abutton'] = this.createLabel("A", "abutton")
             this.labels['bbutton'] = this.createLabel("B", "bbutton")
+            this.labels['thumbstick'] = this.createLabel("2", "thumbstick")
         }
 
         window.addEventListener('keyup', this.keyUp)
@@ -116,12 +118,17 @@ AFRAME.registerComponent('desktop-vr-controller', {
     
                 case "abutton":
                     pos = "-0.017 0.005 0.045"
-                    offset = "0.2 0.2 0"
+                    offset = "0.0 0.1 0.1"
                     break;
     
                 case "bbutton":
                     pos = "-0.022 0.005 0.03"
-                    offset = "0.15 0.2 -0.1"
+                    offset = "0.0 0.2 -0.1"
+                    break;
+
+                case "thumbstick":
+                    pos = "-0.001 0.015 0.03"
+                    offset = "0.1 0.2 -0.1"
                     break;
 
                 default:
@@ -150,6 +157,10 @@ AFRAME.registerComponent('desktop-vr-controller', {
                                      wrapCount: ${text.length + 2};
                                      align: center;
                                      anchor: center`)
+        if (positionIdentifier ==="thumbstick") {
+            button.setAttribute("desktop-vr-thumbstick", "")
+        }
+
         label.appendChild(button)
 
         return(anchor)
@@ -189,11 +200,18 @@ AFRAME.registerComponent('desktop-vr-controller', {
         const binding = this.keyBindings[evt.code]
 
         if (binding) {
-            this.el.emit(`${binding}up`)
-            this.el.emit(`${binding}changed`)
 
-            this.labels[binding].setAttribute("label-anchor", "lineColor: green")
-            this.labels[binding].querySelector("a-plane").setAttribute("color", "black")
+            if (binding !== "thumbstick") {
+                this.el.emit(`${binding}up`)
+                this.el.emit(`${binding}changed`)
+
+                this.labels[binding].setAttribute("label-anchor", "lineColor: green")
+                this.labels[binding].querySelector("a-plane").setAttribute("color", "black")
+            }
+            else {
+                this.labels[binding].querySelector("[desktop-vr-thumbstick]").setAttribute("desktop-vr-thumbstick", "active: false")
+            }
+            
         }
     },
 
@@ -202,8 +220,15 @@ AFRAME.registerComponent('desktop-vr-controller', {
         const binding = this.keyBindings[evt.code]
 
         if (binding) {
-            this.el.emit(`${binding}down`)
-            this.el.emit(`${binding}changed`)
+
+            if (binding !== "thumbstick") {
+
+                this.el.emit(`${binding}down`)
+                this.el.emit(`${binding}changed`)
+            }
+            else {
+                this.labels[binding].querySelector("[desktop-vr-thumbstick]").setAttribute("desktop-vr-thumbstick", "active: true")
+            }
 
             this.labels[binding].setAttribute("label-anchor", "lineColor: yellow")
             this.labels[binding].querySelector("a-plane").setAttribute("color", "grey")
@@ -211,4 +236,93 @@ AFRAME.registerComponent('desktop-vr-controller', {
     }
 })
 
+AFRAME.registerComponent('desktop-vr-thumbstick', {
+
+    schema: {
+        active: {type: 'boolean', default: false}
+    },
+
+    init() {
+
+        this.dimension = 100;
+        this.radius = 0.5;
+
+        const camera = this.el.sceneEl.camera;
+
+        this.mouseMove = this.mouseMove.bind(this)
+        this.listeningToMouse = false
+        this.startMouseX = undefined
+        this.startMouseY = undefined
+        this.thumbstickVector = new THREE.Vector2()
+
+        this.base =  document.createElement("a-circle")
+        this.base.setAttribute("radius", this.radius)
+        this.base.setAttribute("material", "color:black; shader: flat")
+        this.base.setAttribute("screen-display", `position: pixels; scale: pixels; width: ${this.dimension}`)
+        this.base.object3D.visible = false;
+        
+        camera.el.appendChild(this.base)
+
+        this.stick = document.createElement("a-circle")
+        this.stick.setAttribute("material", "color:#bbb; shader: flat")
+        this.stick.setAttribute("radius", this.radius * 0.6)
+        this.stick.object3D.position.set(0, 0, 0.00001)
+        this.base.appendChild(this.stick)
+    },
+
+    update() {
+
+        if (this.data.active) {
+            if (!this.listeningToMouse) {   
+                window.addEventListener("mousemove", this.mouseMove)
+                this.listeningToMouse = true
+            }
+            // set visible here - and extract x/y from cursor??
+            // !!!
+        }
+        else {
+            if (this.listeningToMouse) {
+                window.removeEventListener("mousemove", this.mouseMove)
+                this.listeningToMouse = false
+            }
+            this.base.object3D.visible = false;
+            this.startMouseX = undefined
+            this.startMouseY = undefined
+        }
+    },
+
+    mouseMove(evt) {
+
+        if (this.startMouseX === undefined) {
+            // first mouse event - anchor virtual thumbstick
+
+            this.startMouseX = evt.clientX
+            this.startMouseY = evt.clientY
+
+            this.base.object3D.visible = true;
+            this.base.setAttribute("screen-display", {xpos: this.startMouseX,
+                                                      ypos: this.startMouseY})
+        }
+        else {
+            // subsequent mouse event - handle movement.
+            xDiff = (evt.clientX - this.startMouseX) / (this.dimension * 0.375)
+            yDiff = (evt.clientY - this.startMouseY) / (this.dimension * 0.375)
+
+            this.thumbstickVector.set(xDiff, -yDiff)
+            this.thumbstickVector.clampLength(0, 1)
+
+            this.updateDisplay()
+            this.generateEvents()
+        }
+    },
+
+    updateDisplay() {
+        this.stick.object3D.position.x = this.thumbstickVector.x * this.radius * 0.75
+        this.stick.object3D.position.y = this.thumbstickVector.y * this.radius * 0.75
+    },
+
+    generateEvents() {
+        this.el.emit("thumbstickmoved", this.thumbstickVector)
+    }
+});
 
