@@ -234,7 +234,9 @@ AFRAME.registerComponent('desktop-vr-controller', {
                 this.el.emit(`${binding}changed`)
             }
             else {
-                this.labels[binding].querySelector("[desktop-vr-thumbstick]").setAttribute("desktop-vr-thumbstick", "active: true")
+                this.labels[binding].querySelector("[desktop-vr-thumbstick]").setAttribute("desktop-vr-thumbstick",
+                                                                                           `active: true;
+                                                                                            controller: #${this.el.id}`)
             }
 
             this.labels[binding].setAttribute("label-anchor", "lineColor: yellow")
@@ -246,14 +248,15 @@ AFRAME.registerComponent('desktop-vr-controller', {
 AFRAME.registerComponent('desktop-vr-thumbstick', {
 
     schema: {
-        active: {type: 'boolean', default: false}
+        active: {type: 'boolean', default: false},
+        controller: {type: 'selector'}
     },
 
     init() {
 
         this.dimension = 100;
         this.radius = 0.5;
-
+        
         const camera = this.el.sceneEl.camera;
 
         this.mouseMove = this.mouseMove.bind(this)
@@ -263,8 +266,8 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
 
         this.base =  document.createElement("a-circle")
         this.base.setAttribute("radius", this.radius)
+        this.base.setAttribute("id", Math.random().toString(36).slice(2))
         this.base.setAttribute("material", "color:black; shader: flat")
-        this.base.setAttribute("screen-display", `position: pixels; scale: pixels; width: ${this.dimension}`)
         this.base.object3D.visible = false;
         
         camera.el.appendChild(this.base)
@@ -275,6 +278,10 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
         this.stick.object3D.position.set(0, 0, 0.00001)
         this.base.appendChild(this.stick)
 
+        this.line = document.createElement("a-entity")
+        this.line.object3D.visible = false
+        this.el.sceneEl.appendChild(this.line)
+
         window.addEventListener("mousemove", this.mouseMove)
     },
 
@@ -282,14 +289,27 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
 
         if (this.data.active) {
             
-            this.base.setAttribute("screen-display", {xpos: this.startMouseX,
+            this.base.setAttribute("screen-display", {position: "pixels",
+                                                      scale: "pixels",
+                                                      width:this.dimension,
+                                                      xpos: this.startMouseX,
                                                       ypos: this.startMouseY})
             this.base.object3D.visible = true;
+
+            this.line.setAttribute("connecting-line",
+                                    `start: #${this.data.controller.id};
+                                    startOffset: 0 0.015 0.03;
+                                    end: #${this.base.id};
+                                    endOffset: 0 0 0;
+                                    color: yellow`)
+            this.line.object3D.visible = true
         }
         else {
             this.base.object3D.visible = false;
             this.startMouseX = undefined
             this.startMouseY = undefined
+            this.line.removeAttribute("connecting-line")
+            this.line.object3D.visible = false
         }
     },
 

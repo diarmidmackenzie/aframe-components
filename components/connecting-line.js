@@ -27,6 +27,10 @@ AFRAME.registerComponent('connecting-line', {
                              })
     },
 
+    remove() {
+        this.el.removeAttribute(`line__${this.attrName}`)
+    },
+
     // Position is updated on a tick() to accommodate movement of entities, which may
     // not be in the object hierarchy above the entity that the line is configured on.
     tick() {
@@ -36,10 +40,12 @@ AFRAME.registerComponent('connecting-line', {
 
         // transform start & end vectors to local space.
         start.copy(this.data.startOffset)
+        this.data.start.object3D.updateMatrixWorld()
         this.data.start.object3D.localToWorld(start)
         this.el.object3D.worldToLocal(start)
         
         end.copy(this.data.endOffset)
+        this.data.end.object3D.updateMatrixWorld()
         this.data.end.object3D.localToWorld(end)
         this.el.object3D.worldToLocal(end)
 
