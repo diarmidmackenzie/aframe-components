@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+      <script src="../components/connecting-line.js"></script>
+      <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Connecting lines between entities.</p>
+        <p>Specific offsets relative to the center of the entity can be specified.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/connecting-line.html">
+        view code
+    </a>
+    
+    <a-scene background="color:black">
+      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+      <a-entity id="container" position = "0 0 -4">
+        <a-box id="box" position="-1 0.5 1" rotation="0 45 0" color="#4CC3D9">
+        </a-box>
+        <a-sphere id="sphere" position="0 1.25 -1" radius="1.25" color="#EF2D5E">
+        </a-sphere>
+        <a-cylinder id="cylinder" position="1 0.75 1" radius="0.5" height="1.5" color="#FFC65D">
+        </a-cylinder>
+        <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" side="double"></a-plane>
+      </a-entity>
+
+      <a-entity connecting-line__1="start:#box;
+                                    startOffset: 0 0.5 0;
+                                    end:#sphere;
+                                    endOffset: 0 1.25 0;
+                                    color:red"
+                connecting-line__2="start:#box;
+                                    startOffset: 0 0 0.5;
+                                    end:#cylinder;
+                                    endOffset: 0 0.75 0;
+                                    color:green"
+                connecting-line__3="start:#sphere;
+                                    startOffset: 0 1.25 0;
+                                    end:#cylinder;
+                                    endOffset: 0 0.75 0;
+                                    color:cyan">
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
