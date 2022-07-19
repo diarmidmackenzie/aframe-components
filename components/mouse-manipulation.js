@@ -327,7 +327,7 @@ AFRAME.registerComponent('mouse-manipulation', {
 
         if (!el.id) {
             // No ID, just set one
-            el.setAttribute("id", Math.random().toString(36).slice(10))
+            el.setAttribute("id", Math.random().toString(36).slice(2))
         }
         else {
             const reference = document.getElementById(el.id)
