@@ -10,6 +10,9 @@
     <script src="../components/thumbstick-states.js"></script>
     <script src="../components/laser-manipulation.js"></script>
     <script src="../components/desktop-vr-controller.js"></script>
+    <script src="../components/raycaster-thresholds.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/screen-display@latest/src/screen-display.js"></script>
+    <script src="../components/connecting-line.js"></script>
     
     <link rel="stylesheet" href="/styles.css">
   </head>
@@ -41,13 +44,13 @@
         </a-entity>
 
         <a-entity id="lhand"
-                  position="-0.25 1.1 -0.5"
+                  position="-0.4 1.4 -0.5"
                   oculus-touch-controls="hand: left"
                   desktop-vr-controller>
         </a-entity>
 
         <a-entity id="rhand"
-                  position="0.25 1.1 -0.5"
+                  position="0.4 1.4 -0.5"
                   laser-controls="hand: right" raycaster="objects: [clickable]; far: Infinity; lineColor: red; lineOpacity: 0.5"
                   laser-manipulation="defaultParent: #scale-container"
                   thumbstick-states__right="controller:#rhand;
