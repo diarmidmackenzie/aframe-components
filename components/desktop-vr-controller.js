@@ -1,5 +1,92 @@
+AFRAME.registerSystem('desktop-vr-controller', {
+
+    init() {
+        this.controllers = 0
+    },
+
+    registerController() {
+
+        if (this.controllers === 0) {
+
+            this.disableExistingCursors()
+            this.createCursor()
+        }
+
+        this.controllers++
+    },
+
+    unregisterController() {
+
+        this.controllers-- 
+
+        if (this.controllers <= 0) {
+            this.controllers = 0
+
+            this.myCursor.parentNode.removeChild(this.myCursor)
+            this.myCursor = null
+
+            this.reinstateCursors()
+        }
+    },
+
+    createCursor() {
+
+        this.myCursor = document.createElement("a-entity")
+        this.myCursor.setAttribute("id", "desktop-vr-controller-cursor")
+        this.myCursor.setAttribute("cursor",
+                                   "rayOrigin: mouse")
+        this.myCursor.setAttribute("raycaster",
+                                   "objects: [desktop-vr-controller]")
+        this.myCursor.setAttribute("raycaster-thresholds",
+                                   "line: 0")
+        this.myCursor.setAttribute("mouse-manipulation", "")
+
+        this.el.sceneEl.appendChild(this.myCursor)
+
+    },
+
+    disableExistingCursors() {
+
+        const cursors = document.querySelectorAll("[cursor]")
+
+        this.oldCursorStates = []
+
+        for (ii = 0; ii < cursors.length; ii++) {
+            const el = cursors[ii]
+
+            this.oldCursorStates.push(el.getAttribute("raycaster", "enabled"))
+
+            if (el.components.cursor.data.rayOrigin === "mouse") {
+                el.setAttribute("raycaster", "enabled", false)
+            }
+            
+        }
+    },
+
+    reinstateCursors() {
+
+        if (!this.oldCursorStates) return;
+
+        const cursors = document.querySelectorAll("[cursor]")
+
+        for (ii = 0; ii < cursors.length; ii++) {
+
+            if (this.oldCursorStates[ii]) {
+                const el = cursors[ii]
+                if (el.components.cursor.data.rayOrigin === "mouse") {
+                    el.setAttribute("raycaster", "enabled", this.oldCursorStates[ii])
+                }
+            }
+        }
+    },
+
+})
 
 AFRAME.registerComponent('desktop-vr-controller', {
+
+    schema: {
+        disableCursor: {type: 'boolean', default: true}
+    },
 
     dependencies: ['oculus-touch-controls'],
 
@@ -28,6 +115,8 @@ AFRAME.registerComponent('desktop-vr-controller', {
             console.log("desktop-vr-controller suppressed due to presence of an XR session")
             return;
         }
+
+        this.system.registerController()
 
         const scene = this.el.sceneEl
         this.trackedControlsSystem = scene && scene.systems['tracked-controls-webxr']
@@ -268,6 +357,8 @@ AFRAME.registerComponent('desktop-vr-controller', {
         window.removeEventListener('keydown', this.keyDown)
 
         this.removeLabels()
+
+        this.system.unregisterController()
     },
 
     keyUp(evt) {

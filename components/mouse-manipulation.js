@@ -11,6 +11,12 @@ AFRAME.registerComponent('object-parent', {
     },
   
     update() {
+
+        const matches = document.querySelectorAll(`#${parent.id}`)
+        if (matches.length > 1) {
+            console.warn(`object-parent matches duplicate entities for new parent ${parent.id}`)
+        }
+
         const object = this.el.object3D
         const oldParent = object.parent
         const newParent = this.data.parent.object3D
@@ -51,14 +57,9 @@ AFRAME.registerComponent('object-parent', {
 });
 
 // Add this to the same entity as the cursor component.
-// To fix:
-// - Must drop object on *all* mouseup events (not just when hitting object)
-// - Move in is moving child in wrong direction (too low)
-// - New control schemme: middle button, right button.
 AFRAME.registerComponent('mouse-manipulation', {
 
     schema: {
-        rotateRate: {type: 'number', default: 45},
         debug: {type: 'boolean', default: false},
         showHints: {type: 'boolean', default: true},
     },
@@ -86,7 +87,7 @@ AFRAME.registerComponent('mouse-manipulation', {
         //                   (which does not match the camera, when using rayOrigin: mouse)
         this.camera = document.querySelector('[camera]')
         this.cursorTracker = document.createElement('a-entity')
-        this.cursorTracker.setAttribute('cursor-tracker', "")
+        this.cursorTracker.setAttribute('cursor-tracker', `cursor:#${this.el.id}`)
         this.camera.appendChild(this.cursorTracker)
 
         // A container for any entity that can be grabbed.
@@ -135,9 +136,6 @@ AFRAME.registerComponent('mouse-manipulation', {
 
     update: function() {
   
-        // internally store rotation rate as radians per event
-        this.rotateRate = this.data.rotateRate * Math.PI / 180;
-
         if (this.data.showHints) {
             this.createHints()
         }
@@ -150,6 +148,9 @@ AFRAME.registerComponent('mouse-manipulation', {
     remove() {
 
         this.removeHints()
+
+        this.cursorTracker.parentNode.removeChild(this.cursorTracker)
+        this.cameraContactPoint.parentNode.removeChild(this.cameraContactPoint)
 
         window.removeEventListener('mouseup', this.windowMouseUp);
         window.removeEventListener('mousedown', this.windowMouseDown);
@@ -294,7 +295,7 @@ AFRAME.registerComponent('mouse-manipulation', {
     removeHints() {
 
         if (this.hints) {
-            this.hints.parent.removeChild(this.hints)
+            this.hints.parentNode.removeChild(this.hints)
             this.hints = null
         }
     },

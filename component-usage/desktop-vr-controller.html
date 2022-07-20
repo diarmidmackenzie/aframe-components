@@ -79,15 +79,9 @@
       </a-assets>
 
       <!-- Move original cursor from scene to avoid crossover of events from different cursors-->
+      <!-- Not sure if this is actually necessary, now we disable this cursor when we enable desktop-vr-controller-->
       <a-entity
         cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .raycastable">
-      </a-entity>
-
-      <!-- Cursor used to move desktop VR controllers-->
-      <a-entity id="cursor"
-        cursor="rayOrigin: mouse; fuse: false" raycaster="objects: [desktop-vr-controller]"
-        raycaster-thresholds="line:0"
-        mouse-manipulation>
       </a-entity>
 
       <a-entity
