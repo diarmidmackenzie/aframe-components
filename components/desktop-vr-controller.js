@@ -231,6 +231,8 @@ AFRAME.registerComponent('desktop-vr-controller', {
 
     keyDown(evt) {
 
+        if (evt.repeat) return;
+
         const binding = this.keyBindings[evt.code]
 
         if (binding) {
