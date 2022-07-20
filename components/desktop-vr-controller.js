@@ -13,6 +13,9 @@ AFRAME.registerComponent('desktop-vr-controller', {
         this.el.sceneEl.addEventListener('exit-vr', this.removeController)
 
         this.labels = {}
+
+        this.keysDown = {}
+        this.keysLocked = {}
     },
 
     simulateController() {
@@ -54,11 +57,14 @@ AFRAME.registerComponent('desktop-vr-controller', {
                                  'KeyY': 'ybutton',
                                  'Digit1': 'thumbstick'}
             this.labels['trigger'] = this.createLabel("L-Shift", "trigger")
+
+            this.lockLabel(this.labels['trigger'])
+            this.unlockLabel(this.labels['trigger'])
+
             this.labels['grip'] = this.createLabel("L-Ctrl", "grip")
             this.labels['xbutton'] = this.createLabel("X", "xbutton")
             this.labels['ybutton'] = this.createLabel("Y", "ybutton")
             this.labels['thumbstick'] = this.createLabel("1", "thumbstick")
-
         }
         else {
             this.keyBindings = {'ShiftRight' : 'trigger',
@@ -180,6 +186,30 @@ AFRAME.registerComponent('desktop-vr-controller', {
         return(anchor)
     },
 
+    lockLabel(anchor) {
+
+        // don't lock more than once.
+        const lock = anchor.querySelector("a-image")
+        if (lock) return;
+
+        const button = anchor.querySelector("a-plane")
+
+        const image = document.createElement('a-image')
+        image.setAttribute("src", "../assets/icons/lock.svg")
+        const xpos = 0.4 * button.attributes.width.value
+        image.object3D.position.set(xpos, 0, 0)
+        image.object3D.scale.set(0.03, 0.03, 0.03)
+        button.appendChild(image)
+    },
+
+    unlockLabel(anchor) {
+
+        const lock = anchor.querySelector("a-image")
+        if (lock) {
+            lock.parentNode.removeChild(lock)
+        }
+    },
+
     removeLabels() {
 
         Object.entries(this.labels).forEach(([key, label]) => {
@@ -211,6 +241,13 @@ AFRAME.registerComponent('desktop-vr-controller', {
 
     keyUp(evt) {
 
+        // check for keyLocks.
+        // if a key is locked, don't process the key up (but do track that the key is no longer down)
+        if (this.keysLocked[evt.code]) {
+            this.keysDown[evt.code] = false
+            return;
+        }
+
         const binding = this.keyBindings[evt.code]
 
         if (binding) {
@@ -227,11 +264,16 @@ AFRAME.registerComponent('desktop-vr-controller', {
             this.labels[binding].setAttribute("label-anchor", "lineColor: green")
             this.labels[binding].querySelector("a-plane").setAttribute("color", "black")
         }
+
+        this.keysDown[evt.code] = false
     },
 
     keyDown(evt) {
 
         if (evt.repeat) return;
+
+        // non-repeating keyDown always unlocks that key.
+        this.keysLocked[evt.code] = false
 
         const binding = this.keyBindings[evt.code]
 
@@ -250,7 +292,25 @@ AFRAME.registerComponent('desktop-vr-controller', {
 
             this.labels[binding].setAttribute("label-anchor", "lineColor: yellow")
             this.labels[binding].querySelector("a-plane").setAttribute("color", "grey")
+            this.unlockLabel(this.labels[binding])
         }
+
+        // Enter key locks any other key down.
+        if (evt.code === "Enter") {
+            Object.entries(this.keysDown).forEach(([key, value]) => {
+
+                if (value) {
+                    this.keysLocked[key] = true
+
+                    const lockedBinding = this.keyBindings[key]
+                    if (lockedBinding) {
+                        this.lockLabel(this.labels[lockedBinding])
+                    }
+                }
+            })
+        }
+
+        this.keysDown[evt.code] = true
     }
 })
 
