@@ -2,8 +2,6 @@
 AFRAME.registerComponent('laser-manipulation', {
 
     schema: {
-  
-      defaultParent: {type: 'selector'},
       rotateRate: {type: 'number', default: 45},
     },
   
@@ -36,7 +34,43 @@ AFRAME.registerComponent('laser-manipulation', {
       this.contactPoint.setAttribute('id', `${this.el.id}-contact-point`)
       this.el.appendChild(this.contactPoint)
     },
-  
+
+    /* Code below is duplicated from mouse-manipulation - should be commonized */
+
+    // Ensure an element has a usable ID.
+    // If it has no ID, add one.
+    // If it has an ID but it's not usable to identify the element...
+    // ...log an error (preferable to creating confusion by modifying existing IDs)
+    assureUsableId(el) {
+
+        if (!el.id) {
+            // No ID, just set one
+            el.setAttribute("id", Math.random().toString(36).slice(10))
+        }
+        else {
+            const reference = document.getElementById(el.id)
+            if (reference !== el) {
+                console.error(`Element ID for ${el.id} does not unambiguously identify it.  Check for duplicate IDs.`)
+            }
+        }
+    },
+
+    // Get scene graph parent element of an element.
+    // Includes the case where the parent is the a-scene.
+    getParentEl(el) {
+
+        const parentObject = el.object3D.parent
+
+        if (parentObject.type === 'Scene') {
+            return(this.el.sceneEl)
+        }
+        else {
+            return parentObject.el
+        }
+    },
+
+    /* Code above is duplicated from mouse-manipulation - should be commonized */
+
     triggerDown(evt) {
   
       console.assert(!this.grabbedEl)
@@ -49,6 +83,12 @@ AFRAME.registerComponent('laser-manipulation', {
   
       const intersectionData = this.el.components.raycaster.getIntersection(element)
   
+      // Save record of original parent, and make sure it has a usable ID.
+      if (!this.originalParentEl) {
+        this.originalParentEl = this.getParentEl(element)
+      }
+      this.assureUsableId(this.originalParentEl)
+
       // reparent element to this controller.
       this.grabbedEl = element
       const grabbedPoint = this.el.object3D.worldToLocal(intersectionData.point)
@@ -60,7 +100,7 @@ AFRAME.registerComponent('laser-manipulation', {
   
       if (!this.grabbedEl) return
   
-      this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.data.defaultParent.id}`)
+      this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.originalParentEl.id}`)
       this.grabbedEl = null
     },
   
