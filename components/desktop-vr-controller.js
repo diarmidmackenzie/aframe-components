@@ -16,6 +16,8 @@ AFRAME.registerComponent('desktop-vr-controller', {
 
         this.keysDown = {}
         this.keysLocked = {}
+
+        this.createLockHint();
     },
 
     simulateController() {
@@ -186,6 +188,35 @@ AFRAME.registerComponent('desktop-vr-controller', {
         return(anchor)
     },
 
+    createLockHint() {
+
+        const hint= document.createElement("a-plane")
+        hint.setAttribute("color", "black")
+        hint.setAttribute("height", 0.12)
+        hint.setAttribute("screen-display", "xpos: 50; ypos: 85; width: 25" )
+        hint.setAttribute("text", "value: Press Enter to Lock Button Down; align: center; wrapCount: 30")
+        
+        const camera = document.querySelector("[camera]")
+        camera.appendChild(hint)
+
+        this.lockHint = hint;
+        this.lockHintCounter = 0;
+        this.hideLockHint()
+    },
+
+    showLockHint() {
+        this.lockHint.object3D.visible = true
+        this.lockHintCounter++;
+    },
+
+    hideLockHint() {
+        this.lockHintCounter--;
+        if (this.lockHintCounter <= 0) {
+            this.lockHint.object3D.visible = false
+            this.lockHintCounter = 0;
+        }
+    },
+
     lockLabel(anchor) {
 
         // don't lock more than once.
@@ -241,31 +272,28 @@ AFRAME.registerComponent('desktop-vr-controller', {
 
     keyUp(evt) {
 
-        // check for keyLocks.
-        // if a key is locked, don't process the key up (but do track that the key is no longer down)
-        if (this.keysLocked[evt.code]) {
-            this.keysDown[evt.code] = false
-            return;
-        }
-
         const binding = this.keyBindings[evt.code]
 
         if (binding) {
 
-            if (binding !== "thumbstick") {
-                this.el.emit(`${binding}up`)
-                this.el.emit(`${binding}changed`)
+            if (!this.keysLocked[evt.code]) {
+                
+                if (binding !== "thumbstick") {
+                    this.el.emit(`${binding}up`)
+                    this.el.emit(`${binding}changed`)
 
-            }
-            else {
-                this.labels[binding].querySelector("[desktop-vr-thumbstick]").setAttribute("desktop-vr-thumbstick", "active: false")
+                }
+                else {
+                    this.labels[binding].querySelector("[desktop-vr-thumbstick]").setAttribute("desktop-vr-thumbstick", "active: false")
+                }
+
+                this.labels[binding].setAttribute("label-anchor", "lineColor: green")
+                this.labels[binding].querySelector("a-plane").setAttribute("color", "black")
             }
 
-            this.labels[binding].setAttribute("label-anchor", "lineColor: green")
-            this.labels[binding].querySelector("a-plane").setAttribute("color", "black")
+            this.keysDown[evt.code] = false
+            this.hideLockHint()
         }
-
-        this.keysDown[evt.code] = false
     },
 
     keyDown(evt) {
@@ -278,6 +306,8 @@ AFRAME.registerComponent('desktop-vr-controller', {
         const binding = this.keyBindings[evt.code]
 
         if (binding) {
+
+            this.showLockHint()
 
             if (binding !== "thumbstick") {
 
@@ -293,6 +323,8 @@ AFRAME.registerComponent('desktop-vr-controller', {
             this.labels[binding].setAttribute("label-anchor", "lineColor: yellow")
             this.labels[binding].querySelector("a-plane").setAttribute("color", "grey")
             this.unlockLabel(this.labels[binding])
+
+            this.keysDown[evt.code] = true
         }
 
         // Enter key locks any other key down.
@@ -305,12 +337,11 @@ AFRAME.registerComponent('desktop-vr-controller', {
                     const lockedBinding = this.keyBindings[key]
                     if (lockedBinding) {
                         this.lockLabel(this.labels[lockedBinding])
+                        this.hideLockHint()
                     }
                 }
             })
         }
-
-        this.keysDown[evt.code] = true
     }
 })
 
