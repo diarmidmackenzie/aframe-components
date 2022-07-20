@@ -63,13 +63,13 @@ AFRAME.registerComponent('desktop-vr-controller', {
         else {
             this.keyBindings = {'ShiftRight' : 'trigger',
                                 'ControlRight': 'grip',
-                                'KeyA': 'abutton',
+                                'KeyV': 'abutton',
                                 'KeyB': 'bbutton',
                                 'Digit2': 'thumbstick'}
 
             this.labels['trigger'] = this.createLabel("R-Shift", "trigger")
             this.labels['grip'] = this.createLabel("R-Ctrl", "grip")
-            this.labels['abutton'] = this.createLabel("A", "abutton")
+            this.labels['abutton'] = this.createLabel("V", "abutton")
             this.labels['bbutton'] = this.createLabel("B", "bbutton")
             this.labels['thumbstick'] = this.createLabel("2", "thumbstick")
         }
