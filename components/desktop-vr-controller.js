@@ -335,7 +335,7 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
             xDiff = (evt.clientX - this.startMouseX) / (this.dimension * 0.375)
             yDiff = (evt.clientY - this.startMouseY) / (this.dimension * 0.375)
 
-            this.thumbstickVector.set(xDiff, -yDiff)
+            this.thumbstickVector.set(xDiff, yDiff)
             this.thumbstickVector.clampLength(0, 1)
 
             this.updateDisplay()
@@ -350,7 +350,7 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
 
     updateDisplay() {
         this.stick.object3D.position.x = this.thumbstickVector.x * this.radius * 0.75
-        this.stick.object3D.position.y = this.thumbstickVector.y * this.radius * 0.75
+        this.stick.object3D.position.y = -this.thumbstickVector.y * this.radius * 0.75
     },
 
     generateEvents() {
