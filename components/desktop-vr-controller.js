@@ -515,7 +515,7 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
             if (this.thumbstickDown) {
                 this.data.controller.emit("thumbstickup")
                 this.data.controller.emit("thumbstickchanged")
-                this.thumbstickDown = falses
+                this.thumbstickDown = false
             }
         }
     },
