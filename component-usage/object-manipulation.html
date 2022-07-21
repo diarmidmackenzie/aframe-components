@@ -13,6 +13,7 @@
     <script src="../components/raycaster-thresholds.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/screen-display@latest/src/screen-display.js"></script>
     <script src="../components/connecting-line.js"></script>
+    <script src="../components/raycast-target.js"></script>
     
     <link rel="stylesheet" href="/styles.css">
   </head>
@@ -36,7 +37,7 @@
              background="color:#88f">
       <a-entity id="cursor"
                 cursor="rayOrigin: mouse"
-                raycaster="objects: [clickable]; far: Infinity"
+                raycaster="objects: [raycast-target]; far: Infinity"
                 mouse-manipulation>
       </a-entity>
       <a-entity id="rig" wasd-controls>
@@ -51,7 +52,7 @@
 
         <a-entity id="rhand"
                   position="0.4 1.4 -0.5"
-                  laser-controls="hand: right" raycaster="objects: [clickable]; far: Infinity; lineColor: red; lineOpacity: 0.5"
+                  laser-controls="hand: right" raycaster="objects: [raycast-target]; far: Infinity; lineColor: red; lineOpacity: 0.5"
                   laser-manipulation
                   thumbstick-states__right="controller:#rhand;
                                             tBindings:moving-in,moving-out,rotating-y-plus,rotating-y-minus"

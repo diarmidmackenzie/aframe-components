@@ -139,7 +139,7 @@ AFRAME.registerComponent('desktop-vr-controller', {
 
         scene.emit('controllersupdated');
 
-        this.el.setAttribute('clickable', `#${this.el.id}`)
+        this.el.setAttribute('raycast-target', `#${this.el.id}`)
 
         if (this.controllerData.hand == 'left') {
             this.keyBindings = {'ShiftLeft' : 'trigger',

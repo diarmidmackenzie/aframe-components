@@ -309,7 +309,7 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (intersections.length === 0)  return;
     
         const element = intersections[0]
-        const newGrabbedEl = element.components['clickable'].target
+        const newGrabbedEl = element.components['raycast-target'].target
 
         if (this.grabbedEl && 
             this.grabbedEl !== newGrabbedEl) {
@@ -399,7 +399,7 @@ AFRAME.registerComponent('mouse-manipulation', {
     
         const element = intersections[0]
 
-        this.hoverEl = element.components['clickable'].target
+        this.hoverEl = element.components['raycast-target'].target
         if (this.data.debug) console.log("HoverEl set:", this.hoverEl)
         
         // don't do actual hover display behaviour when another entity is already grabbed.

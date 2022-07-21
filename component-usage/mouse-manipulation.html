@@ -8,6 +8,7 @@
     <script src="../components/mouse-manipulation.js"></script>
     <script src="../components/label.js"></script>
     <script src="../components/thumbstick-states.js"></script>
+    <script src="../components/raycast-target.js"></script>
     
     <link rel="stylesheet" href="/styles.css">
   </head>
@@ -30,7 +31,7 @@
              background="color:#88f">
       <a-entity id="cursor"
                 cursor="rayOrigin: mouse"
-                raycaster="objects: [clickable]; far: Infinity"
+                raycaster="objects: [raycast-target]; far: Infinity"
                 mouse-manipulation>
       </a-entity>
       <a-entity id="rig" wasd-controls>

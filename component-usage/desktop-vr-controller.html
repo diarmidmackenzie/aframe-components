@@ -19,17 +19,8 @@
     <script src="../components/raycaster-thresholds.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/screen-display@latest/src/screen-display.js"></script>
     <script src="../components/connecting-line.js"></script>
+    <script src="../components/raycast-target.js"></script>
 
-    <!-- needs tidying up-->
-    <script>
-        AFRAME.registerComponent('clickable', {
-            schema: {type: 'selector'},
-
-            init() {
-                this.target = this.data
-            }
-        })
-    </script>
   </head>
   <body>
     <a-scene
@@ -107,12 +98,12 @@
       <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .raycastable"
                 position="-0.4 1.4 -0.5"
                 desktop-vr-controller
-                clickable="target:#leftHand"></a-entity>
+                raycast-target="#leftHand"></a-entity>
       <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .raycastable" line="color: #118A7E"
                 position="0.4 1.4 -0.5"
                 desktop-vr-controller
-                clickable="target:#rightHand"></a-entity>
-      <!-- "clickable" attribute needs tidying up -->
+                raycast-target="#rightHand"></a-entity>
+      <!-- "raycast-target" attribute needs tidying up -->
 
       <a-entity id="ui" position="0 1.6 -2.5">
         <!-- Poster menu -->
