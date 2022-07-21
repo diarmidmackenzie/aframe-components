@@ -309,7 +309,7 @@ AFRAME.registerComponent('mouse-manipulation', {
         if (intersections.length === 0)  return;
     
         const element = intersections[0]
-        const newGrabbedEl = element.components['raycast-target'].target
+        var newGrabbedEl = this.getRaycastTarget(element)
 
         if (this.grabbedEl && 
             this.grabbedEl !== newGrabbedEl) {
@@ -389,6 +389,15 @@ AFRAME.registerComponent('mouse-manipulation', {
         // all work done on MouseEvent, where we have detail as to *which* button is pressed.
     },
 
+    getRaycastTarget(el) {
+        if (el.components['raycast-target']) {
+            return el.components['raycast-target'].target
+        }
+        else {
+            return el
+        }
+    },
+
     mouseEnter(evt) {
 
         // similar logic to mouseDown - could be commonized
@@ -399,7 +408,7 @@ AFRAME.registerComponent('mouse-manipulation', {
     
         const element = intersections[0]
 
-        this.hoverEl = element.components['raycast-target'].target
+        this.hoverEl = this.getRaycastTarget(element)
         if (this.data.debug) console.log("HoverEl set:", this.hoverEl)
         
         // don't do actual hover display behaviour when another entity is already grabbed.

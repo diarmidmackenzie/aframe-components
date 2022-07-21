@@ -100,11 +100,11 @@ AFRAME.registerComponent('desktop-vr-controller', {
         this.el.sceneEl.addEventListener('exit-vr', this.removeController)
 
         this.labels = {}
-
         this.keysDown = {}
         this.keysLocked = {}
 
         this.createLockHint();
+        
     },
 
     simulateController() {
@@ -138,8 +138,6 @@ AFRAME.registerComponent('desktop-vr-controller', {
         this.trackedControlsSystem.controllers.push(this.controllerData)
 
         scene.emit('controllersupdated');
-
-        this.el.setAttribute('raycast-target', `#${this.el.id}`)
 
         if (this.controllerData.hand == 'left') {
             this.keyBindings = {'ShiftLeft' : 'trigger',
