@@ -104,7 +104,7 @@ AFRAME.registerComponent('desktop-vr-controller', {
         this.keysLocked = {}
 
         this.createLockHint();
-        
+
     },
 
     simulateController() {
@@ -453,7 +453,8 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
         this.mouseUp = this.mouseUp.bind(this)
         this.startMouseX = undefined
         this.startMouseY = undefined
-        this.thumbstickVector = new THREE.Vector2()
+        this.thumbstickVector = new THREE.Vector2(0, 0)
+        this.thumbstickDown = false
 
         this.base =  document.createElement("a-circle")
         this.base.setAttribute("radius", this.radius)
@@ -503,6 +504,19 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
             this.startMouseY = undefined
             this.line.removeAttribute("connecting-line")
             this.line.object3D.visible = false
+
+            if (this.thumbstickVector.lengthSq() > 0) {
+                // reset thumbstick to neutral position,
+                // and indicate this event.
+                this.thumbstickVector.set(0, 0)
+                this.generateEvents()
+            }
+
+            if (this.thumbstickDown) {
+                this.data.controller.emit("thumbstickup")
+                this.data.controller.emit("thumbstickchanged")
+                this.thumbstickDown = falses
+            }
         }
     },
 
@@ -544,6 +558,7 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
             this.stick.setAttribute("material", "color:#888; shader: flat")
             this.data.controller.emit("thumbstickdown")
             this.data.controller.emit("thumbstickchanged")
+            this.thumbstickDown = true
         }
     },
 
@@ -552,6 +567,7 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
             this.stick.setAttribute("material", "color:#bbb; shader: flat")
             this.data.controller.emit("thumbstickup")
             this.data.controller.emit("thumbstickchanged")
+            this.thumbstickDown = false
         }
     }
 });
