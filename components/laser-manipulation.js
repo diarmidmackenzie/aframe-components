@@ -1,4 +1,3 @@
-
 AFRAME.registerComponent('laser-manipulation', {
 
     schema: {
@@ -132,5 +131,13 @@ AFRAME.registerComponent('laser-manipulation', {
       else if (this.el.is("rotating-y-minus")) {
         this.contactPoint.object3D.rotation.y -= timeDelta * this.rotateRate / 1000;
       }
+
+      if (this.el.is("rotating-x-plus")) {
+        this.contactPoint.object3D.rotation.x += timeDelta * this.rotateRate / 1000;
+      }
+      else if (this.el.is("rotating-x-minus")) {
+        this.contactPoint.object3D.rotation.x -= timeDelta * this.rotateRate / 1000;
+      }
+
     }
   });
