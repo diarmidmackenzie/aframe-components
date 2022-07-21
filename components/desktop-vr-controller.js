@@ -500,8 +500,6 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
         }
         else {
             this.base.object3D.visible = false;
-            this.startMouseX = undefined
-            this.startMouseY = undefined
             this.line.removeAttribute("connecting-line")
             this.line.object3D.visible = false
 
@@ -527,6 +525,13 @@ AFRAME.registerComponent('desktop-vr-thumbstick', {
     mouseMove(evt) {
 
         if (this.data.active) {
+
+            if (!this.startMouseX || !this.startMouseY) {
+                // Mouse hadn't been moved yet - just set to current position
+                this.startMouseX = evt.clientX
+                this.startMouseY = evt.clientY
+            }
+
             // Thumbstick control active - handle movement.
             xDiff = (evt.clientX - this.startMouseX) / (this.dimension * 0.375)
             yDiff = (evt.clientY - this.startMouseY) / (this.dimension * 0.375)
