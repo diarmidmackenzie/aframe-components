@@ -2,6 +2,7 @@ AFRAME.registerComponent('laser-manipulation', {
 
     schema: {
       rotateRate: {type: 'number', default: 45},
+      center: {type: 'string', default: 'center', oneOf: ['center','contact']}
     },
   
     update: function() {
@@ -32,6 +33,7 @@ AFRAME.registerComponent('laser-manipulation', {
       this.contactPoint = document.createElement('a-entity')
       this.contactPoint.setAttribute('id', `${this.el.id}-contact-point`)
       this.el.appendChild(this.contactPoint)
+
     },
 
     /* Code below is duplicated from mouse-manipulation - should be commonized */
@@ -88,11 +90,24 @@ AFRAME.registerComponent('laser-manipulation', {
       }
       this.assureUsableId(this.originalParentEl)
 
+      // set up a contact point at the position of the grabbed entity
+      if (this.data.center === "center") {
+        // attach to entity center
+        const pos = this.contactPoint.object3D.position
+        element.object3D.getWorldPosition(pos)
+        this.contactPoint.object3D.parent.worldToLocal(pos)
+      }
+      else {
+        // attach to ray's contact point with entity
+        const contactPoint = this.el.object3D.worldToLocal(intersectionData.point)
+        this.contactPoint.object3D.position.copy(contactPoint)
+      }
+
       // reparent element to this controller.
-      this.grabbedEl = element
-      const grabbedPoint = this.el.object3D.worldToLocal(intersectionData.point)
-      this.contactPoint.object3D.position.copy(grabbedPoint)
       element.setAttribute('object-parent', 'parent', `#${this.el.id}-contact-point`)
+
+      // store reference to grabbed element
+      this.grabbedEl = element
     },
   
     triggerUp() {
@@ -138,6 +153,5 @@ AFRAME.registerComponent('laser-manipulation', {
       else if (this.el.is("rotating-x-minus")) {
         this.contactPoint.object3D.rotation.x -= timeDelta * this.rotateRate / 1000;
       }
-
     }
   });
