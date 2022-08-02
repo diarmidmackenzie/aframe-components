@@ -1,4 +1,4 @@
-## Overview
+## cursor-tracker
 
 Set on an entity to track the orientation of the cursor's ray.
 
