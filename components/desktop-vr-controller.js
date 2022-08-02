@@ -84,10 +84,6 @@ AFRAME.registerSystem('desktop-vr-controller', {
 
 AFRAME.registerComponent('desktop-vr-controller', {
 
-    schema: {
-        disableCursor: {type: 'boolean', default: true}
-    },
-
     dependencies: ['oculus-touch-controls'],
 
     init() {
