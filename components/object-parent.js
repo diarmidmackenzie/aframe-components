@@ -32,39 +32,39 @@ AFRAME.registerComponent('object-parent', {
   reparent(newParent) {
 
     const object = this.el.object3D
-      const oldParent = object.parent
-  
-      if (object.parent === newParent) {
-          return;
-      }
+    const oldParent = object.parent
 
-      objectEl = (o) => {
-          if (o.type === 'Scene') {
-              return (this.el.sceneEl)
-          }
-          else {
-              return o.el
-          }
-      }
-  
-      console.log(`Reparenting ${object.el.id} from ${objectEl(oldParent).id} to ${objectEl(newParent).id}`);
-      
-      // make sure all matrices are up to date before we do anything.
-      // this may be overkill, but ooptimizing for reliability over performance.
-      oldParent.updateMatrixWorld();
-      oldParent.updateMatrix();
-      object.updateMatrix();
-      newParent.updateMatrixWorld();
-      newParent.updateMatrix();
-      
-      // Now update the object's matrix to the new frame of reference.
-      GLOBAL_DATA.tempMatrix.copy(newParent.matrixWorld).invert();
-      object.matrix.premultiply(oldParent.matrixWorld);
-      object.matrix.premultiply(GLOBAL_DATA.tempMatrix);
-      object.matrix.decompose(object.position, object.quaternion, object.scale);
-      object.matrixWorldNeedsUpdate = true;
-  
-      // finally, change the object's parent.
-      newParent.add(object);
+    if (object.parent === newParent) {
+        return;
+    }
+
+    objectEl = (o) => {
+        if (o.type === 'Scene') {
+            return (this.el.sceneEl)
+        }
+        else {
+            return o.el
+        }
+    }
+
+    console.log(`Reparenting ${object.el.id} from ${objectEl(oldParent).id} to ${objectEl(newParent).id}`);
+    
+    // make sure all matrices are up to date before we do anything.
+    // this may be overkill, but ooptimizing for reliability over performance.
+    oldParent.updateMatrixWorld();
+    oldParent.updateMatrix();
+    object.updateMatrix();
+    newParent.updateMatrixWorld();
+    newParent.updateMatrix();
+    
+    // Now update the object's matrix to the new frame of reference.
+    GLOBAL_DATA.tempMatrix.copy(newParent.matrixWorld).invert();
+    object.matrix.premultiply(oldParent.matrixWorld);
+    object.matrix.premultiply(GLOBAL_DATA.tempMatrix);
+    object.matrix.decompose(object.position, object.quaternion, object.scale);
+    object.matrixWorldNeedsUpdate = true;
+
+    // finally, change the object's parent.
+    newParent.add(object);
   },
 });
