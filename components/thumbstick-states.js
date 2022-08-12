@@ -2,11 +2,6 @@
 // controller: selector for the controller with the thumbstick
 // bindings: stats to set for each of up/down/left/right.
 // sensitivity: 0 to 1- how far off center thumbstick must be to count as movement.
-// Note the default settings, which give standard left thumbstick movement
-// don't actually work very well because the X & Z directions are fixed
-// in space.  Could make this work using a nested set of "gimbals", but you get
-// a better movement experience by allowing for the position of the controller
-// itself, using thumbstick-object-control.
 AFRAME.registerComponent('thumbstick-states', {
     schema: {
        controller:   {type: 'selector', default: "#lhand"},
