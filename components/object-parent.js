@@ -29,7 +29,7 @@ AFRAME.registerComponent('object-parent', {
 
   },
 
-  reparent(object, oldParent, newParent) {
+  reparent(newParent) {
 
     const object = this.el.object3D
       const oldParent = object.parent
@@ -67,6 +67,4 @@ AFRAME.registerComponent('object-parent', {
       // finally, change the object's parent.
       newParent.add(object);
   },
-
-  
 });
