@@ -47,9 +47,9 @@ For now, install as follows:
 
 
 
-## Redirective Raycasting
+## Proxy Raycasting
 
-`mouse-manipulation` supports redirective raycasting via the [raycast-target](https://diarmidmackenzie.github.io/aframe-examples/docs/raycast-target.html) component
+`mouse-manipulation` supports proxy raycasting via the [raycast-target](https://diarmidmackenzie.github.io/aframe-examples/docs/raycast-target.html) component
 
 
 

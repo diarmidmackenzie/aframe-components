@@ -88,9 +88,9 @@ This example also uses [desktop-vr-controller](https://diarmidmackenzie.github.i
 
 
 
-## Redirective Raycasting
+## Proxy Raycasting
 
-`laser-manipulation` supports redirective raycasting via the [raycast-target](https://diarmidmackenzie.github.io/aframe-examples/docs/raycast-target.html) component
+`laser-manipulation` supports proxy raycasting via the [raycast-target](https://diarmidmackenzie.github.io/aframe-examples/docs/raycast-target.html) component
 
 
 
