@@ -17,8 +17,9 @@ This is useful because the default thresholds for raycasting against lines and p
 
 ## Installation
 
+```
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/raycaster-thresholds.min.js"></script>
-
+```
 
 
 ## Usage

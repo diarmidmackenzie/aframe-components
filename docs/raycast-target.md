@@ -37,8 +37,9 @@ getRaycastTarget(el) {
 
 ## Installation
 
+```
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/raycast-target.min.js"></script>
-
+```
 
 
 ## Components supporting Proxy Raycasting

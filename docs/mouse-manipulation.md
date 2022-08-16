@@ -32,11 +32,12 @@ This is a high-level component with a lot of dependencies.  In future I'll set u
 
 For now, install as follows:
 
+```
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/object-parent.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/cursor-tracker.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/label.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/mouse-manipulation.min.js"></script>
-
+```
 
 
 ## Examples

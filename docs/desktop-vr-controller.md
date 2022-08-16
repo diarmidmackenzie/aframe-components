@@ -58,7 +58,7 @@ This is a high-level component with a lot of dependencies.  In future I'll set u
 
 For now, install as follows:
 
-
+```
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/cursor-tracker.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/mouse-manipulation.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/label.min.js"></script>
@@ -67,6 +67,7 @@ For now, install as follows:
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/raycast-target.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/screen-display@latest/src/screen-display.js"></script>            
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/desktop-vr-controller.min.js"></script>
+```
 
 
 

@@ -35,8 +35,9 @@ There's some fairly extensive discussion (plus code snippets for some other appr
 
 ## Installation
 
+```
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/object-parent.min.js"></script>
-
+```
 
 
 ## Examples

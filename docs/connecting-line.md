@@ -22,8 +22,9 @@ The position of the line is updated automatically whenever the entity at either 
 
 ## Installation
 
+```
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/connecting-line.min.js"></script>
-
+```
 
 
 ## Examples

@@ -86,8 +86,9 @@ Note:  `face-camera` assumes that the `scale` attribute of the entity it is set 
 
 ## Installation
 
+```
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/label.min.js"></script>
-
+```
 
 
 ## Examples

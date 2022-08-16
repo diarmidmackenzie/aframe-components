@@ -27,8 +27,9 @@ Multiple instances of this component can be added to a single entity, for exampl
 
 ## Installation
 
+```
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/thumbstick-states.min.js"></script>
-
+```
 
 
 ## Examples
