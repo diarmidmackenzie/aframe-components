@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+    <script src="../components/cursor-tracker.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+      The cursor-tracker component ensures that an entity positioned at the camera stays aligned in 
+      orientation with the cursor.<br/>
+      The orientation of this entity is shown in this example by a sphere mesh rotated so that one pole lies directly ahead.<br/>
+      This is intended for use with RayOrigin: mouse.<br/>
+      An example application of this is the mouse-manipulation component, where it is used together with
+      object-parent to move an entity around in line with the mouse pointer.<br/>
+      Note that this text overlay blocks the cursor
+    </div>
+    <a-scene renderer="colorManagement:true"
+             background="color:black">
+      <a-entity id="cursor"
+                cursor="rayOrigin: mouse"
+                raycaster>
+      </a-entity>
+      <a-entity camera="active: true" look-controls wasd-controls position="0 1.6 0">
+        <a-entity id="cursor-tracker"
+                  cursor-tracker>
+                  <a-sphere material="wireframe: true"
+                            rotation="90 0 0">
+                  </a-sphere>
+        </a-entity>
+      </a-entity>
+
+      <!-- grid for orientation-->
+      <a-grid material="opacity: 0.5">
+      </a-grid>
+
+      <!-- markers to indicate up & down-->
+      <a-sphere position = "0 10 0">
+      </a-sphere>
+      <a-sphere position = "0 -10 0">
+      </a-sphere>
+
+    </a-scene>
+    <a class="code-link"
+      target="_blank"
+      href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/cursor-tracker.html">
+      view code
+    </a>
+  </body>
+</html>

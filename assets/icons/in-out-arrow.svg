@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   fill="#ffffff"
+   version="1.0"
+   width="512.000000pt"
+   height="512.000000pt"
+   viewBox="0 0 512.000000 512.000000"
+   preserveAspectRatio="xMidYMid meet"
+   id="svg235"
+   sodipodi:docname="perspective-arrow - edited.svg"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs239" />
+  <sodipodi:namedview
+     id="namedview237"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="pt"
+     showgrid="false"
+     inkscape:zoom="1.1923828"
+     inkscape:cx="341.33333"
+     inkscape:cy="341.75266"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg235" />
+  <g
+     transform="matrix(0.12275635,0,0,-0.1372185,-34.161235,686.80784)"
+     stroke="none"
+     id="g233">
+    <path
+       d="m 1855,3502 c -454,-131 -510,-149 -510,-167 0,-20 8,-20 353,-25 l 352,-5 -155,-232 -155,-233 -728,-2 c -719,-3 -727,-3 -727,-23 0,-18 118,-58 1042,-353 l 1043,-334 1037,332 c 571,182 1042,335 1047,340 5,5 6,16 3,24 -6,14 -88,16 -794,16 h -788 l -115,226 c -63,123 -116,229 -118,234 -2,6 143,11 385,12 378,3 388,4 388,23 0,17 -60,36 -515,167 -283,81 -519,147 -525,147 -5,0 -239,-66 -520,-147 z"
+       id="path231" />
+  </g>
+</svg>

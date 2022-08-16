@@ -3,6 +3,7 @@
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="../components/raycaster-thresholds.js"></script>
     <script src="../components/hide-on-hover.js"></script>
+    <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
 
@@ -35,31 +36,15 @@
         <p>Although not shown in this basic example, the "line" and "points" properties of raycaster-threshold can be used to set any desired threshold for raycasting against lines and points.</p>
     </div>
             
-    <a style="position: fixed;
-            z-index: 10;
-            right: 50px;
-            top: 50px;
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            display: flex;
-            background: white;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            text-decoration: none;
-            text-align: center;
-            color: black;
-            font-family: courier;
-            font-weight: bold"
-            target="_blank"
-            href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/raycaster-thredholds.html">
-            view code
+    <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/raycaster-thresholds.html">
+        view code
     </a>
 
     <script>
         function setRaycasterThresholds(value) {
-            const cusror = document.getElementById("cursor")
+            const cursor = document.getElementById("cursor")
             if (value) {
                 cursor.setAttribute("raycaster-thresholds", "")
             }
