@@ -94,7 +94,9 @@ The labels that show the controls point to the physical positions of the buttons
 
 ## Examples
 
-[desktop-vr-controller.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/desktop-vr-controller.html)
+[desktop-vr-controller.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/desktop-vr-controller.html) - VR controllers with a classic A-Frame example
+
+[object-manipulation.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/object-manipulation.html) - VR controllers together with [laser-manipulation](https://diarmidmackenzie.github.io/aframe-examples/docs/laser-manipulation.html) to move and rotate entities with a laser pointer.
 
 
 
