@@ -47,6 +47,12 @@ For now, install as follows:
 
 
 
+## Redirective Raycasting
+
+`mouse-manipulation` supports redirective raycasting via the [raycast-target](https://diarmidmackenzie.github.io/aframe-examples/docs/raycast-target.html) component
+
+
+
 ## Other Components
 
 The mouse-manipulation component makes use of a number of other sub-components.
@@ -88,7 +94,7 @@ This component has a dependency on the entity-screen-position component, (see be
 
 Example: [mouse-object-control.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/mouse-object-control.html)
 
-### 
+
 
 ### entity-screen-position
 

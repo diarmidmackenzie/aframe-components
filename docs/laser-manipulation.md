@@ -86,6 +86,14 @@ See [object-manipulation.html](https://diarmidmackenzie.github.io/aframe-example
 
 This example also uses [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-examples/docs/desktop-vr-controller.html), so you can test out operations of a VR controller in a desktop (non-VR) environment.
 
+
+
+## Redirective Raycasting
+
+`laser-manipulation` supports redirective raycasting via the [raycast-target](https://diarmidmackenzie.github.io/aframe-examples/docs/raycast-target.html) component
+
+
+
 ## Code
 
   [laser-manipulation.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/laser-manipulation.js)
