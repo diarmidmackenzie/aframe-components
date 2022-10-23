@@ -30,7 +30,7 @@ This is a component primarily intended for demonstration purposes.  It can be ad
 | Property | Description                                                  | Default |
 | -------- | ------------------------------------------------------------ | ------- |
 | text     | selector for an HTML element to write the x, y screen co-ordinates of the entity to, once every frame |         |
-| tracker  | selector for an HTML element with absolute position, whose 2D position should be updated to match the 2D position of the entity, once every frame |         |
+| tracker  | selector for an HTML element with absolute position, whose 2D position will be updated once every frame to match the 2D position of the entity. |         |
 
 
 
