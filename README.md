@@ -52,6 +52,7 @@ I also have a range of other A-Frame components in other repositories.  Over tim
 | **Component**                                                | Description                                                |
 | ------------------------------------------------------------ | ---------------------------------------------------------- |
 | [object-parent](https://diarmidmackenzie.github.io/aframe-examples/docs/object-parent.html) | Change the parent of an object in the THREE.js scene graph |
+| [screen-position](https://diarmidmackenzie.github.io/aframe-examples/docs/screen-position.html) | Report the 2D screen position of an A-Frame entity         |
 
 
 
@@ -59,10 +60,11 @@ I also have a range of other A-Frame components in other repositories.  Over tim
 
 Components that exist to support examples.  Not likely to be very useful in their own right.
 
-| **Component**                                                | Description                                       |
-| ------------------------------------------------------------ | ------------------------------------------------- |
-| [scale-on-hover](https://diarmidmackenzie.github.io/aframe-examples/docs/utility-components.html) | Scale an object up when hovered over by the mouse |
-| [hide-on-hover](https://diarmidmackenzie.github.io/aframe-examples/docs/utility-components.html) | Hide an object when hovered over by the mouse     |
+| **Component**                                                | Description                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [scale-on-hover](https://diarmidmackenzie.github.io/aframe-examples/docs/utility-components.html) | Scale an object up when hovered over by the mouse            |
+| [hide-on-hover](https://diarmidmackenzie.github.io/aframe-examples/docs/utility-components.html) | Hide an object when hovered over by the mouse                |
+| [output-screen-position](https://diarmidmackenzie.github.io/aframe-examples/docs/screen-position.html) | Track and report the 2D screen position of an A-Frame entity (as reported by `screen-position`) |
 
 
 
