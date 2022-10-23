@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+      <script src="../components/screen-position.js"></script>
+      <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Screen positions of entities.  Move using left mouse or WASD to observe changes.</p>
+        <div>
+          Cube: <span id="cube-output">Calculating...</span>
+        </div>
+        <div>
+          Sphere: <span id="sphere-output">Calculating...</span>
+        </div>
+        <div>
+          Cylinder: <span id="cylinder-output">Calculating...</span>
+        </div>
+    </div>
+    <a class="code-link"
+    target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/screen-position.html">
+    view code
+    </a>
+    <div id="cube-tracker"
+         style="z-index: 100;
+                position: absolute; top: 0px; left: 0px;
+                width: 10px; height: 10px;
+                background-color: red">
+    </div>
+    <div id="sphere-tracker"
+         style="z-index: 100;
+                position: absolute; top: 0px; left: 0px;
+                width: 10px; height: 10px;
+                background-color: green">
+    </div>
+    <div id="cylinder-tracker"
+         style="z-index: 100;
+                position: absolute; top: 0px; left: 0px;
+                width: 10px; height: 10px;
+                background-color: blue">
+    </div>
+    
+    <a-scene background="color:black">
+      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+      <a-entity id="container" position = "0 0 -4">
+        <a-box id="box" position="-1 0.5 1" rotation="0 45 0" color="#4CC3D9"
+               screen-position
+               output-screen-position="text:#cube-output; tracker: #cube-tracker">
+        </a-box>
+        <a-sphere id="sphere" position="0 1.25 -1" radius="1.25" color="#EF2D5E"
+                  screen-position
+                  output-screen-position="text:#sphere-output; tracker: #sphere-tracker">
+        </a-sphere>
+        <a-cylinder id="cylinder" position="1 0.75 1" radius="0.5" height="1.5" color="#FFC65D"
+                    screen-position
+                    output-screen-position="text:#cylinder-output; tracker: #cylinder-tracker">
+        </a-cylinder>
+        <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" side="double"></a-plane>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
