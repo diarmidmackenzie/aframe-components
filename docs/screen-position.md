@@ -10,7 +10,7 @@ This component makes the current screen position of an A-Frame entity (as per th
 
 `this.el.components['screen-position'].getScreenPosition(pos)`
 
-The parameter `pos` should contain a pre-allocated THREE.Vector2.
+The parameter `pos` should contain a pre-allocated [`THREE.Vector2`](https://threejs.org/docs/index.html?q=vector2#api/en/math/Vector2).
 
 The x & y values are populated with the x & y co-ordinates on the current screen of the center of the entity.
 
