@@ -16,7 +16,7 @@
             this.secs++;
             const random = Math.floor(Math.random() * 100)
 
-            this.el.emit("event1", {secs: this.secs, random: random})
+            this.el.emit("event1", {secs: this.secs, random: random, wrapper: { nested: this.secs - 1}})
             this.el.emit("event2", {data: this.secs * this.secs})
           }
         })
@@ -39,6 +39,7 @@
         stats-row__1="group: 1; event: event1; property: secs; label: Seconds"
         stats-row__2="group: 1; event: event1; property: random; label: Random"
         stats-row__3="group: 2; event: event2; property: data; label: More data"
+        stats-row__4="group: 2; event: event1; property: wrapper.nested; label: More data"
         generate-data>
       <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
 
