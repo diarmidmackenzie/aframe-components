@@ -109,10 +109,25 @@ AFRAME.registerComponent('stats-row', {
 
     this.updateData = this.updateData.bind(this)
     this.el.addEventListener(this.data.event, this.updateData)
+
+    this.splitCache = {}
   },
 
   updateData(e) {
-    const value = e.detail[this.data.property]
+    
+    const split = this.splitDot(this.data.property);
+    let value = e.detail;
+    for (i = 0; i < split.length; i++) {
+      value = value[split[i]];
+    }
     this.counterValue.innerHTML = value
+
+  },
+
+  splitDot (path) {
+    if (path in this.splitCache) { return this.splitCache[path]; }
+    this.splitCache[path] = path.split('.');
+    return this.splitCache[path];
   }
+
 });

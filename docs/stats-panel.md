@@ -32,7 +32,7 @@ The source of data for a row is always an event, with some properties in its `de
 | -------- | ------------------------------------------------------------ | ------- |
 | group    | Every statistics row must be displayed in a group.<br />This component uses this name to search for a group to add the row to.  It searches for:<br />- a group with a matching name on the same entity<br />- a group with a matching name on the scene<br />- any unnamed group on the entity<br />- any unnamed group on the scene., |         |
 | event    | The name of the event that provides data for this stats row.  Each time the event is detected, the stats row will be updated with data from the event.  Note that the `stats-row` must be configured on an entity that will detect the event. |         |
-| property | The name of a property within the `detail` of the event that is to be displayed in the `stats-row`.  This is displayed without any additional formatting.  If additional formatting / processing is required, write an additional component that listens for the event and modifies the data as required |         |
+| property | The name of a property within the `detail` of the event that is to be displayed in the `stats-row`.  Can extract data from nested properties, e.g. `wrapper.nested`  will access `detail.wrapper.nested`. This is displayed without any additional formatting.  If additional formatting / processing is required, write an additional component that listens for the event and modifies the data as required |         |
 | label    | The label for this stats row - displayed in the stats panel. |         |
 
 
