@@ -80,7 +80,7 @@ AFRAME.registerComponent('stats-row', {
     event: {type: 'string'},
 
     // property from event to output in stats panel
-    property: {type: 'string'},
+    properties: {type: 'array'},
 
     // label for the row in the stats panel
     label: {type: 'string'}
@@ -108,10 +108,14 @@ AFRAME.registerComponent('stats-row', {
     this.counterId.innerHTML = this.data.label
     this.counter.appendChild(this.counterId)
 
-    this.counterValue = document.createElement('div')
-    this.counterValue.classList.add('rs-counter-value')
-    this.counterValue.innerHTML = "..."
-    this.counter.appendChild(this.counterValue)
+    this.counterValues = {}
+    this.data.properties.forEach((property) => {
+      const counterValue = document.createElement('div')
+      counterValue.classList.add('rs-counter-value')
+      counterValue.innerHTML = "..."
+      this.counter.appendChild(counterValue)
+      this.counterValues[property] = counterValue
+    })
 
     this.updateData = this.updateData.bind(this)
     this.el.addEventListener(this.data.event, this.updateData)
@@ -121,13 +125,14 @@ AFRAME.registerComponent('stats-row', {
 
   updateData(e) {
     
-    const split = this.splitDot(this.data.property);
-    let value = e.detail;
-    for (i = 0; i < split.length; i++) {
-      value = value[split[i]];
-    }
-    this.counterValue.innerHTML = value
-
+    this.data.properties.forEach((property) => {
+      const split = this.splitDot(property);
+      let value = e.detail;
+      for (i = 0; i < split.length; i++) {
+        value = value[split[i]];
+      }
+      this.counterValues[property].innerHTML = value
+    })
   },
 
   splitDot (path) {
