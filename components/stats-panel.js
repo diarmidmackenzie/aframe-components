@@ -59,7 +59,13 @@ AFRAME.registerComponent('stats-group', {
     container.appendChild(this.groupHeader)
 
     this.group = document.createElement('div')
-    this.group.classList.add('rs-group')    
+    this.group.classList.add('rs-group')
+    // rs-group hs style flex-direction of 'column-reverse'
+    // No idea why it's like that, but it's not what we want for our stats.
+    // We prefer them rendered in the order speified.
+    // So override this style.
+    this.group.style.flexDirection = 'column'
+    this.group.style.webKitFlexDirection = 'column'
     container.appendChild(this.group)
   }
 });
