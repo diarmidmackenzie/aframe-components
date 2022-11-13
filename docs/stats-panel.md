@@ -40,8 +40,16 @@ The source of data for a row is always an event, with some properties in its `de
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/stats-panel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/stats-panel/index.min.js"></script>
 ```
+
+
+
+Or from npm:
+
+https://www.npmjs.com/package/aframe-stats-panel
+
+
 
 ## Examples
 
@@ -66,4 +74,4 @@ See a live example here: [stats-panel.html](https://diarmidmackenzie.github.io/a
 
 ## Code
 
-  [stats-panel.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/stats-panel.js)
+  [stats-panel.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/stats-panel/index.js)

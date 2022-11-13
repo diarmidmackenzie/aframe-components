@@ -1,0 +1,12 @@
+{
+  "name": "aframe-stats-panel",
+  "version": "0.1.2",
+  "description": "A-Frame statistics panel for additional statistics, in the style of A-Frame stats",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "homepage": "https://diarmidmackenzie.github.io/aframe-examples/docs/stats-panel.html",
+  "author": "Diarmid Mackenzie",
+  "license": "MIT"
+}
