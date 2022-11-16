@@ -49,10 +49,11 @@ I also have a range of other A-Frame components in other repositories.  Over tim
 
 ### Other
 
-| **Component**                                                | Description                                                |
-| ------------------------------------------------------------ | ---------------------------------------------------------- |
-| [object-parent](https://diarmidmackenzie.github.io/aframe-examples/docs/object-parent.html) | Change the parent of an object in the THREE.js scene graph |
-| [screen-position](https://diarmidmackenzie.github.io/aframe-examples/docs/screen-position.html) | Report the 2D screen position of an A-Frame entity         |
+| **Component**                                                | Description                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [object-parent](https://diarmidmackenzie.github.io/aframe-examples/docs/object-parent.html) | Change the parent of an object in the THREE.js scene graph   |
+| [screen-position](https://diarmidmackenzie.github.io/aframe-examples/docs/screen-position.html) | Report the 2D screen position of an A-Frame entity           |
+| [stats-panel](https://diarmidmackenzie.github.io/aframe-examples/docs/stats-panel.html) | Display custom statistics in a style that matches core A-Frame stats |
 
 
 
