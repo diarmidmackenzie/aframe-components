@@ -162,6 +162,11 @@ AFRAME.registerComponent('stats-collector', {
     // outputs (generated for each property)
     // Combination of: mean, max, percentile__XX.X (where XX.X is a number)
     outputs: {type: 'array'},
+
+    // Whether to output to console as well as generating events
+    // If a string is specified, this is output to console, together with the event data
+    // If no string is specified, nothing is output to console.
+    outputToConsole: {type: 'string'}
   },
 
   init() {
@@ -221,7 +226,13 @@ AFRAME.registerComponent('stats-collector', {
       })
     })
 
-    this.el.emit(this.data.outEvent, this.outputDetail)
+    if (this.data.outEvent) {
+      this.el.emit(this.data.outEvent, this.outputDetail)
+    }
+
+    if (this.data.outputToConsole) {
+      console.log(this.data.outputToConsole, this.outputDetail)
+    }
   },
 
   computeOutput(outputInstruction, data) {
