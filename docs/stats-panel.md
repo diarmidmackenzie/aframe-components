@@ -37,6 +37,25 @@ The source of data for a row is always an event, with some properties in its `de
 
 
 
+### stats-collector
+
+Processes a data stream, and reports periodic summary data (min, max, mean & percentiles)
+
+
+
+A row of data to be displayed in a stats table.
+
+The source of data for a row is always an event, with some properties in its `detail`
+
+| Property   | Description                                                  | Default |
+| ---------- | ------------------------------------------------------------ | ------- |
+| group      | Every statistics row must be displayed in a group.<br />This component uses this name to search for a group to add the row to.  It searches for:<br />- a group with a matching name on the same entity<br />- a group with a matching name on the scene<br />- any unnamed group on the entity<br />- any unnamed group on the scene., |         |
+| event      | The name of the event that provides data for this stats row.  Each time the event is detected, the stats row will be updated with data from the event.  Note that the `stats-row` must be configured on an entity that will detect the event. |         |
+| properties | The names of one or more properties within the `detail` of the event that is to be displayed in the `stats-row`.  These are displayed without any additional formatting.  If additional formatting / processing is required, write an additional component that listens for the event and modifies the data as required.  If multiple properties are specified, they are displayed left-right.  Typically 3-4 data items can be fitted into a row, if required. |         |
+| label      | The label for this stats row - displayed in the stats panel. |         |
+
+
+
 ## Installation
 
 ```

@@ -10,52 +10,40 @@
             this.secs = 0
             this.emitData = this.emitData.bind(this)
 
-            setInterval(this.emitData, 1000)
-          },
-          emitData() {
-            this.secs++;
-            const random = Math.floor(Math.random() * 100)
-
-            this.el.emit("event1", {secs: this.secs, random: random, wrapper: { nested: this.secs - 1}})
-            this.el.emit("event2", {data: this.secs * this.secs})
-          }
-        })
-
-        AFRAME.registerComponent('generate-rapid-data', {
-          init() {
-            this.secs = 0
-            this.emitData = this.emitData.bind(this)
-
             setInterval(this.emitData, 10)
           },
           emitData() {
             this.secs++;
             const random = Math.floor(Math.random() * 100)
 
-            this.el.emit("event1", {secs: this.secs, random: random, wrapper: { nested: this.secs - 1}})
-            this.el.emit("event2", {data: this.secs * this.secs})
+            this.el.emit("event1", {random: random})
           }
         })
       </script>
   </head>
   <body>
     <div class="text-overlay">
-        <p>User-defined additional statistics, output in the style of A-Frame stats</p>
+        <p>Collect and process stats from a data source, output in the style of A-Frame stats</p>
     </div>
         <a class="code-link"
         target="_blank"
-        href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/stats-panel.html">
+        href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/stats-collector.html">
         view code
     </a>
     
     <a-scene stats
         stats-panel="merge: false"
-        stats-group__1="label: First Group"
-        stats-group__2="label: Second Group"
-        stats-row__1="group: 1; event: event1; properties: secs; label: Seconds"
-        stats-row__2="group: 1; event: event1; properties: random; label: Random"
-        stats-row__3="group: 2; event: event2; properties: data; label: More data"
-        stats-row__4="group: 2; event: event1; properties: wrapper.nested, secs, random; label: More data"
+        stats-group="label: First Group"
+        stats-row__1="event: event2;
+                      properties: random.min, random.mean, random.max; label: Min/Mean/Max"
+        stats-row__2="event: event2;
+                      properties: random.percentile__50, random.percentile__90, random.percentile__99_9;
+                      label: 50th/90th/99.9th"
+        stats-collector="inEvent: event1;
+                         properties: random;
+                         outputFrequency: 100;
+                         outEvent: event2;
+                         outputs: mean, min, max, percentile__50, percentile__90, percentile__99_9"
         generate-data>
       <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
 
