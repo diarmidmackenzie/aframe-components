@@ -142,3 +142,128 @@ AFRAME.registerComponent('stats-row', {
   }
 
 });
+
+AFRAME.registerComponent('stats-collector', {
+  multiple: true,
+
+  schema: {
+    // name of an event to listen for
+    inEvent: {type: 'string'},
+
+    // property from event to output in stats panel
+    properties: {type: 'array'},
+
+    // frequency of output in terms of events received.
+    outputFrequency: {type: 'number', default: 100},
+
+    // name of event to emit
+    outEvent: {type: 'string'},
+    
+    // outputs (generated for each property)
+    // Combination of: mean, max, percentile__XX.X (where XX.X is a number)
+    outputs: {type: 'array'},
+  },
+
+  init() {
+    
+    this.statsData = {}
+    this.resetData()
+    this.outputDetail = {}
+    this.data.properties.forEach((property) => {
+      this.outputDetail[property] = {}
+    })
+
+    this.statsReceived = this.statsReceived.bind(this)
+    this.el.addEventListener(this.data.inEvent, this.statsReceived)
+  },
+  
+  resetData() {
+
+    this.counter = 0
+    this.data.properties.forEach((property) => {
+      
+      // For calculating percentiles like 0.01 and 99.9% we'll want to store
+      // additional data - something like this...
+      // Store off outliers, and discard data.
+      // const min = Math.min(...this.statsData[property])
+      // this.lowOutliers[property].push(min)
+      // const max = Math.max(...this.statsData[property])
+      // this.highOutliers[property].push(max)
+
+      this.statsData[property] = []
+    })
+  },
+
+  statsReceived(e) {
+
+    this.updateData(e.detail)
+
+    this.counter++ 
+    if (this.counter === this.data.outputFrequency) {
+      this.outputData()
+      this.resetData()
+    }
+  },
+
+  updateData(detail) {
+
+    this.data.properties.forEach((property) => {
+      let value = detail;
+      value = value[property];
+      this.statsData[property].push(value)
+    })
+  },
+
+  outputData() {
+    this.data.properties.forEach((property) => {
+      this.data.outputs.forEach((output) => {
+        this.outputDetail[property][output] = this.computeOutput(output, this.statsData[property])
+      })
+    })
+
+    this.el.emit(this.data.outEvent, this.outputDetail)
+  },
+
+  computeOutput(outputInstruction, data) {
+
+    const outputInstructions = outputInstruction.split("__")
+    const outputType = outputInstructions[0]
+    let output
+
+    switch (outputType) {
+      case "mean":
+        output = data.reduce((a, b) => a + b, 0) / data.length;
+        break;
+      
+      case "max":
+        output = Math.max(...data)
+        break;
+
+      case "min":
+        output = Math.min(...data)
+        break;
+
+      case "percentile":
+        const sorted = data.sort((a, b) => a - b)
+        // decimal percentiles encoded like 99+9 rather than 99.9 due to "." being used as a 
+        // separator for nested properties.
+        const percentileString = outputInstructions[1].replace("_", ".")
+        const proportion = +percentileString / 100
+
+        // Note that this calculation of the percentile is inaccurate when there is insufficient data
+        // e.g. for 0.1th or 99.9th percentile when only 100 data points.
+        // Greater accuracy would require storing off more data (specifically outliers) and folding these
+        // into the computation.
+        const position = (data.length - 1) * proportion
+        const base = Math.floor(position)
+        const delta = position - base;
+        if (sorted[base + 1] !== undefined) {
+            output = sorted[base] + delta * (sorted[base + 1] - sorted[base]);
+        } else {
+            output = sorted[base];
+        }
+        break;
+    }
+    return output.toFixed(2)
+  }
+});
