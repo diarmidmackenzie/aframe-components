@@ -309,7 +309,7 @@ AFRAME.registerComponent('desktop-vr-controller', {
         const button = anchor.querySelector("a-plane")
 
         const image = document.createElement('a-image')
-        image.setAttribute("src", "../assets/icons/lock.svg")
+        image.setAttribute("src", "https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/assets/icons/lock.svg")
         const xpos = 0.4 * button.attributes.width.value
         image.object3D.position.set(xpos, 0, 0)
         image.object3D.scale.set(0.03, 0.03, 0.03)

@@ -483,7 +483,7 @@ AFRAME.registerComponent('mouse-manipulation-hints', {
 
         const spacing = 0.15
         const imgSize = 0.1
-        const iconsPath = "../assets/icons/"
+        const iconsPath = "https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/assets/icons/"
 
         var xOffset, yOffset
         
