@@ -5,8 +5,8 @@
     <script src="https://cdn.jsdelivr.net/gh/kylebakerio/vr-super-stats@2.0.1/vr-super-stats.js"></script>
     <script src="../components/frame-rate/index.js"></script>
     <script>
-      rates = [90, 72, 60]
-      rateIndex = 0
+      let rates = [60, 72, 90]
+      let rateIndex = 0
 
       AFRAME.registerComponent('frame-rate-control', {
         init() {
@@ -23,6 +23,16 @@
           }
           const newRate = rates[rateIndex]
           this.el.sceneEl.setAttribute("frame-rate", newRate)
+
+          // update list of available rates:
+          const newList = this.el.sceneEl.components['frame-rate'].getSupportedFrameRates()
+
+          if (newList) {
+            console.log("Updating list of available frame rates")
+            rates = newList
+            rateIndex = rates.indexOf(newRate)
+            if (rateIndex <= 0) rateIndex = 0;
+          }
         }
       })
 
@@ -84,6 +94,15 @@
         <a-entity id="rhand" hand-controls="hand: right">
         </a-entity>
     </a-scene>
+
+  <div class="text-overlay">
+    <p>Switch between the available frame rates on your WebXR device.</p>
+    <p>Starting with a default set of frame rates of 60, 72 and 90, this example adapts to offer the
+      set of available frame rates reported by the device it's running on. 
+    </p>
+    <p>Requesting changes to frame rates on non-WebXR devices, or running in non-immersive mode will have no effect
+       but requested changes will be applied on entry to immersive mode.</p>
+  </div>
 
   <a class="code-link"
     target="_blank"
