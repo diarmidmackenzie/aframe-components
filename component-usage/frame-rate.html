@@ -1,0 +1,94 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+    <script src="https://unpkg.com/@fern-solutions/aframe-extra-stats/dist/extra-stats.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/kylebakerio/vr-super-stats@2.0.1/vr-super-stats.js"></script>
+    <script src="../components/frame-rate/index.js"></script>
+    <script>
+      rates = [90, 72, 60]
+      rateIndex = 0
+
+      AFRAME.registerComponent('frame-rate-control', {
+        init() {
+          this.el.sceneEl.setAttribute('frame-rate', rates[rateIndex])
+
+          this.el.addEventListener("abuttondown", this.updateRate.bind(this))
+          window.addEventListener("click", this.updateRate.bind(this))
+          this.el.addEventListener("trigger", this.updateRate.bind(this))
+        },
+        updateRate() {
+          rateIndex += 1
+          if (rateIndex >= rates.length) {
+            rateIndex = 0;
+          }
+          const newRate = rates[rateIndex]
+          this.el.sceneEl.setAttribute("frame-rate", newRate)
+        }
+      })
+
+      AFRAME.registerComponent('frame-rate-display', {
+        init() {
+          this.requestedOutputEl = document.getElementById("frame-requested-output")
+          this.rateOutputEl = document.getElementById("frame-rate-output")
+        },
+        tick() {
+          const requested = this.el.sceneEl.getAttribute('frame-rate')
+          const actual = this.el.sceneEl.components['frame-rate'].getFrameRate()
+          this.requestedOutputEl.setAttribute("text", "value", `${requested}`);
+          this.rateOutputEl.setAttribute("text", "value", `${actual}`);
+        }
+      })
+    </script>
+    <link rel="stylesheet" href="../styles.css">
+  </head>
+  <body>
+
+    <a-scene frame-rate-control
+             frame-rate-display
+             extra-stats
+             vr-super-stats="anchorel:#the-box;
+                             position: 0 0 0;
+                             scale: 8 8 8;
+                             alwaysshow3dstats:true;
+                             show2dstats:false;
+                             showlabels:fps,raf; showgraphs:fps,raf">
+        <a-sky color="black">
+        </a-sky>
+        <a-box color="red"
+               position="0 1.8 -3"
+               rotation="45 0 45"
+               animation="property: rotation; from: 45 0 45; to: 45 360 45; dur: 3000; loop: true; easing: linear">
+        </a-box>
+        <a-text id="frame-rate-caption"
+                position="1 0.2 -3"
+                value="Press A, Trigger or Mouse
+                       to change frame rate.
+                       Requested XR frame rate:
+                       Current XR frame rate:"
+                align="right">
+        </a-text>
+        <a-text id="frame-requested-output"
+                position="1 0.1 -3"
+                align="left">
+        </a-text>
+        <a-text id="frame-rate-output"
+                position="1 -0.15 -3"
+                align="left">
+        </a-text>
+
+        <a-entity id="the-box" position="0 -10 0.5"></a-entity>
+        
+        <a-entity id="lhand" hand-controls="hand: left">
+        </a-entity>
+
+        <a-entity id="rhand" hand-controls="hand: right">
+        </a-entity>
+    </a-scene>
+
+  <a class="code-link"
+    target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-examples/blob/main/component-usage/frame-rate.html">
+    view code
+  </a>
+
+</body>
