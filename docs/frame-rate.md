@@ -71,4 +71,4 @@ Returns an array indicating the set of frame rates available on this device.
 
 ## Code
 
-  [frame-rate.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/frame-rate.js)
+  [frame-rate.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/frame-rate/index.js)
