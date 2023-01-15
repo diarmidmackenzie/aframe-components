@@ -37,16 +37,16 @@ This is a component primarily intended for demonstration purposes.  It can be ad
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/screen-position.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/screen-position.min.js"></script>
 ```
 
 
 ## Examples
 
-[screen-position.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/screen-position.html)
+[screen-position.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/screen-position.html)
 
 
 
 ## Code
 
-[screen-position.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/screen-position.js)
+[screen-position.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/screen-position.js)

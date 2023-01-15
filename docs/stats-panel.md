@@ -57,7 +57,7 @@ The source of data for is always an event, with some properties in its `detail`
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/stats-panel/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/stats-panel/index.min.js"></script>
 ```
 
 
@@ -87,10 +87,10 @@ With suitable events generating input, this will generate output like this:
 
 ![image-20221106161718921](image-20221106161718921.png)
 
-See a live example here: [stats-panel.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/stats-panel.html)
+See a live example here: [stats-panel.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/stats-panel.html)
 
-See a live example of how `stats-collector` can be used to aggregate summary statistics here: [stats-collector.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/stats-collector.html)
+See a live example of how `stats-collector` can be used to aggregate summary statistics here: [stats-collector.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/stats-collector.html)
 
 ## Code
 
-  [stats-panel.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/stats-panel/index.js)
+  [stats-panel.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/stats-panel/index.js)

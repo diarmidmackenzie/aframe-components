@@ -15,7 +15,7 @@ This can be customized with the following options as URL parameters.
 
 Example:
 
-https://diarmidmackenzie.github.io/aframe-examples/compositions/wrapped-present/?gift-url=https%3A%2F%2Fcdn.aframe.io%2Fexamples%2Fui%2FkarigurashiPoster.jpg&box-color=00ff00&ribbon-color=0000ff&message=Good%20%Luck%21
+https://diarmidmackenzie.github.io/aframe-components/compositions/wrapped-present/?gift-url=https%3A%2F%2Fcdn.aframe.io%2Fexamples%2Fui%2FkarigurashiPoster.jpg&box-color=00ff00&ribbon-color=0000ff&message=Good%20%Luck%21
 
 
 

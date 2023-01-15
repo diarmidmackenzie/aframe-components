@@ -28,18 +28,18 @@ Multiple instances of this component can be added to a single entity, for exampl
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/thumbstick-states.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/thumbstick-states.min.js"></script>
 ```
 
 
 ## Examples
 
-See [object-manipulation.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/object-manipulation.html) for an example of how this can be used alongside the [laser-manipulation](https://diarmidmackenzie.github.io/aframe-examples/docs/laser-manipulation.html) component to build a control system using the thumbstick.
+See [object-manipulation.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/object-manipulation.html) for an example of how this can be used alongside the [laser-manipulation](https://diarmidmackenzie.github.io/aframe-components/docs/laser-manipulation.html) component to build a control system using the thumbstick.
 
-The [object-manipulation.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/object-manipulation.html) example also uses [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-examples/docs/desktop-vr-controller.html), so you can operate VR controller thumbstick controls even in a desktop (non-VR) environment.
+The [object-manipulation.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/object-manipulation.html) example also uses [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-components/docs/desktop-vr-controller.html), so you can operate VR controller thumbstick controls even in a desktop (non-VR) environment.
 
 
 
 ## Code
 
-  [thumbstick-states.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/thumbstick-states.js)
+  [thumbstick-states.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/thumbstick-states.js)

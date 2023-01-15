@@ -17,16 +17,16 @@ Typically set on a entity that is a child of the camera that the cursor uses.  T
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/cursor-tracker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/cursor-tracker.min.js"></script>
 ```
 
 
 ## Examples
 
-[cursor-tracker.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/cursor-tracker.html)
+[cursor-tracker.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/cursor-tracker.html)
 
 Also Used by `mouse-manipulation` component to keep grabbed entities aligned with the mouse pointer.
 
 ## Code
 
-  [cursor-tracker.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/cursor-tracker.js)
+  [cursor-tracker.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/cursor-tracker.js)

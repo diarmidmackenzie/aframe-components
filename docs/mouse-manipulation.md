@@ -33,24 +33,24 @@ This is a high-level component with a lot of dependencies.  In future I'll set u
 For now, install as follows:
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/object-parent.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/cursor-tracker.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/label.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/mouse-manipulation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/object-parent.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/cursor-tracker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/label.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/mouse-manipulation.min.js"></script>
 ```
 
 
 ## Examples
 
-[mouse-manipulation.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/mouse-manipulation.html)
+[mouse-manipulation.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/mouse-manipulation.html)
 
-[object-manipulation.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/object-manipulation.html) - This uses mouse manipulation in desktop mode.  When you enter VR on a non-VR desktop, the controllers themselves become targets of mouse manipulation, via the [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-examples/docs/desktop-vr-controller.html) component.
+[object-manipulation.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/object-manipulation.html) - This uses mouse manipulation in desktop mode.  When you enter VR on a non-VR desktop, the controllers themselves become targets of mouse manipulation, via the [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-components/docs/desktop-vr-controller.html) component.
 
 
 
 ## Proxy Raycasting
 
-`mouse-manipulation` supports proxy raycasting via the [raycast-target](https://diarmidmackenzie.github.io/aframe-examples/docs/raycast-target.html) component
+`mouse-manipulation` supports proxy raycasting via the [raycast-target](https://diarmidmackenzie.github.io/aframe-components/docs/raycast-target.html) component
 
 
 
@@ -77,7 +77,7 @@ This component is used to control the pitch and yaw of an entity based on the mo
 | singleAxis | Whether to only allow rotation on a single axis (whichever moves first) | false   |
 | threshold  | When operating in "singleAxis" mode, number of mouse pixels movement required to lock onto an axis. | 5       |
 
-Example: [mouse-object-control.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/mouse-object-control.html)
+Example: [mouse-object-control.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/mouse-object-control.html)
 
 
 
@@ -93,7 +93,7 @@ This component is used to control the roll of an entity based on the mouse point
 
 This component has a dependency on the entity-screen-position component, (see below)
 
-Example: [mouse-object-control.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/mouse-object-control.html)
+Example: [mouse-object-control.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/mouse-object-control.html)
 
 
 
@@ -115,10 +115,10 @@ This component is used to dolly an entity forwards or backwards based on the mov
 
 It has no configurable properties (speed of dollying is not currently configurable)
 
-Example: [mouse-object-control.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/mouse-object-control.html)
+Example: [mouse-object-control.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/mouse-object-control.html)
 
 
 
 ## Code
 
-  [mouse-manipulation.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/mouse-manipulation.js)
+  [mouse-manipulation.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/mouse-manipulation.js)

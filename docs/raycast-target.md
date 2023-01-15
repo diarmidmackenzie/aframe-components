@@ -38,7 +38,7 @@ getRaycastTarget(el) {
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/raycast-target.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/raycast-target.min.js"></script>
 ```
 
 
@@ -46,9 +46,9 @@ getRaycastTarget(el) {
 
 The following high-level components support proxy raycasting using `raycast-target`.
 
-- [laser-manipulation](https://diarmidmackenzie.github.io/aframe-examples/docs/laser-manipulation.html)
+- [laser-manipulation](https://diarmidmackenzie.github.io/aframe-components/docs/laser-manipulation.html)
 
-- [mouse-manipulation](https://diarmidmackenzie.github.io/aframe-examples/docs/mouse-manipulation.html)
+- [mouse-manipulation](https://diarmidmackenzie.github.io/aframe-components/docs/mouse-manipulation.html)
 
 
 
@@ -60,4 +60,4 @@ To follow...
 
 ## Code
 
-  [raycast-target.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/raycast-target.js)
+  [raycast-target.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/raycast-target.js)

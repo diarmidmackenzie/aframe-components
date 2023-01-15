@@ -23,16 +23,16 @@ The position of the line is updated automatically whenever the entity at either 
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/connecting-line.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/connecting-line.min.js"></script>
 ```
 
 
 ## Examples
 
-[connecting-line.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/connecting-line.html)
+[connecting-line.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/connecting-line.html)
 
 
 
 ## Code
 
-[connecting-line.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/connecting-line.js)
+[connecting-line.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line.js)

@@ -87,16 +87,16 @@ Note:  `face-camera` assumes that the `scale` attribute of the entity it is set 
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/label.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/label.min.js"></script>
 ```
 
 
 ## Examples
 
-[labels.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/labels.html)
+[labels.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/labels.html)
 
 
 
 ## Code
 
-  [label.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/label.js)
+  [label.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/label.js)

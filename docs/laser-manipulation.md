@@ -19,7 +19,7 @@ The basic control scheme is:
 
 ## Usage
 
-This component does not implement all of the control scheme described above, but can be combined with the [thumbstick-states](https://diarmidmackenzie.github.io/aframe-examples/docs/thumbstick-states.html) component to deliver a full control scheme.
+This component does not implement all of the control scheme described above, but can be combined with the [thumbstick-states](https://diarmidmackenzie.github.io/aframe-components/docs/thumbstick-states.html) component to deliver a full control scheme.
 
 This example shows a configuration for the right controller that delivers the thumbstick controls described above.
 
@@ -51,7 +51,7 @@ The aspects of the control system driven by thumbsticks in the description above
 | rotating-x-plus  | Rotate the entity about the controller's x axis (pitch) |
 | rotating-x-minus | Rotate the entity about the controller's x axis (pitch) |
 
-The configuration shown above for the [thumbstick-states](https://diarmidmackenzie.github.io/aframe-examples/docs/thumbstick-states.html) component will give the basic  control scheme described at the top of this page.
+The configuration shown above for the [thumbstick-states](https://diarmidmackenzie.github.io/aframe-components/docs/thumbstick-states.html) component will give the basic  control scheme described at the top of this page.
 
 However, any mechanism that sets and clears [states](https://aframe.io/docs/1.3.0/core/entity.html#addstate-statename) on an A-Frame entity could be used to drive these controls. 
 
@@ -75,26 +75,26 @@ This is a high-level component with a lot of dependencies.  In future I'll set u
 For now, install as follows:
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/object-parent.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/thumbstick-states.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/laser-manipulation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/object-parent.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/thumbstick-states.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/laser-manipulation.min.js"></script>
 ```
 
 
 ## Examples
 
-See [object-manipulation.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/object-manipulation.html) for an example of how this can be used.
+See [object-manipulation.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/object-manipulation.html) for an example of how this can be used.
 
-This example also uses [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-examples/docs/desktop-vr-controller.html), so you can test out operations of a VR controller in a desktop (non-VR) environment.
+This example also uses [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-components/docs/desktop-vr-controller.html), so you can test out operations of a VR controller in a desktop (non-VR) environment.
 
 
 
 ## Proxy Raycasting
 
-`laser-manipulation` supports proxy raycasting via the [raycast-target](https://diarmidmackenzie.github.io/aframe-examples/docs/raycast-target.html) component
+`laser-manipulation` supports proxy raycasting via the [raycast-target](https://diarmidmackenzie.github.io/aframe-components/docs/raycast-target.html) component
 
 
 
 ## Code
 
-  [laser-manipulation.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/laser-manipulation.js)
+  [laser-manipulation.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/laser-manipulation.js)

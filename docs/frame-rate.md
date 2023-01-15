@@ -58,17 +58,17 @@ Returns an array indicating the set of frame rates available on this device.
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/frame-rate/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/frame-rate/index.min.js"></script>
 ```
 
 
 
 ## Examples
 
-[frame-rate.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/frame-rate.html)
+[frame-rate.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/frame-rate.html)
 
 
 
 ## Code
 
-  [frame-rate.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/frame-rate.js)
+  [frame-rate.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/frame-rate.js)

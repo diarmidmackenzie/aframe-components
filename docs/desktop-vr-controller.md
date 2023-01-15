@@ -59,15 +59,15 @@ This is a high-level component with a lot of dependencies.  In future I'll set u
 For now, install as follows:
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/cursor-tracker.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/object-parent.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/mouse-manipulation.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/label.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/raycaster-thresholds.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/connecting-line.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/raycast-target.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/cursor-tracker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/object-parent.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/mouse-manipulation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/label.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/raycaster-thresholds.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/connecting-line.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/raycast-target.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/screen-display@latest/src/screen-display.js"></script>            
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/desktop-vr-controller.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/desktop-vr-controller.min.js"></script>
 ```
 
 
@@ -96,12 +96,12 @@ The labels that show the controls point to the physical positions of the buttons
 
 ## Examples
 
-[desktop-vr-controller.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/desktop-vr-controller.html) - VR controllers with a classic A-Frame example
+[desktop-vr-controller.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/desktop-vr-controller.html) - VR controllers with a classic A-Frame example
 
-[object-manipulation.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/object-manipulation.html) - VR controllers together with [laser-manipulation](https://diarmidmackenzie.github.io/aframe-examples/docs/laser-manipulation.html) to move and rotate entities with a laser pointer.
+[object-manipulation.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/object-manipulation.html) - VR controllers together with [laser-manipulation](https://diarmidmackenzie.github.io/aframe-components/docs/laser-manipulation.html) to move and rotate entities with a laser pointer.
 
 
 
 ## Code
 
-  [desktop-vr-controller.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/desktop-vr-controller.js)
+  [desktop-vr-controller.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/desktop-vr-controller.js)

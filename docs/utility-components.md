@@ -10,13 +10,13 @@ This component scales an entity by 20% on the `mouseenter` event, and shrinks it
 
 Used in various examples, including:
 
-- [polygon-wireframe.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/polygon-wireframe.html)
+- [polygon-wireframe.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/polygon-wireframe.html)
 
-Code: [scale-on-hover.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/scale-on-hover.js)
+Code: [scale-on-hover.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/scale-on-hover.js)
 
 Install:
 
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/scale-on-hover.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/scale-on-hover.min.js"></script>
 
 
 
@@ -26,13 +26,13 @@ This component hides an entity on the `mouseenter` event, and shows it again on 
 
 Used in various examples, including:
 
-- [raycaster-thresholds.html](https://diarmidmackenzie.github.io/aframe-examples/component-usage/raycaster-thresholds.html)
+- [raycaster-thresholds.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/raycaster-thresholds.html)
 
-Code: [hide-on-hover.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/hide-on-hover.js)
+Code: [hide-on-hover.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/hide-on-hover.js)
 
 Install:
 
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/hide-on-hover.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/hide-on-hover.min.js"></script>
 
 
 

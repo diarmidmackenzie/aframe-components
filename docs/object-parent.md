@@ -36,7 +36,7 @@ There's some fairly extensive discussion (plus code snippets for some other appr
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-examples@latest/components/object-parent.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/object-parent.min.js"></script>
 ```
 
 
@@ -50,8 +50,8 @@ this.el.setAttribute('object-parent', 'parent:#newparent')
 
 Dedicated small-scale example to follow.
 
-For now, see [mouse-manipulation.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/mouse-manipulation.js) and [laser-manipulation.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/laser-manipulation.js), which both use this component.
+For now, see [mouse-manipulation.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/mouse-manipulation.js) and [laser-manipulation.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/laser-manipulation.js), which both use this component.
 
 ## Code
 
-[object-parent.js](https://github.com/diarmidmackenzie/aframe-examples/blob/main/components/object-parent.js)
+[object-parent.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/object-parent.js)
