@@ -21,6 +21,7 @@ I also have a range of other A-Frame components in other repositories.  Over tim
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [connecting-line](https://diarmidmackenzie.github.io/aframe-components/docs/connecting-line.html) | Draw a line between two entities.                            |
 | [frame-rate](https://diarmidmackenzie.github.io/aframe-components/docs/frame-rate.html) | Request that the browser targets a particular frame rate (e.g. 60fps, 72fps). |
+| [adaptive-frame-rate](https://diarmidmackenzie.github.io/aframe-components/docs/adaptive-frame-rate.html) | Adapts the browser frame rate to best match the performance of the app. |
 | [polygon-wireframe](https://diarmidmackenzie.github.io/aframe-components/docs/polygon-wireframe.html) | Display wireframes composed of polygons, rather than triangles. |
 | [label](https://diarmidmackenzie.github.io/aframe-components/docs/label.html) | Labels always face the camera, at a fixed size               |
 | [label-anchor](https://diarmidmackenzie.github.io/aframe-components/docs/label.html) | Supports labels positioned at a distance from the entity they label |

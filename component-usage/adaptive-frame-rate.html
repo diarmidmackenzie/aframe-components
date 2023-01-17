@@ -1,0 +1,193 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+    <script src="https://unpkg.com/@fern-solutions/aframe-extra-stats/dist/extra-stats.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/kylebakerio/vr-super-stats@2.0.1/vr-super-stats.js"></script>
+    <script src="../components/thumbstick-states.js"></script>
+    <script src="../components/frame-rate/index.js"></script>
+    <script>
+      AFRAME.registerComponent('workload', {
+
+        schema: {
+          work: {type: 'number', default: 1},
+          variationPercent: {type: 'number', default: 33}
+        },
+
+        tick() {
+          const variationFactor = 1 + (Math.random() - 0.5) * (this.data.variationPercent / 50)
+          
+          var time = performance.now()
+          const endTime = time + (this.data.work * variationFactor)
+        
+          while (time < endTime) {
+            time = performance.now()
+          }
+        }
+      })
+
+      AFRAME.registerComponent('workload-adjuster', {
+        schema: {
+          speed: {type: 'number', default: 0.5}
+        },
+
+        update() {
+          this.work = 1
+          this.variationPercent = 33
+          this.increaseFactor = this.data.speed + 1
+          this.decreaseFactor = 1 / this.increaseFactor
+        },
+
+        tick(t, dt) {
+
+          const power = dt / 1000
+          if (this.el.is("work-plus")) {
+            this.work *= this.increaseFactor**power
+          }
+          if (this.el.is("work-minus")) {
+            this.work *= this.decreaseFactor**power
+          }
+          if (this.el.is("variation-plus")) {
+            this.variationPercent *= this.increaseFactor**power
+          }
+          if (this.el.is("variation-minus")) {
+            this.variationPercent *= this.decreaseFactor**power
+          }
+
+          this.el.setAttribute("workload", `work: ${this.work}; variationPercent: ${this.variationPercent}`)
+
+        }
+      })
+
+      AFRAME.registerComponent('frame-rate-display', {
+        init() {
+          this.requestedOutputEl = document.getElementById("frame-requested-output")
+          this.rateOutputEl = document.getElementById("frame-rate-output")
+        },
+        tick() {
+          const requested = this.el.sceneEl.getAttribute('frame-rate')
+          const actual = this.el.sceneEl.components['frame-rate'].getFrameRate()
+          this.requestedOutputEl.setAttribute("text", "value", `${requested}`);
+          this.rateOutputEl.setAttribute("text", "value", `${actual}`);
+        }
+      })
+
+      AFRAME.registerComponent('workload-display', {
+        init() {
+          this.workOutputEl = document.getElementById("workload-work-output")
+          this.variationOutputEl = document.getElementById("workload-variation-output")
+          this.downrateOutputEl = document.getElementById("downrate-output")
+          this.uprateOutputEl = document.getElementById("uprate-output")
+        },
+        tick() {
+          const data = this.el.sceneEl.getAttribute('workload')
+          if (data) {
+            this.workOutputEl.setAttribute("text", "value", `${data.work.toFixed(2)}`);
+            this.variationOutputEl.setAttribute("text", "value", `${data.variationPercent.toFixed(2)}`);
+            const component = this.el.components['adaptive-frame-rate']
+            const drMissed = component.downrateMissedFrames
+            const drThreshold = component.data.downrateThreshold
+            const drTimer = component.data.downrateInterval
+            const drStatus = `${drMissed}/${drThreshold} - resets every ${drTimer} secs`
+            this.downrateOutputEl.setAttribute("text", "value", drStatus);
+            const urMissed = component.uprateMissedFrames
+            const urThreshold = component.data.uprateThreshold
+            const urTimer = component.data.uprateInterval
+            const urStatus = `${urMissed}/${urThreshold} - reset/checked every ${urTimer} secs`
+            this.uprateOutputEl.setAttribute("text", "value", urStatus);
+          }
+        }
+      })
+
+    </script>
+    <link rel="stylesheet" href="../styles.css">
+  </head>
+  <body>
+
+    <a-scene adaptive-frame-rate
+             workload-adjuster
+             frame-rate-display
+             workload-display
+             extra-stats
+             vr-super-stats="anchorel:#the-box;
+                             position: 0 0 0;
+                             scale: 8 8 8;
+                             alwaysshow3dstats:true;
+                             show2dstats:false;
+                             showlabels:fps,raf; showgraphs:fps,raf"
+             thumbstick-states__right="controller:#rhand;
+                             bindings:work-minus, work-plus"
+             thumbstick-states__left="controller:#lhand;
+                             bindings:variation-minus, variation-plus">
+        <a-sky color="black">
+        </a-sky>
+        <a-box color="red"
+               position="0 1.8 -3"
+               rotation="45 0 45"
+               animation="property: rotation; from: 45 0 45; to: 45 360 45; dur: 3000; loop: true; easing: linear">
+        </a-box>
+        <a-text id="frame-rate-caption"
+                position="1 0 -3"
+                value="Requested XR frame rate:
+                       Current XR frame rate:"
+                align="right">
+        </a-text>
+        <a-text id="frame-requested-output"
+                position="1 0.1 -3"
+                align="left">
+        </a-text>
+        <a-text id="frame-rate-output"
+                position="1 -0.15 -3"
+                align="left">
+        </a-text>
+
+        <a-text id="workload-caption"
+          position="4 2.3 -3"
+
+          value="Right thumbstick to change work per-frame.
+                 Left thumbstick to change work variation per-frame.
+                Current workload (msecs):
+                Workload variation %:
+                Frames missed (downgrade):
+                Frames missed (upgrade):"
+          align="right">
+        </a-text>
+        <a-text id="workload-work-output"
+                position="4 2.26 -3"
+                align="left">
+        </a-text>
+        <a-text id="workload-variation-output"
+                position="4 2.04 -3"
+                align="left">
+        </a-text>
+        <a-text id="downrate-output"
+                position="4 1.82 -3"
+                align="left">
+        </a-text>
+        <a-text id="uprate-output"
+                position="4 1.60 -3"
+                align="left">
+        </a-text>
+
+        <a-entity id="the-box" position="0 -10 0.5"></a-entity>
+        
+        <a-entity id="lhand" hand-controls="hand: left">
+        </a-entity>
+
+        <a-entity id="rhand" hand-controls="hand: right">
+        </a-entity>
+    </a-scene>
+
+  <div class="text-overlay">
+    <p>Automatically switch between the available frame rates on your WebXR device based on performance.</p>
+    <p>In this example you can increase / decrease the processing required per-frame, and observe the
+      frame rate increasing / decreasing to match the level of processing per-frame.
+    </p>
+  </div>
+
+  <a class="code-link"
+    target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/adaptive-frame-rate.html">
+    view code
+  </a>
+
+</body>
