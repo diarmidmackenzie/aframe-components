@@ -29,7 +29,7 @@ Buttons can be pressed using the keyboard:
 Thumbsticks can be controlled as follows:
 
 - Hold down 1 or 2 to engage thumbstick for the left or right controller
-- A thumstick controller will appear on-screen at the current mouse location.  Move the mouse to move the thumbstick.
+- A thumbstick controller will appear on-screen at the current mouse location.  Move the mouse to move the thumbstick.
 - Left or right click can be used to click the thumbstick.
 
 <img src="image-20220802185543518.png" alt="image-20220802185543518" style="zoom:50%;" />

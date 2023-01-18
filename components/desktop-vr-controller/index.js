@@ -1,3 +1,10 @@
+require('aframe-mouse-manipulation')
+require('aframe-screen-display')
+require('aframe-label')
+require('aframe-raycaster-thresholds')
+require('aframe-connecting-line')
+
+
 AFRAME.registerSystem('desktop-vr-controller', {
 
     init() {
