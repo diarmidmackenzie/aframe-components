@@ -57,14 +57,14 @@ The source of data for is always an event, with some properties in its `detail`
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/stats-panel/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-stats-panel@0.2.2/index.min.js"></script>
 ```
 
+Or via [npm](https://www.npmjs.com/package/aframe-stats-panel)
 
-
-Or from npm:
-
-https://www.npmjs.com/package/aframe-stats-panel
+```
+npm install aframe-stats-panel
+```
 
 
 

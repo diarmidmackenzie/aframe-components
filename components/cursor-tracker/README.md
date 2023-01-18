@@ -17,7 +17,13 @@ Typically set on a entity that is a child of the camera that the cursor uses.  T
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/cursor-tracker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-cursor-tracker@0.1.0/index.min.js"></script>
+```
+
+Or via [npm](https://www.npmjs.com/package/aframe-cursor-tracker)
+
+```
+npm install aframe-cursor-tracker
 ```
 
 

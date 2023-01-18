@@ -18,8 +18,15 @@ A component to display wireframes composed of polygons, rather than triangles.
 
 ## Installation
 
+Via CDN 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/polygon-wireframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-polygon-wireframe@0.1.0/index.min.js"></script>
+```
+
+Or via [npm](https://www.npmjs.com/package/aframe-polygon-wireframe)
+
+```
+npm install aframe-polygon-wireframe
 ```
 
 

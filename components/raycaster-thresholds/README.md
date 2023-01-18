@@ -17,10 +17,16 @@ This is useful because the default thresholds for raycasting against lines and p
 
 ## Installation
 
+Via CDN 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/raycaster-thresholds.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-raycaster-thresholds@0.1.0/index.min.js"></script>
 ```
 
+Or via [npm](https://www.npmjs.com/package/aframe-raycaster-thresholds)
+
+```
+npm install aframe-raycaster-thresholds
+```
 
 ## Usage
 

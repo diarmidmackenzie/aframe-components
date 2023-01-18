@@ -36,10 +36,16 @@ This is a component primarily intended for demonstration purposes.  It can be ad
 
 ## Installation
 
+Via CDN 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/screen-position.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-screen-position@0.1.0/index.min.js"></script>
 ```
 
+Or via [npm](https://www.npmjs.com/package/aframe-screen-position)
+
+```
+npm install aframe-screen-position
+```
 
 ## Examples
 

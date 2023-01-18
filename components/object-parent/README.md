@@ -35,9 +35,17 @@ There's some fairly extensive discussion (plus code snippets for some other appr
 
 ## Installation
 
+Via CDN 
 ```
 <script src="https://cdn.jsdelivr.net/npm/aframe-object-parent@0.1.0/index.min.js"></script>
 ```
+
+Or via [npm](https://www.npmjs.com/package/aframe-object-parent)
+
+```
+npm install aframe-object-parent
+```
+
 
 
 ## Examples

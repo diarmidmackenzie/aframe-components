@@ -37,8 +37,15 @@ getRaycastTarget(el) {
 
 ## Installation
 
+Via CDN 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/raycast-target.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-raycast-target@0.1.0/index.min.js"></script>
+```
+
+Or via [npm](https://www.npmjs.com/package/aframe-raycast-target)
+
+```
+npm install aframe-raycast-target
 ```
 
 

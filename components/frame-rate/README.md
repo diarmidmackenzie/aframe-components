@@ -35,7 +35,7 @@ Both components use the WebXR API features described here: https://www.w3.org/TR
 Via CDN 
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/frame-rate/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-frame-rate@0.1.0/index.min.js"></script>
 ```
 
 Or via [npm](https://www.npmjs.com/package/aframe-frame-rate)
@@ -43,7 +43,6 @@ Or via [npm](https://www.npmjs.com/package/aframe-frame-rate)
 ```
 npm install aframe-frame-rate
 ```
-
 
 
 ## Schemas

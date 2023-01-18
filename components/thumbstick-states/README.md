@@ -27,8 +27,15 @@ Multiple instances of this component can be added to a single entity, for exampl
 
 ## Installation
 
+Via CDN 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/thumbstick-states.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-thumbstick-states@0.1.0/index.min.js"></script>
+```
+
+Or via [npm](https://www.npmjs.com/package/aframe-thumbstick-states)
+
+```
+npm install aframe-thumbstick-states
 ```
 
 

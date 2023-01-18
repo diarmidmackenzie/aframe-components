@@ -86,10 +86,19 @@ Note:  `face-camera` assumes that the `scale` attribute of the entity it is set 
 
 ## Installation
 
+(this imports code for all components: `label`, `face-camera` and `label-anchor`)
+
+Via CDN 
+
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/label.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-label@0.1.0/index.min.js"></script>
 ```
 
+Or via [npm](https://www.npmjs.com/package/aframe-label)
+
+```
+npm install aframe-frame-rate
+```
 
 ## Examples
 
