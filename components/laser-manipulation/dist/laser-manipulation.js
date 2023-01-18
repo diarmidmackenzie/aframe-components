@@ -1,0 +1,76 @@
+/*
+ * ATTENTION: The "eval" devtool has been used (maybe by default in mode: "development").
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+/******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./index.js":
+/*!******************!*\
+  !*** ./index.js ***!
+  \******************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+eval("__webpack_require__(/*! aframe-object-parent */ \"./node_modules/aframe-object-parent/index.js\")\r\n__webpack_require__(/*! aframe-thumbstick-states */ \"./node_modules/aframe-thumbstick-states/index.js\")\r\n\r\nAFRAME.registerComponent('laser-manipulation', {\r\n\r\n    schema: {\r\n      rotateRate: {type: 'number', default: 45},\r\n      center: {type: 'string', default: 'center', oneOf: ['center','contact']}\r\n    },\r\n  \r\n    update: function() {\r\n  \r\n      // internally store rotation rate as radians per event\r\n      this.rotateRate = this.data.rotateRate * Math.PI / 180;\r\n    },\r\n  \r\n    init() {\r\n      // controller must have an ID so that\r\n      console.assert(this.el.id)\r\n  \r\n      // This is a rate per second.  We scale distance by this factor per second.\r\n      // Take a root of this to get a scaling factor.\r\n      this.moveSpeed = 3;\r\n  \r\n      // set up listeners\r\n      this.triggerUp = this.triggerUp.bind(this)\r\n      this.triggerDown = this.triggerDown.bind(this)\r\n      this.el.addEventListener('triggerup', this.triggerUp)\r\n      this.el.addEventListener('triggerdown', this.triggerDown)\r\n  \r\n      // variable to track any grabbed element\r\n      this.grabbedEl = null;\r\n  \r\n      // child object used as container for any entity that can be grabbed.\r\n      // (this helps with scaling, rotation etc. of grabbed entity)\r\n      this.contactPoint = document.createElement('a-entity')\r\n      this.contactPoint.setAttribute('id', `${this.el.id}-contact-point`)\r\n      this.el.appendChild(this.contactPoint)\r\n\r\n    },\r\n\r\n    /* Code below is duplicated from mouse-manipulation - should be commonized */\r\n\r\n    // Ensure an element has a usable ID.\r\n    // If it has no ID, add one.\r\n    // If it has an ID but it's not usable to identify the element...\r\n    // ...log an error (preferable to creating confusion by modifying existing IDs)\r\n    assureUsableId(el) {\r\n\r\n        if (!el.id) {\r\n            // No ID, just set one\r\n            el.setAttribute(\"id\", Math.random().toString(36).slice(10))\r\n        }\r\n        else {\r\n            const reference = document.getElementById(el.id)\r\n            if (reference !== el) {\r\n                console.error(`Element ID for ${el.id} does not unambiguously identify it.  Check for duplicate IDs.`)\r\n            }\r\n        }\r\n    },\r\n\r\n    // Get scene graph parent element of an element.\r\n    // Includes the case where the parent is the a-scene.\r\n    getParentEl(el) {\r\n\r\n        const parentObject = el.object3D.parent\r\n\r\n        if (parentObject.type === 'Scene') {\r\n            return(this.el.sceneEl)\r\n        }\r\n        else {\r\n            return parentObject.el\r\n        }\r\n    },\r\n\r\n    /* Code above is duplicated from mouse-manipulation - should be commonized */\r\n\r\n    triggerDown(evt) {\r\n  \r\n      console.assert(!this.grabbedEl)\r\n  \r\n      const intersections = this.getIntersections(evt.target);\r\n  \r\n      if (intersections.length === 0)  return;\r\n  \r\n      const element = intersections[0]\r\n  \r\n      const intersectionData = this.el.components.raycaster.getIntersection(element)\r\n  \r\n      // Save record of original parent, and make sure it has a usable ID.\r\n      if (!this.originalParentEl) {\r\n        this.originalParentEl = this.getParentEl(element)\r\n      }\r\n      this.assureUsableId(this.originalParentEl)\r\n\r\n      // set up a contact point at the position of the grabbed entity\r\n      if (this.data.center === \"center\") {\r\n        // attach to entity center\r\n        const pos = this.contactPoint.object3D.position\r\n        element.object3D.getWorldPosition(pos)\r\n        this.contactPoint.object3D.parent.worldToLocal(pos)\r\n      }\r\n      else {\r\n        // attach to ray's contact point with entity\r\n        const contactPoint = this.el.object3D.worldToLocal(intersectionData.point)\r\n        this.contactPoint.object3D.position.copy(contactPoint)\r\n      }\r\n\r\n      // reparent element to this controller.\r\n      element.setAttribute('object-parent', 'parent', `#${this.el.id}-contact-point`)\r\n\r\n      // store reference to grabbed element\r\n      this.grabbedEl = element\r\n    },\r\n  \r\n    triggerUp() {\r\n  \r\n      if (!this.grabbedEl) return\r\n  \r\n      this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.originalParentEl.id}`)\r\n      this.grabbedEl = null\r\n    },\r\n  \r\n    getIntersections(controllerEl) {\r\n  \r\n      const els = controllerEl.components.raycaster.intersectedEls\r\n      return els\r\n    },\r\n  \r\n    // Implements moving out or in (in = -ve)\r\n    moveOut(timeDelta) {\r\n      const scalar = Math.pow(this.moveSpeed, timeDelta/1000);\r\n      this.contactPoint.object3D.position.multiplyScalar(scalar)\r\n    },\r\n  \r\n    \r\n    tick: function(time, timeDelta) {\r\n      \r\n      if (this.el.is(\"moving-in\")) {\r\n        this.moveOut(-timeDelta);\r\n      }\r\n      else if (this.el.is(\"moving-out\")) {\r\n        this.moveOut(timeDelta);\r\n      }\r\n  \r\n      if (this.el.is(\"rotating-y-plus\")) {\r\n        this.contactPoint.object3D.rotation.y += timeDelta * this.rotateRate / 1000;\r\n      }\r\n      else if (this.el.is(\"rotating-y-minus\")) {\r\n        this.contactPoint.object3D.rotation.y -= timeDelta * this.rotateRate / 1000;\r\n      }\r\n\r\n      if (this.el.is(\"rotating-x-plus\")) {\r\n        this.contactPoint.object3D.rotation.x += timeDelta * this.rotateRate / 1000;\r\n      }\r\n      else if (this.el.is(\"rotating-x-minus\")) {\r\n        this.contactPoint.object3D.rotation.x -= timeDelta * this.rotateRate / 1000;\r\n      }\r\n    }\r\n  });\n\n//# sourceURL=webpack://aframe-laser-manipulation/./index.js?");
+
+/***/ }),
+
+/***/ "./node_modules/aframe-object-parent/index.js":
+/*!****************************************************!*\
+  !*** ./node_modules/aframe-object-parent/index.js ***!
+  \****************************************************/
+/***/ (() => {
+
+eval("// Change the parent of an object without changing its transform.\r\nAFRAME.registerComponent('object-parent', {\r\n\r\n  schema: {\r\n      parent:     {type: 'selector'},    \r\n  },\r\n\r\n  update() {\r\n\r\n      const matches = document.querySelectorAll(`#${parent.id}`)\r\n      if (matches.length > 1) {\r\n          console.warn(`object-parent matches duplicate entities for new parent ${parent.id}`)\r\n      }\r\n\r\n      const newParent = this.data.parent.object3D\r\n      this.reparent(newParent)\r\n      \r\n  },\r\n\r\n  remove() {\r\n\r\n    const originalParentEl = this.el.parentEl\r\n    this.reparent(originalParentEl.object3D)\r\n\r\n  },\r\n\r\n  reparent(newParent) {\r\n\r\n    const object = this.el.object3D\r\n    const oldParent = object.parent\r\n\r\n    if (object.parent === newParent) {\r\n        return;\r\n    }\r\n\r\n    objectEl = (o) => {\r\n        if (o.type === 'Scene') {\r\n            return (this.el.sceneEl)\r\n        }\r\n        else {\r\n            return o.el\r\n        }\r\n    }\r\n\r\n    console.log(`Reparenting ${object.el.id} from ${objectEl(oldParent).id} to ${objectEl(newParent).id}`);\r\n    \r\n    newParent.attach(object);\r\n  },\r\n});\r\n\n\n//# sourceURL=webpack://aframe-laser-manipulation/./node_modules/aframe-object-parent/index.js?");
+
+/***/ }),
+
+/***/ "./node_modules/aframe-thumbstick-states/index.js":
+/*!********************************************************!*\
+  !*** ./node_modules/aframe-thumbstick-states/index.js ***!
+  \********************************************************/
+/***/ (() => {
+
+eval("// Set states based on thumbstick positions.\r\n// controller: selector for the controller with the thumbstick\r\n// bindings: stats to set for each of up/down/left/right.\r\n// sensitivity: 0 to 1- how far off center thumbstick must be to count as movement.\r\nAFRAME.registerComponent('thumbstick-states', {\r\n    schema: {\r\n       controller:   {type: 'selector', default: \"#lhand\"},\r\n       bindings:     {type: 'array', default: [\"none\", \"none\", \"none\", \"none\"]},\r\n       tBindings:    {type: 'array', default: []},\r\n       gBindings:    {type: 'array', default: []},\r\n       tgBindings:   {type: 'array', default: []},\r\n       sensitivity:  {type: 'number', default: 0.5}\r\n    },\r\n  \r\n    multiple: true,\r\n  \r\n    init() {\r\n      this.controller = this.data.controller;\r\n  \r\n      this.listeners = {\r\n        thumbstickMoved: this.thumbstickMoved.bind(this),\r\n        triggerUp: this.triggerUp.bind(this),\r\n        triggerDown: this.triggerDown.bind(this),\r\n        gripUp: this.gripUp.bind(this),\r\n        gripDown: this.gripDown.bind(this),\r\n      }\r\n  \r\n      this.states = {\r\n        gripDown: false,\r\n        triggerDown: false,\r\n      }\r\n  \r\n    },\r\n  \r\n    update() {\r\n  \r\n      this.controller.addEventListener('thumbstickmoved',\r\n                                       this.listeners.thumbstickMoved);\r\n      this.controller.addEventListener('triggerup',\r\n                                       this.listeners.triggerUp);\r\n      this.controller.addEventListener('triggerdown',\r\n                                       this.listeners.triggerDown);\r\n      this.controller.addEventListener('gripup',\r\n                                       this.listeners.gripUp);\r\n      this.controller.addEventListener('gripdown',\r\n                                       this.listeners.gripDown);\r\n  \r\n      this.updateBindings()\r\n  \r\n    },\r\n  \r\n    updateBindings() {\r\n  \r\n      // clear all pre-existing state\r\n      const removeStates = (set) => set.forEach((item) => this.el.removeState(item) )\r\n      removeStates(this.data.bindings)\r\n      removeStates(this.data.tBindings)\r\n      removeStates(this.data.gBindings)\r\n      removeStates(this.data.tgBindings)\r\n  \r\n      // now update bindings\r\n      var binding;\r\n  \r\n      if (!this.states.triggerDown && !this.states.gripDown) {\r\n        binding = (x) => this.data.bindings[x]      \r\n      }\r\n      else if (this.states.triggerDown && !this.states.gripDown) {\r\n        // trigger down.  If tBinding not specified, fall back to regular bindings\r\n        binding = (x) => this.data.tBindings[x] ||\r\n                         this.data.bindings[x]\r\n      }\r\n      else if (!this.states.triggerDown && this.states.gripDown) {\r\n        // grip down.  If gBinding not specified, fall back to regular bindings\r\n        binding = (x) => this.data.gBindings[x] ||\r\n                         this.data.bindings[x]\r\n      }\r\n      else {\r\n        // trigger and grip down.  If tgBinding not specified, fall back to t, g, or regular bindings\r\n        binding = (x) => this.data.tgBindings[x] ||\r\n                         this.data.gBindings[x] ||\r\n                         this.data.tBindings[x] ||\r\n                         this.data.bindings[x]\r\n      }\r\n  \r\n      this.yplus = binding(0)\r\n      this.yminus = binding(1)\r\n      this.xplus = binding(2)\r\n      this.xminus = binding(3)\r\n  \r\n      console.log(this)\r\n    },\r\n  \r\n    gripDown(event) {\r\n  \r\n      this.states.gripDown = true;\r\n      this.updateBindings()\r\n    },\r\n  \r\n    gripUp(event) {\r\n      this.states.gripDown = false;\r\n      this.updateBindings()\r\n    },\r\n  \r\n    triggerDown(event) {\r\n      this.states.triggerDown = true;\r\n      this.updateBindings()\r\n    },\r\n  \r\n    triggerUp(event) {\r\n      this.states.triggerDown = false;\r\n      this.updateBindings()\r\n    },\r\n  \r\n    thumbstickMoved(event) {\r\n  \r\n      const x = event.detail.x\r\n      const y = event.detail.y\r\n  \r\n      if (Math.abs(x) > this.data.sensitivity) {\r\n        if (x > 0) {\r\n          this.el.addState(this.xplus)\r\n          this.el.removeState(this.xminus)\r\n        }\r\n        else {\r\n          this.el.addState(this.xminus)\r\n          this.el.removeState(this.xplus)\r\n        }\r\n      }\r\n      else\r\n      {\r\n        this.el.removeState(this.xplus)\r\n        this.el.removeState(this.xminus)\r\n      }\r\n  \r\n      if (Math.abs(y) > this.data.sensitivity) {\r\n        if (y > 0) {\r\n          this.el.addState(this.yplus)\r\n          this.el.removeState(this.yminus)\r\n        }\r\n        else {\r\n          this.el.addState(this.yminus)\r\n          this.el.removeState(this.yplus)\r\n        }\r\n      }\r\n      else\r\n      {\r\n        this.el.removeState(this.yplus)\r\n        this.el.removeState(this.yminus)\r\n      }\r\n    }\r\n  });\r\n  \n\n//# sourceURL=webpack://aframe-laser-manipulation/./node_modules/aframe-thumbstick-states/index.js?");
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module can't be inlined because the eval devtool is used.
+/******/ 	var __webpack_exports__ = __webpack_require__("./index.js");
+/******/ 	
+/******/ })()
+;

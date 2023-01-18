@@ -70,15 +70,18 @@ Apart from the ability to customize thumbstick controls described above, there a
 
 ## Installation
 
-This is a high-level component with a lot of dependencies.  In future I'll set up npm to build a single JS file with all these rolled in.  
-
-For now, install as follows:
+Via CDN 
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/object-parent.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/thumbstick-states.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/laser-manipulation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-laser-manipulation@0.1.0/dist/laser-manipulation.min.js"></script>
 ```
+
+Or via [npm](https://www.npmjs.com/package/aframe-laser-manipulation)
+
+```
+npm install aframe-laser-manipulation
+```
+
 
 
 ## Examples

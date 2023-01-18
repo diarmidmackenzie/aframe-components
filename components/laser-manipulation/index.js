@@ -1,3 +1,6 @@
+require('aframe-object-parent')
+require('aframe-thumbstick-states')
+
 AFRAME.registerComponent('laser-manipulation', {
 
     schema: {
