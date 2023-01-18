@@ -1,13 +1,9 @@
 # aframe-components
-A repository containing a variety of re-usable A-Frame components, and examples of A-Frame component usage.
+A repository containing a variety of re-usable A-Frame components.
 
-Content is currently organized into:
+There's no particularly strong theme to this repo, other than a selection of things I found I needed (or just wanted) to build, that I thought might be useful for other people too.
 
-- components - Re-usable A-Frame components
-- component-usage - Examples illustrating the usage of a specific component (which may be in this repo, or external)
-- compositions - More complex examples that involve composition of multiple A-Frame components.
-
-I also have a range of other A-Frame components in other repositories.  Over time, I may move some of that into here, but for now feel free to browse those as well, and take anything you find useful (pretty much everything is MIT license - though please do check individual repository licenses as there could be exceptions)
+I intend to keep all these components up-to-date & working with new versions of A-Frame.  If you find a bug or other problem, please [raise an issue](https://github.com/diarmidmackenzie/aframe-components/issues) and I'll be happy to take a look.
 
 
 
@@ -19,12 +15,12 @@ I also have a range of other A-Frame components in other repositories.  Over tim
 
 | **Component**                                                | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [connecting-line](https://diarmidmackenzie.github.io/aframe-components/docs/connecting-line.html) | Draw a line between two entities.                            |
-| [frame-rate](https://diarmidmackenzie.github.io/aframe-components/docs/frame-rate.html) | Request that the browser targets a particular frame rate (e.g. 60fps, 72fps). |
-| [adaptive-frame-rate](https://diarmidmackenzie.github.io/aframe-components/docs/adaptive-frame-rate.html) | Adapts the browser frame rate to best match the performance of the app. |
-| [polygon-wireframe](https://diarmidmackenzie.github.io/aframe-components/docs/polygon-wireframe.html) | Display wireframes composed of polygons, rather than triangles. |
-| [label](https://diarmidmackenzie.github.io/aframe-components/docs/label.html) | Labels always face the camera, at a fixed size               |
-| [label-anchor](https://diarmidmackenzie.github.io/aframe-components/docs/label.html) | Supports labels positioned at a distance from the entity they label |
+| [connecting-line](https://diarmidmackenzie.github.io/aframe-components/components/connecting-line) | Draw a line between two entities.                            |
+| [frame-rate](https://diarmidmackenzie.github.io/aframe-components/components/frame-rate) | Request that the browser targets a particular frame rate (e.g. 60fps, 72fps). |
+| [adaptive-frame-rate](https://diarmidmackenzie.github.io/aframe-components/components/adaptive-frame-rate) | Adapts the browser frame rate to best match the performance of the app. |
+| [polygon-wireframe](https://diarmidmackenzie.github.io/aframe-components/components/polygon-wireframe) | Display wireframes composed of polygons, rather than triangles. |
+| [label](https://diarmidmackenzie.github.io/aframe-components/components/label) | Labels always face the camera, at a fixed size               |
+| [label-anchor](https://diarmidmackenzie.github.io/aframe-components/components/label) | Supports labels positioned at a distance from the entity they label |
 
 
 
@@ -32,11 +28,11 @@ I also have a range of other A-Frame components in other repositories.  Over tim
 
 | **Component**                                                | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [cursor-tracker](https://diarmidmackenzie.github.io/aframe-components/docs/cursor-tracker.html) | Track the direction in 3D space being pointed to be the cursor |
-| [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-components/docs/desktop-vr-controller.html) | Simulates a VR controller on the desktop, controllable using mouse & keyboard. |
-| [laser-manipulation](https://diarmidmackenzie.github.io/aframe-components/docs/laser-manipulation.html) | Move and rotate entities in a 3D scene using a laser pointer. |
-| [mouse-manipulation](https://diarmidmackenzie.github.io/aframe-components/docs/mouse-manipulation.html) | Move and rotate entities in a 3D scene using a mouse.        |
-| [thumbstick-states](https://diarmidmackenzie.github.io/aframe-components/docs/thumbstick-states.html) | Used to simplify implementation of thumbstick-based controls on VR controllers. |
+| [cursor-tracker](https://diarmidmackenzie.github.io/aframe-components/components/cursor-tracker) | Track the direction in 3D space being pointed to be the cursor |
+| [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-components/components/desktop-vr-controller) | Simulates a VR controller on the desktop, controllable using mouse & keyboard. |
+| [laser-manipulation](https://diarmidmackenzie.github.io/aframe-components/components/laser-manipulation) | Move and rotate entities in a 3D scene using a laser pointer. |
+| [mouse-manipulation](https://diarmidmackenzie.github.io/aframe-components/components/mouse-manipulation) | Move and rotate entities in a 3D scene using a mouse.        |
+| [thumbstick-states](https://diarmidmackenzie.github.io/aframe-components/components/thumbstick-states) | Used to simplify implementation of thumbstick-based controls on VR controllers. |
 
 
 
@@ -44,8 +40,8 @@ I also have a range of other A-Frame components in other repositories.  Over tim
 
 | **Component**                                                | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [raycast-target](https://diarmidmackenzie.github.io/aframe-components/docs/raycast-target.html) | Component that is used to enable proxy raycasting (which can improve raycasting performance) |
-| [raycaster-thresholds](https://diarmidmackenzie.github.io/aframe-components/docs/raycaster-thresholds.html) | Configure proximity thresholds for raycasting against lines and points. |
+| [raycast-target](https://diarmidmackenzie.github.io/aframe-components/components/raycast-target) | Component that is used to enable proxy raycasting (which can improve raycasting performance) |
+| [raycaster-thresholds](https://diarmidmackenzie.github.io/aframe-components/components/raycaster-thresholds) | Configure proximity thresholds for raycasting against lines and points. |
 
 
 
@@ -53,55 +49,39 @@ I also have a range of other A-Frame components in other repositories.  Over tim
 
 | **Component**                                                | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [object-parent](https://diarmidmackenzie.github.io/aframe-components/docs/object-parent.html) | Change the parent of an object in the THREE.js scene graph   |
-| [screen-position](https://diarmidmackenzie.github.io/aframe-components/docs/screen-position.html) | Report the 2D screen position of an A-Frame entity           |
-| [stats-panel](https://diarmidmackenzie.github.io/aframe-components/docs/stats-panel.html) | Display custom statistics in a style that matches core A-Frame stats |
+| [object-parent](https://diarmidmackenzie.github.io/aframe-components/components/object-parent) | Change the parent of an object in the THREE.js scene graph   |
+| [screen-position](https://diarmidmackenzie.github.io/aframe-components/components/screen-position) | Report the 2D screen position of an A-Frame entity           |
+| [stats-panel](https://diarmidmackenzie.github.io/aframe-components/components/stats-panel) | Display custom statistics in a style that matches core A-Frame stats |
 
 
 
 ### Utility Components
 
-Components that exist to support examples.  Not likely to be very useful in their own right.
+Components that exist to support examples.  Not likely to be very useful in their own right, and mostly not published on npm.
 
 | **Component**                                                | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [scale-on-hover](https://diarmidmackenzie.github.io/aframe-components/docs/utility-components.html) | Scale an object up when hovered over by the mouse            |
 | [hide-on-hover](https://diarmidmackenzie.github.io/aframe-components/docs/utility-components.html) | Hide an object when hovered over by the mouse                |
-| [output-screen-position](https://diarmidmackenzie.github.io/aframe-components/docs/screen-position.html) | Track and report the 2D screen position of an A-Frame entity (as reported by `screen-position`) |
+| [output-screen-position](https://diarmidmackenzie.github.io/aframe-components/components/screen-position) | Track and report the 2D screen position of an A-Frame entity (as reported by `screen-position`) |
 
 
 
+## Installation
 
+Most components are published on npm, and can be installed either using npm, or via a CDN such as [JSDELIVR](https://www.jsdelivr.com/)
 
-Include a component in your project like this (fill in [component-name] with the appropriate component)
+See individual component pages for specific details.
 
-```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/[component-name].min.js"></script>
-```
+Components in this repo are versioned individually, so pay attention to npm versions of individual components, rather than the version of this GitHub repo.
 
-Some high-level components have multiple dependencies, and require multiple components to be included in the project. See individual component documentation pages for details.
-
-I do plan to use npm to simplify some of these dependencies, but haven't got to it yet.  If you'd like to see a particular component on npm, please raise an issue, and I'll try to prioritize it.
+For this reason, for CDN links I recommend using npm-style links (https://cdn.jsdelivr.net/npm/package@version/file) rather than GitHub-style links (https://cdn.jsdelivr.net/gh/user/repo@version/file)
 
 
 
 ## Component Usage
 
-For components in this repository, see component pages linked above for examples
-
-We don't currently have any examples for usage of components from outside this repository.
-
-
-
-## Compositions
-
-#### Wrapped Present
-
-Wrap a virtual gift (any PNG image), for desktop or mobile (not VR)
-
-[Example](https://diarmidmackenzie.github.io/aframe-components/compositions/wrapped-present/)
-
-[Instructions](https://github.com/diarmidmackenzie/aframe-components/blob/main/compositions/wrapped-present/README.md)
+For usage examples for components in this repository, see component pages linked above for examples
 
 
 

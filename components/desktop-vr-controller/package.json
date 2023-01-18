@@ -1,0 +1,41 @@
+{
+  "name": "aframe-desktop-vr-controller",
+  "version": "0.1.0",
+  "description": "Simulates a VR controller on the desktop, controllable using mouse & keyboard.",
+  "main": "index.js",
+  "scripts": {
+    "dist": "npm run dist:dev && npm run dist:prod",
+    "dist:dev": "webpack --config webpack.config.js",
+    "dist:prod": "webpack --config webpack.prod.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diarmidmackenzie/aframe-components/tree/main/components/desktop-vr-controller"
+  },
+  "keywords": [
+    "A-Frame",
+    "Controller",
+    "6DoF",
+    "Keyboard",
+    "Mouse",
+    "Desktop"
+  ],
+  "bugs": {
+    "url": "https://github.com/diarmidmackenzie/aframe-components/issues"
+  },
+  "homepage": "https://diarmidmackenzie.github.io/aframe-components/components/desktop-vr-controller#readme",
+  "author": "Diarmid Mackenzie",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "aframe-connecting-line": "^0.1.0",
+    "aframe-label": "^0.1.0",
+    "aframe-mouse-manipulation": "^0.1.0",
+    "aframe-raycaster-thresholds": "^0.1.0",
+    "aframe-screen-display": "^0.1.1"
+  }
+}

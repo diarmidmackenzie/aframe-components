@@ -12,18 +12,19 @@
     <script src="https://cdn.jsdelivr.net/gh/aframeVR/aframe/examples/js/info-message.js"></script>
 
     <!-- Additions needed for desktop VR controls-->
-    <script src="../components/desktop-vr-controller.js"></script>
-    <script src="../components/cursor-tracker.js"></script>
-    <script src="../components/object-parent.js"></script>
-    <script src="../components/mouse-manipulation.js"></script>
-    <script src="../components/label.js"></script>
-    <script src="../components/raycaster-thresholds.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/screen-display@latest/src/screen-display.js"></script>
-    <script src="../components/connecting-line.js"></script>
-    <script src="../components/raycast-target.js"></script>
-
+    <script src="../components/desktop-vr-controller/dist/desktop-vr-controller.js"></script>
+    <link rel="stylesheet" href="../styles.css">
   </head>
   <body>
+    <div class="text-overlay" style="background: #88f">
+      Desktop simulation of a VR controller<br/> 
+      Controllers will appear when you enter VR.  Follow the on-screen indications to manipulate them using keybord & mouse.<br/>
+    </div>
+      <a class="code-link"
+      target="_blank"
+      href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/desktop-vr-controller.html">
+      view code
+    </a>
     <a-scene
       background="color: #212"
       environment

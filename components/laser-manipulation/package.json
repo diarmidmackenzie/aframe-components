@@ -1,0 +1,38 @@
+{
+  "name": "aframe-laser-manipulation",
+  "version": "0.1.0",
+  "description": "Enables the user to move objects around using a laser pointer.",
+  "main": "index.js",
+  "scripts": {
+    "dist": "npm run dist:dev && npm run dist:prod",
+    "dist:dev": "webpack --config webpack.config.js",
+    "dist:prod": "webpack --config webpack.prod.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diarmidmackenzie/aframe-components/tree/main/components/laser-manipulation"
+  },
+  "keywords": [
+    "A-Frame",
+    "Laser Controls",
+    "Manipulation",
+    "VR",
+    "Desktop",
+    "Raycasting"
+  ],
+  "bugs": {
+    "url": "https://github.com/diarmidmackenzie/aframe-components/issues"
+  },
+  "homepage": "https://diarmidmackenzie.github.io/aframe-components/components/laser-manipulation#readme",
+  "author": "Diarmid Mackenzie",
+  "license": "MIT",
+  "dependencies": {
+    "aframe-object-parent": "^0.1.0",
+    "aframe-thumbstick-states": "^0.1.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "aframe-cursor-tracker",
+  "version": "0.1.0",
+  "description": "Set on an entity to track the orientation of the cursor's ray.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diarmidmackenzie/aframe-components/tree/main/components/cursor-tracker"
+  },
+  "keywords": [
+    "A-Frame",
+    "Cursor"
+  ],
+  "bugs": {
+    "url": "https://github.com/diarmidmackenzie/aframe-components/issues"
+  },
+  "homepage": "https://diarmidmackenzie.github.io/aframe-components/components/cursor-tracker#readme",
+  "author": "Diarmid Mackenzie",
+  "license": "MIT"
+}
