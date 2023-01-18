@@ -29,7 +29,7 @@ The position of the line is updated automatically whenever the entity at either 
 
 ## Examples
 
-[connecting-line.html](https://diarmidmackenzie.github.io/aframe-components/components/examples/connecting-line/index.html)
+[connecting-line.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/connecting-line.html)
 
 
 

@@ -144,9 +144,9 @@ downrateMissedFrames // The number of missed frames in the current downrate inte
 
 ## Examples
 
-[frame-rate](https://diarmidmackenzie.github.io/aframe-components/components/frame-rate/examples/frame-rate/index.html)
+[frame-rate](https://diarmidmackenzie.github.io/aframe-components/component-usage/frame-rate.html)
 
-[adaptive-frame-rate](https://diarmidmackenzie.github.io/aframe-components/components/frame-rate/examples/adaptive-frame-rate/index.html)
+[adaptive-frame-rate](https://diarmidmackenzie.github.io/aframe-components/component-usage/adaptive-frame-rate.html)
 
 
 
