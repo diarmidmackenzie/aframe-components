@@ -66,7 +66,7 @@ downrateMissedFrames // The number of missed frames in the current downrate inte
 ## Installation
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/adaptive-frame-rate/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/frame-rate/index.min.js"></script>
 ```
 
 
