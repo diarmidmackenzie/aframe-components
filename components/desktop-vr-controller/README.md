@@ -104,4 +104,4 @@ The labels that show the controls point to the physical positions of the buttons
 
 ## Code
 
-  [desktop-vr-controller.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/desktop-vr-controller.js)
+  [desktop-vr-controller](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/desktop-vr-controller/index.js)

@@ -42,4 +42,4 @@ The [object-manipulation.html](https://diarmidmackenzie.github.io/aframe-compone
 
 ## Code
 
-  [thumbstick-states.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/thumbstick-states.js)
+  [thumbstick-states](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/thumbstick-states/index.js)

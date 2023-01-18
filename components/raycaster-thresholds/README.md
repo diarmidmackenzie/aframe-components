@@ -47,4 +47,4 @@ Or to specify specific non-default thresholds (for example):
 
 ## Code
 
-  [raycaster-thresholds.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/raycaster-thresholds.js)
+  [raycaster-thresholds](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/raycaster-thresholds/index.js)

@@ -29,4 +29,4 @@ Also Used by `mouse-manipulation` component to keep grabbed entities aligned wit
 
 ## Code
 
-  [cursor-tracker.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/cursor-tracker.js)
+  [cursor-tracker](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/cursor-tracker/index.js)

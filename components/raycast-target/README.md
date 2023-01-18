@@ -60,4 +60,4 @@ To follow...
 
 ## Code
 
-  [raycast-target.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/raycast-target.js)
+  [raycast-target](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/raycast-target/index.js)

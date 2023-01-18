@@ -31,4 +31,4 @@ A component to display wireframes composed of polygons, rather than triangles.
 
 ## Code
 
-  [polygon-wireframe.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/polygon-wireframe.js)
+  [polygon-wireframe](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/polygon-wireframe/index.js)

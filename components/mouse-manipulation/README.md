@@ -121,4 +121,4 @@ Example: [mouse-object-control.html](https://diarmidmackenzie.github.io/aframe-c
 
 ## Code
 
-  [mouse-manipulation.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/mouse-manipulation.js)
+  [mouse-manipulation](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/mouse-manipulation/index.js)

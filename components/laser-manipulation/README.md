@@ -97,4 +97,4 @@ This example also uses [desktop-vr-controller](https://diarmidmackenzie.github.i
 
 ## Code
 
-  [laser-manipulation.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/laser-manipulation.js)
+  [laser-manipulation](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/laser-manipulation/index.js)

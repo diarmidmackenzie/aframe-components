@@ -49,4 +49,4 @@ This is a component primarily intended for demonstration purposes.  It can be ad
 
 ## Code
 
-[screen-position.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/screen-position.js)
+[screen-position](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/screen-position/index.js)

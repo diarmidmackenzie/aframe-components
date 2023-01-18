@@ -99,4 +99,4 @@ Note:  `face-camera` assumes that the `scale` attribute of the entity it is set 
 
 ## Code
 
-  [label.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/label.js)
+  [label](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/label/index.js)

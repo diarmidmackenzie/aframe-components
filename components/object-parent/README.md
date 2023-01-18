@@ -54,4 +54,4 @@ For now, see [mouse-manipulation.js](https://github.com/diarmidmackenzie/aframe-
 
 ## Code
 
-[object-parent.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/object-parent.js)
+[object-parent](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/object-parent/index.js)
