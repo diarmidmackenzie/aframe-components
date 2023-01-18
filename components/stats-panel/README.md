@@ -87,10 +87,10 @@ With suitable events generating input, this will generate output like this:
 
 ![image-20221106161718921](image-20221106161718921.png)
 
-See a live example here: [stats-panel.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/stats-panel.html)
+See a live example here: [stats-panel.html](https://diarmidmackenzie.github.io/aframe-components/components/stats-panel/examples/stats-panel/index.html)
 
 See a live example of how `stats-collector` can be used to aggregate summary statistics here: [stats-collector.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/stats-collector.html)
 
 ## Code
 
-  [stats-panel.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/stats-panel/index.js)
+  [stats-panel](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/stats-panel/index.js)
