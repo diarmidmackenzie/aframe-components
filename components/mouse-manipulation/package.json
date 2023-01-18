@@ -1,0 +1,25 @@
+{
+  "name": "aframe-mouse-manipulation",
+  "version": "0.1.0",
+  "description": "Enables the user to move objects in 3D space using a mouse on desktop.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diarmidmackenzie/aframe-components/tree/main/components/mouse-manipulation"
+  },
+  "keywords": [
+    "A-Frame",
+    "Mouse",
+    "Desktop",
+    "Raycasting"
+  ],
+  "bugs": {
+    "url": "https://github.com/diarmidmackenzie/aframe-components/issues"
+  },
+  "homepage": "https://diarmidmackenzie.github.io/aframe-components/components/mouse-manipulation#readme",
+  "author": "Diarmid Mackenzie",
+  "license": "MIT"
+}

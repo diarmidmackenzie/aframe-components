@@ -1,0 +1,24 @@
+{
+  "name": "aframe-screen-position",
+  "version": "0.1.0",
+  "description": "Components to track and report the 2D screen position of an A-Frame entity.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diarmidmackenzie/aframe-components/tree/main/components/screen-position"
+  },
+  "keywords": [
+    "A-Frame",
+    "Screen",
+    "Position"
+  ],
+  "bugs": {
+    "url": "https://github.com/diarmidmackenzie/aframe-components/issues"
+  },
+  "homepage": "https://diarmidmackenzie.github.io/aframe-components/components/screen-position#readme",
+  "author": "Diarmid Mackenzie",
+  "license": "MIT"
+}

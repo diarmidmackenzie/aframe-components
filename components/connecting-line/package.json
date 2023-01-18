@@ -17,6 +17,10 @@
     "A-Frame",
     "line"
   ],
+  "bugs": {
+    "url": "https://github.com/diarmidmackenzie/aframe-components/issues"
+  },
+  "homepage": "https://diarmidmackenzie.github.io/aframe-components/components/connecting-line#readme",
   "author": "Diarmid Mackenzie",
   "license": "MIT"
 }
