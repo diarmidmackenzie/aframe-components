@@ -28,16 +28,19 @@ Controls are as follows:
 
 ## Installation
 
-This is a high-level component with a lot of dependencies.  In future I'll set up npm to build a single JS file with all these rolled in.  
-
-For now, install as follows:
+Via CDN 
 
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/object-parent.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/cursor-tracker.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/label.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/mouse-manipulation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-mouse-manipulation@0.1.0/dist/mouse-manipulation.min.js"></script>
 ```
+
+Or via [npm](https://www.npmjs.com/package/aframe-laser-manipulation)
+
+```
+npm install aframe-mouse-manipulation
+```
+
+
 
 
 ## Examples
