@@ -1,0 +1,27 @@
+{
+  "name": "aframe-frame-rate",
+  "version": "0.1.0",
+  "description": "Adjust WebXR frame rate for A-Frame applications",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diarmidmackenzie/aframe-components.git"
+  },
+  "keywords": [
+    "A-Frame",
+    "WebXR",
+    "performance"
+  ],
+  "author": "Diarmid Mackenzie",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/diarmidmackenzie/aframe-components/issues"
+  },
+  "homepage": "https://github.com/diarmidmackenzie/aframe-components/components/frame-rate#readme"
+}
