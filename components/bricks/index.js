@@ -1,3 +1,13 @@
+function recenterGeometry(geometry) {
+  geometry.computeBoundingBox();
+  const center = new THREE.Vector3();
+
+  center.addVectors(geometry.boundingBox.min, geometry.boundingBox.max);
+  center.multiplyScalar(0.5);
+  geometry.translate(-center.x, -center.y, -center.z)
+  geometry.computeBoundingBox();
+}
+
 // https://www.researchgate.net/figure/Basic-dimensions-of-LEGOR-toy-bricks-20_fig3_330754387
 const MATERIAL_WIDTH = 1.2
 const UNIT_WIDTH = 8.0
@@ -62,7 +72,7 @@ AFRAME.registerGeometry('brick', {
 
     this.geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
 
-    //recenterGeometry(this.geometry);
+    recenterGeometry(this.geometry);
   }
 });
 
@@ -99,7 +109,15 @@ AFRAME.registerComponent('brick', {
     color: {default: 'red'}
   },
 
-  init() {
+  update() {
+
+    // clean up previous children
+    if (this.visual) {
+      this.visual.parentEl.removeChild(this.visual)
+    }
+    if (this.collider) {
+      this.collider.parentEl.removeChild(this.collider)
+    }
 
     this.visual = document.createElement('a-entity')
     this.visual.setAttribute('geometry', {primitive: 'brick', 
@@ -119,6 +137,7 @@ AFRAME.registerComponent('brick', {
     this.collider.setAttribute("physx-hidden-collision", "")
     this.el.appendChild(this.collider)
 
-    this.el.setAttribute('physx-body', {type: this.data.movement})
+    this.el.setAttribute('physx-body', {type: this.data.movement,
+                                        highPrecision: true})
   }
 })
