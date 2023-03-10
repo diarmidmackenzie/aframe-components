@@ -1,13 +1,3 @@
-function recenterGeometry(geometry) {
-  geometry.computeBoundingBox();
-  const center = new THREE.Vector3();
-
-  center.addVectors(geometry.boundingBox.min, geometry.boundingBox.max);
-  center.multiplyScalar(0.5);
-  geometry.translate(-center.x, -center.y, -center.z)
-  geometry.computeBoundingBox();
-}
-
 // https://www.researchgate.net/figure/Basic-dimensions-of-LEGOR-toy-bricks-20_fig3_330754387
 const MATERIAL_WIDTH = 1.2
 const UNIT_WIDTH = 8.0
@@ -72,7 +62,7 @@ AFRAME.registerGeometry('brick', {
 
     this.geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries);
 
-    recenterGeometry(this.geometry);
+    //recenterGeometry(this.geometry);
   }
 });
 
@@ -82,17 +72,53 @@ var extendDeep = AFRAME.utils.extendDeep;
 // This makes the material component a default component and maps all the base material properties.
 var meshMixin = AFRAME.primitives.getMeshMixin();
 
-AFRAME.registerPrimitive('a-brick', extendDeep({}, meshMixin, {
+AFRAME.registerPrimitive('a-brick', {
   // Preset default components. These components and component properties will be attached to the entity out-of-the-box.
   defaultComponents: {
-    geometry: {primitive: 'brick'}
+    brick: {}
   },
 
   // Defined mappings from HTML attributes to component properties (using dots as delimiters).
   // If we set `depth="5"` in HTML, then the primitive will automatically set `geometry="depth: 5"`.
   mappings: {
-    depth: 'geometry.depth',
-    height: 'geometry.height',
-    width: 'geometry.width'
+    depth: 'brick.depth',
+    height: 'brick.height',
+    width: 'brick.width',
+    movement: 'brick.movement',
+    color: 'brick.color'
   }
-}));
+});
+
+AFRAME.registerComponent('brick', {
+
+  schema: {
+    width: {default: 4},
+    depth: {default: 2},
+    height: {default: 3},
+    movement: {default: 'dynamic'},
+    color: {default: 'red'}
+  },
+
+  init() {
+
+    this.visual = document.createElement('a-entity')
+    this.visual.setAttribute('geometry', {primitive: 'brick', 
+                                          width: this.data.width,
+                                          height: this.data.height,
+                                          depth: this.data.depth})
+    this.visual.setAttribute("physx-no-collision", "")
+    this.visual.setAttribute("material", {color: this.data.color})
+    this.el.appendChild(this.visual)
+
+    this.collider = document.createElement('a-entity')
+    this.collider.setAttribute("geometry", { primitive: "box", 
+                                             width:  this.data.width * UNIT_WIDTH,
+                                             height: this.data.height * PLATE_HEIGHT,
+                                             depth:  this.data.depth * UNIT_WIDTH})
+    this.collider.setAttribute("visible", false)
+    this.collider.setAttribute("physx-hidden-collision", "")
+    this.el.appendChild(this.collider)
+
+    this.el.setAttribute('physx-body', {type: this.data.movement})
+  }
+})

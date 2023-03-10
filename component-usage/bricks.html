@@ -2,6 +2,7 @@
 <html>
   <head>
       <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/c-frame/physx@latest/dist/physx.min.js"></script>
       <script src="../components/bricks/index.js"></script>
       <link rel="stylesheet" href="../styles.css">
   </head>
@@ -14,11 +15,12 @@
         href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/bricks.html">
         view code
     </a>
-      <a-scene background="color:#88f" stats>
-        <a-entity position = "0 1 -3">
-            <a-brick color="red" scale="0.01 0.01 0.01">
+      <a-scene background="color:#88f" stats
+               physx="autoLoad: true; delay: 1000; useDefaultScene: false; stats: panel">
+        <a-entity position = "0 1 -3" scale="0.01 0.01 0.01" >
+            <a-brick color="red">
             </a-brick>
-            <a-brick width="50" depth="50" color="#75c852" scale="0.01 0.01 0.01" position="0 -0.5 0">
+            <a-brick width="50" movement="static" depth="50" height="1" color="#75c852" position="0 -50 0">
             </a-brick>
         </a-entity>
       </a-scene>
