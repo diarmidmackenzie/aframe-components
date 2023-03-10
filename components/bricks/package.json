@@ -1,0 +1,16 @@
+{
+  "name": "aframe-bricks",
+  "version": "0.0.1",
+  "description": "Building Bricks for A-Frame",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "A-Frame",
+    "bricks",
+    "building"
+  ],
+  "author": "Diarmid Mackenzie",
+  "license": "MIT"
+}
