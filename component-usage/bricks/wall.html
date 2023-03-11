@@ -11,8 +11,8 @@
         const BRICK_HEIGHT = 3
         AFRAME.registerComponent('brick-wall', {
           schema: {
-            width: {default: 10},
-            height: {default: 10},
+            width: {default: 3},
+            height: {default: 3},
           },
           init() {
 
@@ -25,7 +25,10 @@
                 const offset = (ii % 2) /2
                 const x = (jj + offset - (this.data.width / 2)) * UNIT_WIDTH * BRICK_WIDTH
 
-                this.createBrick(x, y, 0)
+                const brick = this.createBrick(x, y, 0)
+
+                this.bindToBase(brick) 
+
               }
             }
           },
@@ -47,6 +50,30 @@
             brick.setAttribute("position", {x, y, z})
 
             this.el.appendChild(brick)
+
+            return brick
+          },
+
+          bindToBase(brick) {
+
+            /*for (let ii = 0; ii < BRICK_WIDTH; ii++) {
+              for (let jj = 0; jj < BRICK_WIDTH; jj++) {
+
+                const x = ((ii - BRICK_WIDTH) / 2) * UNIT_WIDTH
+                const z = ((jj - BRICK_WIDTH) / 2) * UNIT_WIDTH
+                this.createJoint(brick, '#base', x, z)
+              }
+            }*/
+            this.createJoint(brick, '#base', 0, 0)
+          },
+
+          createJoint(brick, targetId, x, z) {
+
+            const joint = document.createElement('a-entity');
+            const y = -BRICK_HEIGHT * PLATE_HEIGHT / 2
+            joint.object3D.position.set(x, y, z)
+            joint.setAttribute('physx-joint', {type: "Fixed", target: targetId})
+            brick.appendChild(joint)
           }
         })
       </script>
@@ -64,7 +91,7 @@
       <a-scene background="color:#88f" stats
                physx="autoLoad: true; delay: 1000; useDefaultScene: false; stats: panel">
         <a-entity position = "0 1 -3" scale="0.01 0.01 0.01" brick-wall>
-            <a-brick width="60" movement="static" depth="60" height="3" color="#4B9F4A" position="0 0 0">
+            <a-brick id="base" width="60" movement="static" depth="60" height="3" color="#4B9F4A" position="0 0 0">
             </a-brick>
         </a-entity>
       </a-scene>
