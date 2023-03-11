@@ -3,7 +3,8 @@
   <head>
       <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
       <script src="https://cdn.jsdelivr.net/gh/c-frame/physx@latest/dist/physx.min.js"></script>
-      <script src="../components/bricks/index.js"></script>
+      <script src="../../components/bricks/index.js"></script>
+      <script src="./colors.js"></script>
       <script>
         AFRAME.registerComponent('brick-spawner', {
           schema: {
@@ -22,37 +23,6 @@
             WIDTHS = [1, 2]
             DEPTHS = [1, 2, 3, 4, 6, 8]
             HEIGHTS = [1, 3]
-            // https://color-term.com/lego-colors/index.html
-            COLORS = ['#05131D',
-                      '#0055BF',
-                      '#237841',
-                      '#008F9B',
-                      '#C91A09',
-                      '#C870A0',
-                      '#583927',
-                      '#9BA19D',
-                      '#6D6E5C',
-                      '#B4D2E3',
-                      '#4B9F4A',
-                      '#55A5AF',
-                      '#F2705E',
-                      '#FC97AC',
-                      '#F2CD37',
-                      '#FFFFFF',
-                      '#C2DAB8',
-                      '#FBE696',
-                      '#E4CD9E',
-                      '#C9CAE2',
-                      '#D4D5C9',
-                      '#81007B',
-                      '#2032B0',
-                      '#FE8A18',
-                      '#923978',
-                      '#BBE90B',
-                      '#958A73',
-                      '#E4ADC8',
-                      '#AC78BA',
-                      '#E1D5ED']
 
             const randomMember = (array) => {
               const index = Math.floor(Math.random() * array.length)
@@ -83,9 +53,9 @@
       <link rel="stylesheet" href="../styles.css">
   </head>
   <body>
-    <div class="text-overlay">
+    <!--<div class="text-overlay">
         <p>Building with bricks</p>
-    </div>
+    </div>-->
         <a class="code-link"
         target="_blank"
         href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/bricks.html">

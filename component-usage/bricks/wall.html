@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/c-frame/physx@latest/dist/physx.min.js"></script>
+      <script src="../../components/bricks/index.js"></script>
+      <script src="./colors.js"></script>
+      <script>
+        const BRICK_WIDTH = 4
+        const BRICK_DEPTH = 2
+        const BRICK_HEIGHT = 3
+        AFRAME.registerComponent('brick-wall', {
+          schema: {
+            width: {default: 10},
+            height: {default: 10},
+          },
+          init() {
+
+            for (let ii = 0; ii < this.data.width; ii++) {
+
+              const y = (ii + 1) * BRICK_HEIGHT * PLATE_HEIGHT
+              
+              for (let jj = 0; jj < this.data.width; jj++) {
+
+                const offset = (ii % 2) /2
+                const x = (jj + offset - (this.data.width / 2)) * UNIT_WIDTH * BRICK_WIDTH
+
+                this.createBrick(x, y, 0)
+              }
+            }
+          },
+
+          createBrick(x, y, z) {
+
+            const randomMember = (array) => {
+              const index = Math.floor(Math.random() * array.length)
+              return array[index]
+            }
+
+            const color = randomMember(COLORS)
+
+            const brick = document.createElement('a-brick')
+            brick.setAttribute("width", BRICK_WIDTH)
+            brick.setAttribute("height", BRICK_HEIGHT)
+            brick.setAttribute("depth", BRICK_DEPTH)
+            brick.setAttribute("color", color)
+            brick.setAttribute("position", {x, y, z})
+
+            this.el.appendChild(brick)
+          }
+        })
+      </script>
+      <link rel="stylesheet" href="../styles.css">
+  </head>
+  <body>
+    <!--<div class="text-overlay">
+        <p>Building with bricks</p>
+    </div>-->
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/bricks.html">
+        view code
+    </a>
+      <a-scene background="color:#88f" stats
+               physx="autoLoad: true; delay: 1000; useDefaultScene: false; stats: panel">
+        <a-entity position = "0 1 -3" scale="0.01 0.01 0.01" brick-wall>
+            <a-brick width="60" movement="static" depth="60" height="3" color="#4B9F4A" position="0 0 0">
+            </a-brick>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>
+
+
+
