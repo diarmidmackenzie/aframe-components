@@ -12,7 +12,7 @@
         AFRAME.registerComponent('brick-wall', {
           schema: {
             width: {default: 10},
-            height: {default: 4},
+            height: {default: 8},
           },  
           init() {
 
@@ -23,7 +23,7 @@
               for (let jj = 0; jj < this.data.width; jj++) {
 
                 setTimeout(() => this.createAndBindBrick(ii, jj), delay)
-                delay += 100
+                delay += 0
               }
             }
           },
@@ -33,7 +33,7 @@
             const y = (ii + 1) * BRICK_HEIGHT * PLATE_HEIGHT
 
             const offset = (ii % 2) /2
-            const x = (jj + offset - (this.data.width / 2)) * UNIT_WIDTH * (BRICK_WIDTH + 1)
+            const x = (jj + offset - (this.data.width / 2)) * UNIT_WIDTH * BRICK_WIDTH
 
             const id = `brick-${ii}-${jj}`
             const brick = this.createBrick(x, y, 0, id)
@@ -94,13 +94,13 @@
 
           bindToBrick(brick, target) {
 
-            /* This logic would create a binding per-stud.  That seems to be less performant & lkess stable.
+            /* This logic would create a binding per-stud.  That seems to be less performant & no more stable.
               for (let ii = 0; ii < BRICK_WIDTH; ii++) {
               for (let jj = 0; jj < BRICK_WIDTH; jj++) {
 
                 const x = ((ii - BRICK_WIDTH) / 2) * UNIT_WIDTH
                 const z = ((jj - BRICK_WIDTH) / 2) * UNIT_WIDTH
-                this.createJoint(brick, '#base', x, z)
+                this.createJoint(brick, target, 0, 0)
               }
             }*/
             this.createJoint(brick, target, 0, 0)
@@ -114,7 +114,7 @@
             joint.setAttribute('physx-joint', {type: "Fixed",
                                                target: `#${targetId}`,
                                                collideWithTarget: true,
-                                               /*breakForce: {x: 1, y: 1}*/})
+                                               breakForce: {x: -1, y: -1}})
             brick.appendChild(joint)
           }
         })
@@ -132,7 +132,7 @@
     </a>
       <a-scene background="color:#88f" stats
                physx="autoLoad: true; delay: 1000; useDefaultScene: false; stats: panel">
-        <a-entity position = "0 -100 -300" brick-wall>
+        <a-entity position = "0 1 -3" scale="0.01 0.01 0.01" brick-wall>
             <a-brick id="base" width="60" movement="static" depth="60" height="3" color="#4B9F4A" position="0 0 0">
             </a-brick>
         </a-entity>
