@@ -1,7 +1,15 @@
+import 'aframe-connecting-line'
 import Graph from 'graphology';
 import {connectedComponents} from 'graphology-components';
 
 const GRAPH_ROOT = new Graph()
+
+AFRAME.registerComponent('graph', {
+
+  schema: {
+    debug: {default: false}
+  }
+})
 
 AFRAME.registerComponent('graph-node', {
 
@@ -51,12 +59,32 @@ AFRAME.registerComponent('graph-edge', {
     const node = nodeComponent(this.el)
     this.edge = GRAPH_ROOT.addEdge(node.id, targetNode.id)
 
+
+    if (this.el.sceneEl.hasLoaded) {
+      onSceneLoaded()
+    }
+    else {
+      this.el.sceneEl.addEventListener('loaded', () => this.onSceneLoaded())
+    }
+    
     console.log(GRAPH_ROOT.neighbors(node.id))
     console.log(GRAPH_ROOT.neighbors(targetNode.id))
 
     const components = connectedComponents(GRAPH_ROOT);
     console.log(components)
 
+  },
+
+  onSceneLoaded() {
+
+    const debug = this.el.sceneEl.components.graph?.data.debug
+
+    if (debug) {
+      this.el.setAttribute(`connecting-line__${this.attrName}`,
+                         { start: `#${this.el.id}`,
+                           end: `#${this.data.target.id}`,
+                           color: 'red'})
+    }
   },
 
   remove() {
