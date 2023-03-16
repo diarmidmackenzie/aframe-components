@@ -1,8 +1,9 @@
 import 'aframe-connecting-line'
 import Graph from 'graphology';
 import {connectedComponents} from 'graphology-components';
+import {bidirectional} from 'graphology-shortest-path/unweighted';
 
-const GRAPH_ROOT = new Graph({multi: true})
+const GRAPH_ROOT = new Graph({multi: true, type: 'undirected'})
 
 AFRAME.registerComponent('graph', {
 
@@ -41,27 +42,44 @@ AFRAME.registerComponent('graph-edge', {
     else {
       this.addEdge()
     }
+
+    this.eventData = {
+      target: this.data.target
+    }
   },
 
-  addEdge() {
+  getNodes() {
 
     const nodeComponent = (el) => {
       return el.components['graph-node']
     }
-    
 
     const targetNode = nodeComponent(this.data.target)
-
     if (!targetNode) {
       console.warn("graph-edge: No node found for target element:", this.data.target.id)
       return
     }
 
     const node = nodeComponent(this.el)
-
     if (!node) {
       console.warn("graph-edge: No node found for this element:", this.el.id)
       return
+    }
+
+    return [node, targetNode]
+  },
+
+  addEdge() {
+
+    const [node, targetNode] = this.getNodes()
+
+    let componentsJoined
+    if (this.nodesConnected(node, targetNode)) {
+      // already connected.
+      componentsJoined = false
+    }
+    else {
+      componentsJoined = true
     }
 
     this.edge = GRAPH_ROOT.addEdge(node.id, targetNode.id)
@@ -73,8 +91,13 @@ AFRAME.registerComponent('graph-edge', {
       this.el.sceneEl.addEventListener('loaded', () => this.onSceneLoaded())
     }
     
-    const components = connectedComponents(GRAPH_ROOT);
-    console.log(components)
+    if (componentsJoined) {
+      this.el.emit("graph-components-joined", this.eventData)
+      console.log("COMPONENTS JOINED")
+    }
+
+    /* const components = connectedComponents(GRAPH_ROOT);
+    console.log(components)*/
 
   },
 
@@ -100,6 +123,22 @@ AFRAME.registerComponent('graph-edge', {
 
     GRAPH_ROOT.dropEdge(this.edge)
     this.edge = null
+
+    const [node, targetNode] = this.getNodes()
+    if (!this.nodesConnected(node, targetNode)) {
+      // no longer connected.
+      this.el.emit("graph-components-split", this.eventData)
+      console.log("COMPONENTS SPLIT")
+    }
+
+  },
+
+  // are two nodes connected by the graph?
+  nodesConnected(a, b) {
+
+    const path = bidirectional(GRAPH_ROOT, a.id, b.id);
+
+    return !!path
   }
 })
 

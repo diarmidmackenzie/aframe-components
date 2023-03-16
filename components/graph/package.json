@@ -21,7 +21,8 @@
   "dependencies": {
     "aframe-connecting-line": "^0.1.0",
     "graphology": "^0.25.1",
-    "graphology-components": "^1.5.4"
+    "graphology-components": "^1.5.4",
+    "graphology-shortest-path": "^2.0.2"
   },
   "devDependencies": {
     "webpack": "^5.75.0",
