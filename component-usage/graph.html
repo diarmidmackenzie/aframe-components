@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../components/graph/dist/graph.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+      <script>
+        RANDOM_COLOR = () => '#' + THREE.MathUtils.randInt(0, 0xffffff).toString(16).padStart(6, '0')
+        AFRAME.registerComponent('grid', {
+          schema: {
+            rows: { default: 10 },
+            cols: { default: 10 }
+          },
+          init() {
+
+            this.boxes = []
+            this.edges = []
+            this.nextEdgeIndex = 0
+
+            for (let ii = 0; ii < this.data.cols; ii++) {
+              for (let jj = 0; jj < this.data.rows; jj++) {
+                const box = this.createBox(ii, jj)
+                this.boxes.push(box)
+              }
+            }
+
+            setInterval(this.mutateEdges.bind(this), 200)
+          },
+          createBox(col, row) {
+            const x = 2 * (col - (this.data.cols / 2))
+            const y = 2 * (row - (this.data.rows / 2))
+            const box = document.createElement('a-box')
+            box.object3D.position.set(x, y, 0)
+            box.id = `box-${row}-${col}`
+            box.setAttribute('graph-node', '')
+            box.setAttribute('color', RANDOM_COLOR())
+
+            this.el.appendChild(box)
+
+            return box
+          },
+
+          mutateEdges() {
+
+            let pAdd
+            if (this.edges.length > 50) {
+              // prefer to add an edge
+              pAdd = 0.25
+            }
+            else {
+              // prefer to remove an edge
+              pAdd = 0.75
+            }
+
+            if (Math.random() < pAdd) {
+              this.addRandomEdge()
+            }
+            else {
+              this.removeRandomEdge()
+            }
+
+          },
+
+          addRandomEdge() {
+
+            randomBoxPair = () => {
+              const row = THREE.MathUtils.randInt(0, this.data.rows - 1)
+              const col = THREE.MathUtils.randInt(0, this.data.cols - 1)
+
+              id1 = `box-${row}-${col}`
+              el1 = document.getElementById(id1)
+
+              const getRandomAdjacentRowCol = (row, col) => {
+                row2 = row + THREE.MathUtils.randInt(-1, 1)
+                col2 = col + THREE.MathUtils.randInt(-1, 1)
+
+                return [row2, col2]
+              }
+              
+              // pick an adjacent row & column that is within bounds.
+              let row2 = -1
+              let col2 = -1
+
+              while (row2 < 0 || row2 >= this.data.rows || 
+                     col2 < 0 || col2 >= this.data.cols ||
+                     (row === row2 && col === col2)) {
+                [row2, col2] = getRandomAdjacentRowCol(row, col)
+              }
+
+              id2 = `box-${row2}-${col2}`
+              el2 = document.getElementById(id2)
+
+              return [el1, el2]
+            }
+
+            const [a, b] = randomBoxPair()
+
+            edgeIndex = this.nextEdgeIndex
+            this.nextEdgeIndex++
+
+            a.setAttribute(`graph-edge__${edgeIndex}`, { target: `#${b.id}`})
+
+            const edge = {el: a, index: edgeIndex}
+            this.edges.push(edge)
+
+          },
+
+          removeRandomEdge(edge) {
+
+            if (this.edges.length <= 0) return
+
+            randomEdge = () => this.edges[THREE.MathUtils.randInt(0, this.edges.length - 1)]
+
+            const {el, edgeIndex} = randomEdge();
+            el.removeAttribute(`graph-edge__${edgeIndex}`)
+          }
+        })
+      </script>
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Dynamically connected graph in A-Frame.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/connecting-line.html">
+        view code
+    </a>
+    
+    <a-scene background="color:black" graph="debug: true">
+      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+      <a-entity id="container" position = "0 2 -15" grid>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>

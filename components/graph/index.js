@@ -2,7 +2,7 @@ import 'aframe-connecting-line'
 import Graph from 'graphology';
 import {connectedComponents} from 'graphology-components';
 
-const GRAPH_ROOT = new Graph()
+const GRAPH_ROOT = new Graph({multi: true})
 
 AFRAME.registerComponent('graph', {
 
@@ -54,22 +54,25 @@ AFRAME.registerComponent('graph-edge', {
 
     if (!targetNode) {
       console.warn("graph-edge: No node found for target element:", this.data.target.id)
+      return
     }
 
     const node = nodeComponent(this.el)
+
+    if (!node) {
+      console.warn("graph-edge: No node found for this element:", this.el.id)
+      return
+    }
+
     this.edge = GRAPH_ROOT.addEdge(node.id, targetNode.id)
 
-
     if (this.el.sceneEl.hasLoaded) {
-      onSceneLoaded()
+      this.onSceneLoaded()
     }
     else {
       this.el.sceneEl.addEventListener('loaded', () => this.onSceneLoaded())
     }
     
-    console.log(GRAPH_ROOT.neighbors(node.id))
-    console.log(GRAPH_ROOT.neighbors(targetNode.id))
-
     const components = connectedComponents(GRAPH_ROOT);
     console.log(components)
 
