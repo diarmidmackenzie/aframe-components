@@ -91,6 +91,13 @@ AFRAME.registerComponent('graph-edge', {
   },
 
   remove() {
+
+    const debug = this.el.sceneEl.components.graph?.data.debug
+
+    if (debug) {
+      this.el.removeAttribute(`connecting-line__${this.attrName}`)
+    }
+
     GRAPH_ROOT.dropEdge(this.edge)
     this.edge = null
   }

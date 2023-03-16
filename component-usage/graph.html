@@ -24,7 +24,7 @@
               }
             }
 
-            setInterval(this.mutateEdges.bind(this), 200)
+            setInterval(this.mutateEdges.bind(this), 100)
           },
           createBox(col, row) {
             const x = 2 * (col - (this.data.cols / 2))
@@ -43,13 +43,13 @@
           mutateEdges() {
 
             let pAdd
-            if (this.edges.length > 50) {
+            if (this.edges.length < 50) {
               // prefer to add an edge
-              pAdd = 0.25
+              pAdd = 0.75
             }
             else {
               // prefer to remove an edge
-              pAdd = 0.75
+              pAdd = 0.25
             }
 
             if (Math.random() < pAdd) {
@@ -109,10 +109,11 @@
 
             if (this.edges.length <= 0) return
 
-            randomEdge = () => this.edges[THREE.MathUtils.randInt(0, this.edges.length - 1)]
+            const edgeArrayIndex = THREE.MathUtils.randInt(0, this.edges.length - 1)
+            const {el, index} = this.edges[edgeArrayIndex];
 
-            const {el, edgeIndex} = randomEdge();
-            el.removeAttribute(`graph-edge__${edgeIndex}`)
+            el.removeAttribute(`graph-edge__${index}`)
+            this.edges.splice(edgeArrayIndex, 1)
           }
         })
       </script>
