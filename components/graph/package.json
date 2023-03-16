@@ -19,7 +19,8 @@
   "author": "Diarmid Mackenzie",
   "license": "MIT",
   "dependencies": {
-    "graphology": "^0.25.1"
+    "graphology": "^0.25.1",
+    "graphology-components": "^1.5.4"
   },
   "devDependencies": {
     "webpack": "^5.75.0",

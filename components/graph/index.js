@@ -1,4 +1,5 @@
 import Graph from 'graphology';
+import {connectedComponents} from 'graphology-components';
 
 const GRAPH_ROOT = new Graph()
 
@@ -52,6 +53,9 @@ AFRAME.registerComponent('graph-edge', {
 
     console.log(GRAPH_ROOT.neighbors(node.id))
     console.log(GRAPH_ROOT.neighbors(targetNode.id))
+
+    const components = connectedComponents(GRAPH_ROOT);
+    console.log(components)
 
   },
 
