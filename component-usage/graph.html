@@ -17,6 +17,8 @@
             this.edges = []
             this.nextEdgeIndex = 0
 
+            this.nodeMap = {}
+
             for (let ii = 0; ii < this.data.cols; ii++) {
               for (let jj = 0; jj < this.data.rows; jj++) {
                 const box = this.createBox(ii, jj)
@@ -25,6 +27,13 @@
             }
 
             setInterval(this.mutateEdges.bind(this), 100)
+
+            this.componentsJoined = this.componentsJoined.bind(this)
+            this.componentsSplit = this.componentsSplit.bind(this)
+
+            this.el.addEventListener('graph-components-joined', this.componentsJoined)
+            this.el.addEventListener('graph-components-split', this.componentsSplit)
+            
           },
           createBox(col, row) {
             const x = 2 * (col - (this.data.cols / 2))
@@ -36,6 +45,8 @@
             box.setAttribute('color', RANDOM_COLOR())
 
             this.el.appendChild(box)
+
+            this.nodeMap[box.object3D.uuid] = box
 
             return box
           },
@@ -114,6 +125,30 @@
 
             el.removeAttribute(`graph-edge__${index}`)
             this.edges.splice(edgeArrayIndex, 1)
+          },
+
+          componentsSplit(evt) {
+
+            color1 = RANDOM_COLOR()
+            color2 = RANDOM_COLOR()
+
+            component1 = evt.detail.component
+            component2 = evt.detail.otherComponent
+            component1.forEach((uuid) => {
+              this.nodeMap[uuid].setAttribute('color', color1)
+            })
+            component2.forEach((uuid) => {
+              this.nodeMap[uuid].setAttribute('color', color2)
+            })
+          },
+
+          componentsJoined(evt) {
+
+            color = RANDOM_COLOR()
+            component = evt.detail.component
+            component.forEach((uuid) => {
+              this.nodeMap[uuid].setAttribute('color', color)
+            })
           }
         })
       </script>
@@ -121,6 +156,8 @@
   <body>
     <div class="text-overlay">
         <p>Dynamically connected graph in A-Frame.</p>
+        <p>Edges are added / deleted.  Connected components in the graph are all colored the same.</p>
+        <p>Colors change at random every time a component is split, or components are joined.</p>
     </div>
         <a class="code-link"
         target="_blank"
@@ -131,7 +168,7 @@
     <a-scene background="color:black" graph="debug: true">
       <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
 
-      <a-entity id="container" position = "0 2 -15" grid>
+      <a-entity id="container" position = "0 0 -18" grid>
       </a-entity>
     </a-scene>
   </body>

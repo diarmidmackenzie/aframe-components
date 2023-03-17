@@ -2,6 +2,7 @@ import 'aframe-connecting-line'
 import Graph from 'graphology';
 import {connectedComponents} from 'graphology-components';
 import {bidirectional} from 'graphology-shortest-path/unweighted';
+import {getConnectedComponent} from './src/utils.js'
 
 const GRAPH_ROOT = new Graph({multi: true, type: 'undirected'})
 
@@ -35,6 +36,9 @@ AFRAME.registerComponent('graph-edge', {
   init() {
     
     const target = this.data.target
+    this.eventData = {
+      target: this.data.target
+    }
 
     if (!target.hasLoaded) {
       this.data.target.addEventListener('loaded', () => this.addEdge())
@@ -43,9 +47,7 @@ AFRAME.registerComponent('graph-edge', {
       this.addEdge()
     }
 
-    this.eventData = {
-      target: this.data.target
-    }
+
   },
 
   getNodes() {
@@ -92,10 +94,15 @@ AFRAME.registerComponent('graph-edge', {
     }
     
     if (componentsJoined) {
+
+      this.eventData.component = getConnectedComponent(GRAPH_ROOT, node.id)
+      this.eventData.otherComponent = null
       this.el.emit("graph-components-joined", this.eventData)
       console.log("COMPONENTS JOINED")
+
     }
 
+    
     /* const components = connectedComponents(GRAPH_ROOT);
     console.log(components)*/
 
@@ -127,10 +134,12 @@ AFRAME.registerComponent('graph-edge', {
     const [node, targetNode] = this.getNodes()
     if (!this.nodesConnected(node, targetNode)) {
       // no longer connected.
+      this.eventData.component = getConnectedComponent(GRAPH_ROOT, node.id)
+      this.eventData.otherComponent = getConnectedComponent(GRAPH_ROOT, targetNode.id)
+
       this.el.emit("graph-components-split", this.eventData)
       console.log("COMPONENTS SPLIT")
     }
-
   },
 
   // are two nodes connected by the graph?
@@ -141,4 +150,5 @@ AFRAME.registerComponent('graph-edge', {
     return !!path
   }
 })
+
 
