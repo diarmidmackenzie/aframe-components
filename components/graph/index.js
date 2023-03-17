@@ -1,6 +1,5 @@
 import 'aframe-connecting-line'
 import Graph from 'graphology';
-import {connectedComponents} from 'graphology-components';
 import {bidirectional} from 'graphology-shortest-path/unweighted';
 import {getConnectedComponent} from './src/utils.js'
 
@@ -46,8 +45,6 @@ AFRAME.registerComponent('graph-edge', {
     else {
       this.addEdge()
     }
-
-
   },
 
   getNodes() {
@@ -101,11 +98,6 @@ AFRAME.registerComponent('graph-edge', {
       console.log("COMPONENTS JOINED")
 
     }
-
-    
-    /* const components = connectedComponents(GRAPH_ROOT);
-    console.log(components)*/
-
   },
 
   onSceneLoaded() {
