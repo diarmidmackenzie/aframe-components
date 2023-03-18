@@ -36,7 +36,9 @@ AFRAME.registerComponent('graph-edge', {
     
     const target = this.data.target
     this.eventData = {
-      target: this.data.target
+      otherNode: this.data.target,
+      thisComponent: null,
+      otherComponent: null
     }
 
     if (!target.hasLoaded) {
@@ -72,13 +74,15 @@ AFRAME.registerComponent('graph-edge', {
 
     const [node, targetNode] = this.getNodes()
 
-    let componentsJoined
+    let componentsNewlyJoined
     if (this.nodesConnected(node, targetNode)) {
       // already connected.
-      componentsJoined = false
+      componentsNewlyJoined = false
     }
     else {
-      componentsJoined = true
+      componentsNewlyJoined = true
+      this.eventData.thisComponent = getConnectedComponent(GRAPH_ROOT, node.id)
+      this.eventData.otherComponent = getConnectedComponent(GRAPH_ROOT, targetNode.id)
     }
 
     this.edge = GRAPH_ROOT.addEdge(node.id, targetNode.id)
@@ -90,13 +94,9 @@ AFRAME.registerComponent('graph-edge', {
       this.el.sceneEl.addEventListener('loaded', () => this.onSceneLoaded())
     }
     
-    if (componentsJoined) {
-
-      this.eventData.component = getConnectedComponent(GRAPH_ROOT, node.id)
-      this.eventData.otherComponent = null
+    if (componentsNewlyJoined) {
       this.el.emit("graph-components-joined", this.eventData)
       console.log("COMPONENTS JOINED")
-
     }
   },
 
@@ -126,7 +126,7 @@ AFRAME.registerComponent('graph-edge', {
     const [node, targetNode] = this.getNodes()
     if (!this.nodesConnected(node, targetNode)) {
       // no longer connected.
-      this.eventData.component = getConnectedComponent(GRAPH_ROOT, node.id)
+      this.eventData.thisComponent = getConnectedComponent(GRAPH_ROOT, node.id)
       this.eventData.otherComponent = getConnectedComponent(GRAPH_ROOT, targetNode.id)
 
       this.el.emit("graph-components-split", this.eventData)
