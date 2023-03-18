@@ -1,0 +1,30 @@
+{
+  "name": "aframe-graph",
+  "version": "0.0.1",
+  "description": "Dynamically Connected Graphs for A-Frame",
+  "main": "index.js",
+  "scripts": {
+    "dist": "npm run dist:dev && npm run dist:prod",
+    "dist:dev": "webpack --config webpack.config.js",
+    "dist:prod": "webpack --config webpack.prod.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "A-Frame",
+    "aframe",
+    "link",
+    "cut",
+    "tree"
+  ],
+  "author": "Diarmid Mackenzie",
+  "license": "MIT",
+  "dependencies": {
+    "aframe-connecting-line": "^0.1.0",
+    "graphology": "^0.25.1",
+    "graphology-shortest-path": "^2.0.2"
+  },
+  "devDependencies": {
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  }
+}
