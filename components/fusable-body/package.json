@@ -11,8 +11,5 @@
     "physx"
   ],
   "author": "Diarmid Mackenzie",
-  "license": "MIT",
-  "dependencies": {
-    "dynamic-forest": "^1.0.0"
-  }
+  "license": "MIT"
 }
