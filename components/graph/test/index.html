@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../dist/graph.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Link cut tree in A-Frame.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/connecting-line.html">
+        view code
+    </a>
+    
+    <a-scene background="color:black" graph="debug: true">
+      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+      <a-entity id="container" position = "0 0 -4">
+        <a-box id="box1" position="-2 1 0"color="red"
+               graph-node
+               graph-edge__2="target:#box2"
+               graph-edge__3="target:#box3">
+        </a-box>
+        <a-box id="box2" position="0 1 0"color="green"
+               graph-node
+               graph-edge__1="target:#box1"
+               graph-edge__3="target:#box3">
+        </a-box>
+        <a-box id="box3" position="-2 3 0"color="blue"
+               graph-node
+               graph-edge__1="target:#box1"
+               graph-edge__4="target:#box4">
+        </a-box>
+        <a-box id="box4" position="0 3 0"color="yellow"
+               graph-node
+               graph-edge__1="target:#box1">
+        </a-box>
+        <a-box id="box5" position="2 3 0"color="cyan"
+                graph-node
+                graph-edge__1="target:#box6">
+        </a-box>
+        <a-box id="box6" position="2 1 0"color="magenta"
+                graph-node>
+        </a-box>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
