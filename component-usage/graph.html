@@ -132,7 +132,7 @@
             color1 = RANDOM_COLOR()
             color2 = RANDOM_COLOR()
 
-            component1 = evt.detail.component
+            component1 = evt.detail.thisComponent
             component2 = evt.detail.otherComponent
             component1.forEach((uuid) => {
               this.nodeMap[uuid].setAttribute('color', color1)
@@ -145,8 +145,12 @@
           componentsJoined(evt) {
 
             color = RANDOM_COLOR()
-            component = evt.detail.component
-            component.forEach((uuid) => {
+            component1 = evt.detail.thisComponent
+            component2 = evt.detail.otherComponent
+            component1.forEach((uuid) => {
+              this.nodeMap[uuid].setAttribute('color', color)
+            })
+            component2.forEach((uuid) => {
               this.nodeMap[uuid].setAttribute('color', color)
             })
           }

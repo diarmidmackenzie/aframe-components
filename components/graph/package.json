@@ -1,7 +1,7 @@
 {
-  "name": "graph",
+  "name": "aframe-graph",
   "version": "0.0.1",
-  "description": "Link Cut Tree for A-Frame",
+  "description": "Dynamically Connected Graphs for A-Frame",
   "main": "index.js",
   "scripts": {
     "dist": "npm run dist:dev && npm run dist:prod",
