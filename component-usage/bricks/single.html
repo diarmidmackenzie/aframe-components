@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/aframe-mouse-manipulation@0.1.0/dist/mouse-manipulation.min.js"></script>
+      <script src="../../components/raycast-target/index.js"></script>
+      <script src="../../components/bricks/index.js"></script>
+      <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Default building brick - use mouse to move it around</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/single.html">
+        view code
+    </a>
+      <a-scene background="color:#88f" stats
+               physx="autoLoad: true; delay: 1000; useDefaultScene: false; stats: panel">
+        <a-entity id="cursor"
+               cursor="rayOrigin: mouse"
+               raycaster="objects: [raycast-target]"
+               mouse-manipulation>
+        <a-entity position = "0 1.3 -1" scale="0.01 0.01 0.01" rotation="0 30 0">
+          <a-brick></a-brick>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>
+
+
+

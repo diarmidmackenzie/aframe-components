@@ -109,6 +109,14 @@ AFRAME.registerComponent('brick', {
     color: {default: 'red'}
   },
 
+  init() {
+
+    // id needed for raycast-target component
+    if (!this.el.id) {
+      this.el.id = THREE.MathUtils.generateUUID()
+    }
+  },
+
   update() {
 
     // clean up previous children
@@ -135,6 +143,7 @@ AFRAME.registerComponent('brick', {
                                              depth:  this.data.depth * UNIT_WIDTH})
     this.collider.setAttribute("visible", false)
     this.collider.setAttribute("physx-hidden-collision", "")
+    this.collider.setAttribute("raycast-target", `#${this.el.id}`)
     this.el.appendChild(this.collider)
 
     this.el.setAttribute('physx-body', {type: this.data.movement,
