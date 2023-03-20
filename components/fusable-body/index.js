@@ -1,113 +1,157 @@
-var createVertex = require("dynamic-forest")
+if (!AFRAME.components['object-parent']) require('aframe-object-parent')
+if (!AFRAME.components['raycast-target']) require('aframe-raycast-target')
 
-AFRAME.registerComponent('fusable-body', {
+AFRAME.registerSystem('fusable-body', {
 
   init() {
 
+    this.nodeMap = {}
+    
+    this.componentsJoined = this.componentsJoined.bind(this)
+    this.componentsSplit = this.componentsSplit.bind(this)
+
+    this.el.addEventListener('graph-components-joined', this.componentsJoined)
+    this.el.addEventListener('graph-components-split', this.componentsSplit)
+
+    this.containers = {}
+
+  },
+
+  getNodePhysicsType(el) {
+    return el.components['fusable-body'].data.type
+  },
+
+  addNode(el) {
+
+    this.nodeMap[el.object3D.uuid] = el
+
+    // create a container by default for each node
+    const physicsType = this.getNodePhysicsType(el)
+    const container = this.createContainer(el, physicsType)
+    
+    // reparent the object to that container node,
+    // and redirect raycasting.
+    const containerselector = `#${container.id}`
+    el.setAttribute('object-parent', {parent: containerselector})
+    el.setAttribute('raycast-target', containerselector)
+  },
+
+  createContainer(el, physicsType) {
+
+    const container = document.createElement('a-entity')
+    container.id = THREE.MathUtils.generateUUID()
+
+    // extract the transform of the reference element to use for this container
+    el.object3D.add(container.object3D)
+    this.el.object3D.attach(container.object3D)
+    
+    container.setAttribute('physx-body', {type: physicsType})
+    this.el.appendChild(container)
+
+    return container
+  },
+
+  destroyContainer(container) {
+
+    container.parentEl.removeNode(container)
+  },
+
+  removeNode(el) {
+
+    // remove reparenting of the object
+    el.removeAttribute('object-parent')
+    el.parentContainer = null
+
+    // delete nodeMap record
+    delete nodeMap[el.object3D.uuid]
+  },
+
+  componentsJoined(evt) {
+
+    component1 = evt.detail.thisComponent
+    component2 = evt.detail.otherComponent
+
+    let fromComponent, toComponent
+
+    if (component1.length >= component2.length) {
+      fromComponent = component2
+      toComponent = component1
+    }
+    else {
+      fromComponent = component1
+      toComponent = component2
+    }
+
+    // source & target containers can be determined from 1st nodes of component'
+    const sourceContainer = this.nodeMap[fromComponent[0]].object3D.parent.el
+    const targetContainerId = this.nodeMap[toComponent[0]].object3D.parent.el.id
+
+    fromComponent.forEach((uuid) => {
+      const node = this.nodeMap[uuid]
+      const targetContainerSelector = `#${targetContainerId}`
+      node.setAttribute('object-parent', {parent: targetContainerSelector})
+      node.setAttribute('raycast-target', targetContainerSelector)
+    })
+
+    // sourceContainer is empty & no longer needed.
+    this.destroyContainer(sourceContainer)
+  },
+
+  componentsSplit(evt) {
+
+    component1 = evt.detail.thisComponent
+    component2 = evt.detail.otherComponent
+
+    let componentToMove
+
+    if (component1.length >= component2.length) {
+      componentToMove = component2
+    }
+    else {
+      componentToMove = component1
+    }
+
+    const container = this.createContainer("kinematic")
+    const targetContainerSelector = `#${container.id}`
+    
+    componentToMove.forEach((uuid) => {
+      const node = this.nodeMap[uuid]
+      node.setAttribute('object-parent', {parent: targetContainerSelector})
+      node.setAttribute('raycast-target', targetContainerSelector)
+    })
   }
+})
 
-  }
+AFRAME.registerComponent('fusable-body', {
 
-);
+  schema: {
+    type: {type: 'string', default: 'dynamic'}
+  },
 
+  init() {
+    this.el.setAttribute('graph-node')
+    this.system.addNode(this.el)
+  },
+
+  remove() {
+    this.el.removeAttribute('graph-node')
+    this.system.removeNode(this.el)
+  },
+})
 
 AFRAME.registerComponent('fused-joint', {
+
+  multiple: true,
 
   schema() {
     target: {type: 'selector'}
   },
 
   init() {
-    const thisGroup = this.el.object3D.parent.el
-    const targetGroup = this.data.target.object3D.parent.el
-
-    this.system.
+    this.el.setAttibute(`graph-edge__${this.attrName}`)
   },
 
   remove() {
-    this.system.splitGroups(thisGroup, targetGroup)
-
+    this.el.removeAttibute(`graph-edge__${this.attrName}`)
   }
-});
-
-AFRAME.registerSystemomponent('fusion-container', {
-
-  init() {
-    this.groups = []
-  },
-
-
-  trackBody(body) {
-
-    if (body.graphVertex)
-    body.graphVertex = createVertex(body.object3D.id)
-  },
-
-  untrackBody(body) {
-
-    body.graphVertex.cut()
-    body.graphVertex = null
-  },
-
-  linkBodies(bodyA, bodyB) {
-    bodyA.graphVertex.link(bodyB.graphVertex)
-  },
-
-  jointAdded(bodyA, bodyB) {
-
-    this.trackBody(bodyA)
-    this.trackBody(bodyB)
-    this.linkBodies(bodyA, bodyB)
-    
-    groupA = bodyA.object3D.parent
-    groupB = bodyB.object3D.parent
-
-    // no need to merge group with itself.
-    if (groupA === groupB) return;
-
-    mergeGroups(groupA, groupB)
-  },
-
-  jointRemoved(bodyA, bodyB) {
-
-    group = bodyA.object3D.parent
-
-
-    // only work to do if the bodies were in the same group before.
-    if (group != bodyB.object3D.parent) return;
-
-
-
-
-  }
-
-  createGroup() {
-
-    const group = document.createElement('a-entity')
-    group.setAttribute('physx-body', '')
-    this.el.appendChild(group)
-    group.joints = []
-    this.groups.push(group)
-  },
-
-  destroyGroup(group) {
-    // TO DO
-
-  },
-
-  addJoint(groupA, groupB) {
-
-    groupA.
-
-
-
-
-
-
-  },
-
-  removeJoint(groupA, groupB) {
-
-  }
-
 });
