@@ -16,6 +16,7 @@
   "author": "Diarmid Mackenzie",
   "license": "MIT",
   "dependencies": {
+    "aframe-graph": "^0.0.1",
     "aframe-object-parent": "^0.1.0",
     "aframe-raycast-target": "^0.1.0"
   },

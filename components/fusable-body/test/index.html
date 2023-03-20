@@ -5,6 +5,42 @@
       <script src="https://cdn.jsdelivr.net/npm/aframe-mouse-manipulation@0.1.0/dist/mouse-manipulation.min.js"></script>
       <script src="../dist/fusable-body.js"></script>
       <link rel="stylesheet" href="../../../styles.css">
+      <script>
+        const updateFusedJoints = () => {
+
+          const controls = {
+            "red-green" : { el: "red-box", attr: "fused-joint__rg", value: "target: #green-box"},
+            "red-blue" : { el: "red-box", attr: "fused-joint__rb", value: "target: #blue-box"},
+            "red-yellow" : { el: "red-box", attr: "fused-joint__ry", value: "target: #yellow-box"},
+            "green-blue" : { el: "green-box", attr: "fused-joint__gb", value: "target: #blue-box"},
+            "green-yellow" : { el: "green-box", attr: "fused-joint__gy", value: "target: #yellow-box"},
+            "blue-yellow" : { el: "blue-box", attr: "fused-joint__by", value: "target: #yellow-box"}
+          }
+
+          Object.entries(controls).forEach(([key, val]) => {
+
+            const control = document.getElementById(key)
+            const el = document.getElementById(val.el)
+
+            if (control.checked) {
+              el.setAttribute(val.attr, val.value)
+            }
+            else {
+              el.removeAttribute(val.attr)
+            }
+          })
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+
+          const inputs = document.querySelectorAll("input")
+
+          inputs.forEach((input) => {
+            input.addEventListener("change", updateFusedJoints)
+            input.addEventListener("click", updateFusedJoints)
+          })
+          updateFusedJoints()
+        })
+      </script>
   </head>
   <body>
     <div class="text-overlay">
@@ -15,17 +51,35 @@
         href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/graph/test/">
         view code
     </a>
+    <div class="right-panel">
+      Fused joints
+      <div style="display: grid; grid-template-columns: 50% 50%">
+        <label for="red-green">red-green</label>
+        <input type="checkbox" id="red-green" name="red-green">
+        <label for="red-blue">red-blue</label>
+        <input type="checkbox" id="red-blue" name="red-blue">
+        <label for="red-yellow">red-yellow</label>
+        <input type="checkbox" id="red-yellow" name="red-yellow">
+        <label for="green-blue">green-blue</label>
+        <input type="checkbox" id="green-blue" name="green-blue">
+        <label for="green-yellow">green-yellow</label>
+        <input type="checkbox" id="green-yellow" name="green-yellow">
+        <label for="blue-yellow">blue-yellow</label>
+        <input type="checkbox" id="blue-yellow" name="blue-yellow">
+      </div>
+    </div>
     
     <a-scene background="color:black" graph="debug: true">
       <a-entity id="cursor"
                 cursor="rayOrigin: mouse"
                 raycaster="objects: [raycast-target]"
                 mouse-manipulation>
+      </a-entity>
       <a-entity id="container">
-        <a-box id="box1" position="-1 1 -4" color="red" fusable-body></a-box>
-        <a-box id="box2" position="1 1 -4" color="green" fusable-body></a-box>
-        <a-box id="box3" position="-1 3 -4" color="blue" fusable-body></a-box>
-        <a-box id="box4" position="1 3 -4" color="yellow" fusable-body></a-box>
+        <a-box id="red-box" position="-1 1 -4" color="red" fusable-body></a-box>
+        <a-box id="green-box" position="1 1 -4" color="green" fusable-body></a-box>
+        <a-box id="blue-box" position="-1 3 -4" color="blue" fusable-body></a-box>
+        <a-box id="yellow-box" position="1 3 -4" color="yellow" fusable-body></a-box>
       </a-entity>
     </a-scene>
   </body>

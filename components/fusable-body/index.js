@@ -1,5 +1,6 @@
 if (!AFRAME.components['object-parent']) require('aframe-object-parent')
 if (!AFRAME.components['raycast-target']) require('aframe-raycast-target')
+if (!AFRAME.components['graph-node']) require('aframe-graph')
 
 AFRAME.registerSystem('fusable-body', {
 
@@ -53,7 +54,7 @@ AFRAME.registerSystem('fusable-body', {
 
   destroyContainer(container) {
 
-    container.parentEl.removeNode(container)
+    container.parentEl.removeChild(container)
   },
 
   removeNode(el) {
@@ -129,7 +130,7 @@ AFRAME.registerComponent('fusable-body', {
   },
 
   init() {
-    this.el.setAttribute('graph-node')
+    this.el.setAttribute('graph-node', '')
     this.system.addNode(this.el)
   },
 
@@ -143,15 +144,15 @@ AFRAME.registerComponent('fused-joint', {
 
   multiple: true,
 
-  schema() {
+  schema: {
     target: {type: 'selector'}
   },
 
   init() {
-    this.el.setAttibute(`graph-edge__${this.attrName}`)
+    this.el.setAttribute(`graph-edge__${this.attrName}`, {target: `#${this.data.target.id}`})
   },
 
   remove() {
-    this.el.removeAttibute(`graph-edge__${this.attrName}`)
+    this.el.removeAttribute(`graph-edge__${this.attrName}`)
   }
 });

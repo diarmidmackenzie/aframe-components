@@ -30,3 +30,16 @@
     font-size: 20px;
     font-family: arial
 }
+
+.right-panel {
+  background: white;
+  color: black;
+  width: 20%;
+  position: absolute;
+  top: 200px;
+  right: 10px;
+  z-index: 10;
+  font-size: 20px;
+  font-family: arial;
+  padding: 10px;
+}
