@@ -91,6 +91,9 @@ AFRAME.registerSystem('fusable-body', {
       const node = this.nodeMap[uuid]
       const targetContainerSelector = `#${targetContainerId}`
       node.setAttribute('object-parent', {parent: targetContainerSelector})
+      
+      // !! raycast-target doesn't support updates - TO FIX !!
+      node.removeAttribute('raycast-target')
       node.setAttribute('raycast-target', targetContainerSelector)
     })
 
@@ -112,12 +115,16 @@ AFRAME.registerSystem('fusable-body', {
       componentToMove = component1
     }
 
-    const container = this.createContainer("kinematic")
+    // where to position containers?
+    const container = this.createContainer(evt.target, "kinematic") 
     const targetContainerSelector = `#${container.id}`
     
     componentToMove.forEach((uuid) => {
       const node = this.nodeMap[uuid]
       node.setAttribute('object-parent', {parent: targetContainerSelector})
+
+      // !! raycast-target doesn't support updates - TO FIX !!
+      node.removeAttribute('raycast-target')
       node.setAttribute('raycast-target', targetContainerSelector)
     })
   }
