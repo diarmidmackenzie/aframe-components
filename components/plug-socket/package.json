@@ -1,0 +1,19 @@
+{
+  "name": "aframe-plug-socket",
+  "version": "0.0.1",
+  "description": "Plugs & Sockets for A-Frame Entities",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "A-Frame",
+    "aframe",
+    "plug",
+    "socket",
+    "snap",
+    "position"
+  ],
+  "author": "Diarmid Mackenzie",
+  "license": "MIT"
+}
