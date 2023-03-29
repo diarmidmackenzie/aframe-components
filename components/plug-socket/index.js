@@ -92,9 +92,9 @@ AFRAME.registerSystem('socket', {
     const tolerance = this.data.snapDistance
     const plugPosition = plug.position
 
-    const xCandidates = this.findCandidates(this.freeSocketsSortedByX, plugPosition.x, tolerance);
-    const yCandidates = this.findCandidates(this.freeSocketsSortedByY, plugPosition.y, tolerance);
-    const zCandidates = this.findCandidates(this.freeSocketsSortedByZ, plugPosition.z, tolerance);
+    const xCandidates = this.findCandidates(this.freeSocketsSortedByX, 'x', plugPosition.x, tolerance);
+    const yCandidates = this.findCandidates(this.freeSocketsSortedByY, 'y', plugPosition.y, tolerance);
+    const zCandidates = this.findCandidates(this.freeSocketsSortedByZ, 'z', plugPosition.z, tolerance);
 
     const intersectArrays = (a1, a2) => {
       const intersect = a1.filter((c1) => a2.find((c2) => c1 === c2));
@@ -113,6 +113,9 @@ AFRAME.registerSystem('socket', {
   },
 
   findCandidates(array, property, value, tolerance) {
+
+    if (array.length === 0) return array
+
     const firstIndex = this.findInArraySegment(array, property, value - tolerance, 0, array.length, true);
     const lastIndex = this.findInArraySegment(array, property, value + tolerance, 0, array.length, false);
 
@@ -171,6 +174,9 @@ AFRAME.registerSystem('socket', {
       
       adjustmentObject = plugComponent.adjustmentObject
       const socket = this.matchPlugToSocket(plug, adjustmentObject)
+
+      if (!socket) continue
+
       const socketComponent = socket.el.components.socket
 
       const socketInertia = socketComponent.getIntertia()
