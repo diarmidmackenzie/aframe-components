@@ -7,26 +7,36 @@
   </head>
   <body>
     <div class="text-overlay">
-        <p>Simple plug-socket test - bricks should snap together</p>
+        <p>2-stud plug-socket test - bricks should snap together</p>
     </div>
       <a-scene background="color:#88f"
                socket="snapDistance: 0.2">
         <a-entity position = "0 1 -4"
                   animation="property: rotation; from: 0 0 0; to: 0 360 0; loop: true; easing: linear; dur: 10000">
           <a-box position = "0 1.1 0"
+                width = 2
                 socket-fabric
                 color="red">
-            <a-entity socket position = "0 -0.5 0">
+            <a-entity socket position = "-0.5 -0.5 0">
             </a-entity>
-            <a-entity plug position = "0 0.5 0">
+            <a-entity socket position = "0.5 -0.5 0">
+            </a-entity>
+            <a-entity plug position = "-0.5 0.5 0">
+            </a-entity>
+            <a-entity plug position = "0.5 0.5 0">
             </a-entity>
           </a-box>
           <a-box position = "0 0 0"
+                width = 2
                 socket-fabric
                 color="blue">
-            <a-entity socket position = "0 -0.5 0">
+            <a-entity socket position = "-0.5 -0.5 0">
             </a-entity>
-            <a-entity plug position = "0 0.5 0">
+            <a-entity socket position = "0.5 -0.5 0">
+            </a-entity>
+            <a-entity plug position = "-0.5 0.5 0">
+            </a-entity>
+            <a-entity plug position = "0.5 0.5 0">
             </a-entity>
           </a-box>
         </a-entity>
