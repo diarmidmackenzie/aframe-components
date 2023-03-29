@@ -166,8 +166,8 @@ AFRAME.registerSystem('socket', {
     const length = plugs.length
 
     for (ii = 0; ii < length; ii++) {
-      const plug = plug[ii]
-      const plugComponent = plug.el.components.plug
+      const plug = plugs[ii]
+      const plugComponent = plug.el.components.socket
       
       adjustmentObject = plugComponent.adjustmentObject
       const socket = this.matchPlugToSocket(plug, adjustmentObject)
@@ -363,7 +363,7 @@ AFRAME.registerComponent('socket-fabric', {
     const matchCounts = this.requests.map((request) => countMatchingRequests(request))
 
     const maxMatches = Math.max(...matchCounts)
-    const maxMatchesIndex = matchCounts.find(maxMatches)
+    const maxMatchesIndex = matchCounts.indexOf(maxMatches)
 
     usableRequest = this.requests[maxMatchesIndex]
 
@@ -406,6 +406,8 @@ AFRAME.registerComponent('socket-fabric', {
 
   tick() {
 
+    if (!this.requests.length) return
+
     // dispose of any requests that are inconsistent with other requests.
     this.buildConsensus()
 
@@ -433,13 +435,15 @@ AFRAME.registerComponent('socket-fabric', {
   requestCompleted(request) {
 
     request.el.emit('binding-success')
+
+    this.disposeOfRequest(request)
   }
 })
 
 AFRAME.registerComponent('plug', {
 
   init() {
-    this.el.setAtribute('socket', {type: 'plug'})
+    this.el.setAttribute('socket', {type: 'plug'})
   }
 })
 
