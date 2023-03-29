@@ -74,17 +74,11 @@ AFRAME.registerSystem('socket', {
     const sortByY = (o1, o2) => o1.position.y - o2.position.y
     const sortByZ = (o1, o2) => o1.position.z - o2.position.z
 
-    // copy & sort arrays - intention is to avoid allocation of new arrays, which would lead
-    // to Garbage Collection.
-
-    // Maybe futile as elsewhere we use slice & filter which generate new arrays.  Maybe we can
-    // do better there?
-    this.freeSocketsSortedByX.length = 0
-    this.freeSocketsSortedByY.length = 0
-    this.freeSocketsSortedByZ.length = 0
-    this.freeSocketsSortedByX.concat(this.freeSocketObjects).sort(sortByX)
-    this.freeSocketsSortedByY.concat(this.freeSocketObjects).sort(sortByY)
-    this.freeSocketsSortedByZ.concat(this.freeSocketObjects).sort(sortByZ)
+    // copy & sort arrays - would be nice to rework to create less GC, but elsewhere we also use
+    // slice & filter which generate new arrays.
+    this.freeSocketsSortedByX = [...this.freeSocketObjects].sort(sortByX)
+    this.freeSocketsSortedByY = [...this.freeSocketObjects].sort(sortByY)
+    this.freeSocketsSortedByZ = [...this.freeSocketObjects].sort(sortByZ)
   },
 
   findNearbySockets(plug) {
@@ -116,8 +110,8 @@ AFRAME.registerSystem('socket', {
 
     if (array.length === 0) return array
 
-    const firstIndex = this.findInArraySegment(array, property, value - tolerance, 0, array.length, true);
-    const lastIndex = this.findInArraySegment(array, property, value + tolerance, 0, array.length, false);
+    const firstIndex = this.findInArraySegment(array, property, value - tolerance, 0, array.length - 1, true);
+    const lastIndex = this.findInArraySegment(array, property, value + tolerance, 0, array.length - 1, false);
 
     return array.slice(firstIndex, lastIndex + 1);
   },
@@ -130,14 +124,14 @@ AFRAME.registerSystem('socket', {
   // end: the end position to search to
   // forward: true to search from beginning (lowest matching value),
   // false to search from the end (highest matching value_)
-  findInArraySegment(array, value, start, end, forward) {
-    //console.log(`Searching for ${x} in array, between indices ${start} and ${end}`);
+  findInArraySegment(array, property, value, start, end, forward) {
+    //console.log(`Searching for ${value} in array, between indices ${start} and ${end}`);
     //console.log(`Array segment is: ${array.slice(start, end)}`);
 
     // Final match
     if (start === end || start > end) {
       //console.log(`found at ${start}`)
-      if (array[start].object3D.position[property] > value && forward) {
+      if (array[start].position[property] > value && forward) {
         return start - 1;
       } else {
         return start;
@@ -150,7 +144,7 @@ AFRAME.registerSystem('socket', {
     // If element at mid is greater than x
     // (or it matches & we are searching forwards).
     // search in the left half of mid
-    const midValue = array[mid].object3D.position[property]
+    const midValue = array[mid].position[property]
     if (midValue > value || (midValue === value && forward)) {
       return this.findInArraySegment(array, property, value, start, mid - 1);
     }
@@ -262,10 +256,9 @@ AFRAME.registerComponent('socket', {
     this.bindingState = PS_STATE_FREE
     this.adjustmentObject = new THREE.Object3D()
     
-    this.addToSystem()
-
     this.peer = null
     this.isSocket = (this.data.type === 'socket')
+    this.addToSystem()
 
     this.bindingFailed = this.bindingFailed.bind(this)
     this.bindingSuccess = this.bindingSuccess.bind(this)
