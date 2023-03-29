@@ -1,10 +1,18 @@
 
+const PS_STATE_FREE = 0
+const PS_STATE_BINDING = 1
+const PS_STATE_BOUND = 2
+
 AFRAME.registerSystem('socket', {
 
   schema: {
     snapDistance: {default: 0.1},
+
     // rotation in degrees by which a plug can snap to this socket.
     snapRotation: {default: 30},
+
+    // degrees between positions at which the socket & plug can be fixed (y-axis only)
+    rotationIncrement: { default: 90 }
   },
 
   init() {
@@ -15,6 +23,50 @@ AFRAME.registerSystem('socket', {
     this.freeSocketsSortedByY = []
     this.freeSocketsSortedByZ = []
 
+    this.upVector = new THREE.Vector3(0, 1, 0)
+    this.identityQuaternion = new THREE.Quaternion()
+    this.bestQuaternion = new THREE.Quaternion()
+
+    this.testPlug = new THREE.Object3D()
+  },
+
+  update() {
+
+    // build an array of quaternions representing angles to test for socket/plug matches,
+    // based on the supplied config.
+    // old code, can probably delete...
+    /* this.anglesToTest = []
+    for (angle = 0; angle < 360; angle += this.data.rotationIncrement) {
+      const quaternion = new THREE.Quaternion()
+      quaternion.setFromAxisAngle(this.upVector, THREE.MathUtils.degToRad(angle))
+      this.anglesToTest.push(quaternion)
+    }*/
+    this.angleIncrementQuaternion = new THREE.Quaternion()
+    this.angleIncrementQuaternion.setFromAxisAngle(this.upVector, THREE.MathUtils.degToRad(this.data.rotationIncrement))
+  },
+
+  addFreePlug(plug) {
+    this.freePlugObjects.push(plug)
+  },
+
+  removeFreePlug(plug) {
+    const index = this.freePlugObjects.indexOf(plug)
+
+    if (index > 0) {
+      this.freePlugObjects.splice(index, 1)
+    }
+  },
+
+  addFreeSocket(socket) {
+    this.freeSocketObjects.push(socket)
+  },
+
+  removeFreeSocket(socket) {
+    const index = this.freeSocketObjects.indexOf(socket)
+
+    if (index > 0) {
+      this.freeSocketObjects.splice(index, 1)
+    }
   },
 
   prepareSocketsForSearch() {
@@ -35,7 +87,7 @@ AFRAME.registerSystem('socket', {
     this.freeSocketsSortedByZ.concat(this.freeSocketObjects).sort(sortByZ)
   },
 
-  findMatchingSockets(plug) {
+  findNearbySockets(plug) {
 
     const tolerance = this.data.snapDistance
     const plugPosition = plug.position
@@ -114,28 +166,335 @@ AFRAME.registerSystem('socket', {
     const length = plugs.length
 
     for (ii = 0; ii < length; ii++) {
-      this.matchPlugToSocket(plugs[ii])
-    }
-  }
+      const plug = plug[ii]
+      const plugComponent = plug.el.components.plug
+      
+      adjustmentObject = plugComponent.adjustmentObject
+      const socket = this.matchPlugToSocket(plug, adjustmentObject)
+      const socketComponent = socket.el.components.socket
 
+      const socketInertia = socketComponent.getIntertia()
+      const plugInertia = plugComponent.getIntertia()
+
+      if (plugInertia <= socketInertia) {
+        plugComponent.suggestPeer(socket)
+      }
+      else {
+        socketComponent.suggestPeer(plug)
+      }
+    }
+  },
+
+  // params:
+  // plug to match to a socket
+  // adjustmentObject - an object3D, child of the plug, whose transform will be set to the 
+  //                adjustment required from the plug transform to the chosen socket's transform.
+  matchPlugToSocket(plug, adjustmentObject) {
+
+    let bestSocket = null
+    let bestDistanceSq = Infinity
+    const sockets = this.findNearbySockets(plug)
+
+    if (sockets.length < 1) return
+
+    sockets.forEach((socket) => {
+
+      // set testPlug position to match position of socket,
+      // but as a child of the plug.
+      this.testPlug.matrix.identity()
+      this.testPlug.matrix.decompose(this.testPlug.position,
+                                     this.testPlug.quaternion,
+                                     this.testPlug.scale)
+      socket.add(this.testPlug)
+      plug.attach(this.testPlug)
+
+      let bestAngle = Infinity
+
+      for (ii = 0; ii < 360; ii += this.data.rotationIncrement) {
+
+        // standardize an angle to range -PI to +PI
+        const standardizeAngle = (angle) => angle - (2 * Math.PI * Math.floor((angle + Math.PI) / (2 * Math.PI)))
+
+        const rawAngle = this.testQuaternion.angleTo(this.identityQuaternion)
+        const absAngle = Math.abs(standardizeAngle(rawAngle))
+
+        if (absAngle < bestAngle) {
+          bestAngle = absAngle
+          this.bestQuaternion.copy(this.testPlug.quaternion)
+        }
+
+        this.testPlug.quaternion.multiply(this.angleIncrementQuaternion)
+      }
+
+      if (bestAngle < this.data.snapRotation) {
+        // angle small enough to qualify
+
+        const distanceSq = this.testPlug.position.lengthSq()
+        
+        if (distanceSq < bestDistanceSq) {
+          bestDistanceSq = distanceSq
+          bestSocket = socket
+          adjustmentObject.matrix.copy(this.testPlug.matrix)
+          this.testPlug.matrix.decompose(adjustmentObject.position,
+                                         adjustmentObject.quaternion,
+                                         adjustmentObject.scale)
+        }
+      }
+    })
+
+    return bestSocket
+  }
 })
 
 AFRAME.registerComponent('socket', {
 
   schema: {
-    // degrees between positions at which the socket & plug can be fixed
-    rotationIncrement: { default: 90 }
+    type: { type: 'string', default: 'socket', oneOf: ['socket', 'plug']}
+  },
+
+  init() {
+    this.bindingState = PS_STATE_FREE
+    this.adjustmentObject = new THREE.Object3D()
+    
+    this.addToSystem()
+
+    this.peer = null
+    this.isSocket = (this.data.type === 'socket')
+
+    this.bindingFailed = this.bindingFailed.bind(this)
+    this.bindingSuccess = this.bindingSuccess.bind(this)
+    this.el.addEventListener('binding-failed', this.bindingFailed)
+    this.el.addEventListener('binding-success', this.bindingSuccess)
+  },
+
+  addToSystem() {
+
+    if (this.isSocket) {
+      this.system.addFreeSocket(this.el.object3D)
+    }
+    else {
+      this.system.addFreePlug(this.el.object3D)
+    }
+  },
+
+  removeFromSystem() {
+
+    if (this.isSocket) {
+      this.system.removeFreeSocket(this.el.object3D)
+    }
+    else {
+      this.system.removeFreePlug(this.el.object3D)
+    }
+  },
+
+  getIntertia() {
+
+    return 1
+  },
+
+  suggestPeer(peer) {
+
+    this.removeFromSystem(this.el.object3D)
+    this.bindingState = PS_STATE_BINDING
+    this.peer = peer
+
+    this.el.emit('binding-request')
+  },
+  
+  bindingFailed() {
+    this.socketSystem.addFreePlug(this.el.object3D)
+    this.socketSystem.addFreeSocket(this.connectedSocket)
+    this.connectedSocket = null
+  },
+
+  bindingSuccess() {
+    this.bindingState = PS_STATE_BOUND
+  },
+
+  tick() {
+    if (this.bindingState === PS_STATE_BINDING) {
+      // update target position.
+      const node = this.el.object3D
+      const peer = this.peer
+
+      this.adjustmentObject.identity()
+      this.adjustmentObject.matrix.decompose(this.adjustmentObject.position,
+                                             this.adjustmentObject.quaternion,
+                                             this.adjustmentObject.scale)
+      node.add(this.adjustmentObject)
+      peer.attach(this.adjustmentObject)
+
+      this.el.emit('binding-request')
+    }
+  }
+
+})
+
+AFRAME.registerComponent('socket-fabric', {
+
+  init() {
+
+    this.bindingRequest = this.bindingRequest.bind(this)
+    this.el.addEventListener('binding-request', this.bindingRequest)
+
+    this.requests = []    
+  },
+
+  bindingRequest(evt) {
+
+    source = evt.target
+    sourceNode = source.components['socket']
+    target = sourceNode.peer // easier if this is gender-meutral - to adjust above if this proved correct.
+
+    this.requests.add(sourceNode)
+
+    // processing of requests is done on tick().  We don't want to act yet - if entities are in motion
+    // give all entities a chance to catch up with each other before analysing, else the first to move would be 
+    // designated as inconsistent with the others & discarded.
+  },
+
+  buildConsensus() {
+
+    const countMatchingRequests = (request) => {
+      this.requests.filter((item) => this.compareTransforms(request.adjustmentObject,
+                                                            item.adjustmentObject)).length
+    }
+
+    const matchCounts = this.requests.map((request) => countMatchingRequests(request))
+
+    const maxMatches = Math.max(...matchCounts)
+    const maxMatchesIndex = matchCounts.find(maxMatches)
+
+    usableRequest = this.requests[maxMatchesIndex]
+
+    disposableRequests = this.requests.filter((item) => !this.compareTransforms(usableRequest.adjustmentObject,
+                                                                                item.adjustmentObject))
+    disposableRequests.forEach((request) => {
+      this.disposeOfRequest(request)
+    })
+
+    // this.requests now contains only usable requests, that are consistent with each other.
+  },
+
+  disposeOfRequest(request) {
+
+    request.el.emit('binding-failed')
+    const index = this.requests.indexOf(request)
+    this.requests.splice(index, 1)
+  
+  },
+
+  compareTransforms(a, b, precision = 6) {
+
+    const compare = (x, y) => (Math.abs(x - y) < Math.pow(10, -precision))
+
+    const ap = a.position
+    const bp = b.position
+    if (!compare(ap.x, bp.x)) return false
+    if (!compare(ap.y, bp.y)) return false
+    if (!compare(ap.z, bp.z)) return false
+
+    const aq = a.quaternion
+    const bq = b.quaternion
+    if (!compare(aq.x, bq.x)) return false
+    if (!compare(aq.y, bq.y)) return false
+    if (!compare(aq.z, bq.z)) return false
+    if (!compare(aq.w, bq.w)) return false
+  
+    return true
+  },
+
+  tick() {
+
+    // dispose of any requests that are inconsistent with other requests.
+    this.buildConsensus()
+
+    // Now all requests are consistent, so fine to pick any of them to apply.
+    this.moveTowards(this.requests[0].adjustmentObject)
+  },
+
+  moveTowards(object) {
+
+    // for now, just snap to position 
+    // - in future, will be option to do this asynchronously via physics system.
+    this.el.object3D.position.add(object.position)
+    this.el.object3D.quaternion.multiply(object.quaternion)
+
+    this.requests.forEach((request) => {
+      this.requestCompleted(request)
+    })
+
+    // !! Will need to do better when objects are moving - need to mediate between
+    // whatever is controlling movement (animation etc.) and this change to position.
+    // An additional Objet3D needed to track the offset transform?
+    // Details to be worked out...
+  },
+
+  requestCompleted(request) {
+
+    request.el.emit('binding-success')
   }
 })
 
 AFRAME.registerComponent('plug', {
 
   init() {
-    this.connected = false
+    this.el.setAtribute('socket', {type: 'plug'})
+  }
+})
+
+/* Old code - plugs now represented as sockets with type 'plug'.
+AFRAME.registerComponent('plug', {
+
+  init() {
+    this.bindingState = PS_STATE_FREE
+    this.adjustmentObject = new THREE.Object3D()
+    this.plug.add(adjustmentObject)
+    this.socketSystem = this.el.sceneEl.systems.socket
+    this.socketSystem.addFreePlug(this.el.object3D)
+    this.connectedSocket = null
+  },
+
+  suggestSocket(socket) {
+
+    this.socketSystem.removeFreePlug(this.el.object3D)
+    this.socketSystem.removeFreeSocket(socket)
+    this.bindingState = PS_STATE_BINDING
+    this.connectedSocket = socket
+
+    this.el.emit('binding-request')
+  },
+
+  bindingFailed() {
+    this.socketSystem.addFreePlug(this.el.object3D)
+    this.socketSystem.addFreeSocket(this.connectedSocket)
+    this.connectedSocket = null
+  },
+
+  bindingSuccess() {
+    this.bindingState = PS_STATE_BOUND
+  },
+
+  getIntertia() {
+
+    return 1
   },
 
   tick() {
+    if (this.bindingState === PS_STATE_BINDING) {
+      // update target position.
+      const plug = this.el.object3D
+      const socket = this.connectedSocket
 
+      this.adjustmentObject.identity()
+      this.adjustmentObject.matrix.decompose(this.adjustmentObject.position,
+                                             this.adjustmentObject.quaternion,
+                                             this.adjustmentObject.scale)
+      socket.add(this.adjustmentObject)
+      plug.attach(this.adjustmentObject)
 
+      this.el.emit('binding-request')
+    }
   }
 })
+*/

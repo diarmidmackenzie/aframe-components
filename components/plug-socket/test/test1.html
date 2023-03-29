@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../index.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Simple plug-socket test</p>
+      <a-scene background="color:#88f"
+               socket="snapDistance: 0.2">
+        <a-entity position = "0 1 -4">
+        <a-box position = "0 1.1 0"
+               socket-fabric
+               color="red">
+          <a-entity socket position = "0 -0.5 0">
+          </a-entity>
+          <a-entity plug position = "0 0.5 0">
+          </a-entity>
+        </a-box>
+        <a-box position = "0 0 0"
+               socket-fabric
+               color="blue">
+          <a-entity socket position = "0 -0.5 0">
+          </a-entity>
+          <a-entity plug position = "0 0.5 0">
+          </a-entity>
+        </a-box>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>
