@@ -320,8 +320,8 @@ AFRAME.registerComponent('socket', {
   },
   
   bindingFailed() {
-    this.socketSystem.addFreePlug(this.el.object3D)
-    this.socketSystem.addFreeSocket(this.connectedSocket)
+    this.addToSystem()
+    this.peer.el.components.socket.addToSystem()
     this.connectedSocket = null
   },
 
@@ -376,30 +376,32 @@ AFRAME.registerComponent('socket-fabric', {
 
   buildConsensus() {
 
-    const countMatchingRequests = (request) => {
-      this.requests.filter((item) => this.compareTransforms(request.adjustmentObject,
-                                                            item.adjustmentObject)).length
-    }
+    const countMatchingRequests = (request) => 
+      (this.requests.filter((item) => this.compareTransforms(request.adjustmentObject,
+                                                             item.adjustmentObject)).length)
 
     const matchCounts = this.requests.map((request) => countMatchingRequests(request))
 
     const maxMatches = Math.max(...matchCounts)
     const maxMatchesIndex = matchCounts.indexOf(maxMatches)
 
-    usableRequest = this.requests[maxMatchesIndex]
+    const usableRequest = this.requests[maxMatchesIndex]
 
-    disposableRequests = this.requests.filter((item) => !this.compareTransforms(usableRequest.adjustmentObject,
+    const disposableRequests = this.requests.filter((item) => !this.compareTransforms(usableRequest.adjustmentObject,
                                                                                 item.adjustmentObject))
     disposableRequests.forEach((request) => {
-      this.disposeOfRequest(request)
+      this.disposeOfRequest(request, true)
     })
 
     // this.requests now contains only usable requests, that are consistent with each other.
   },
 
-  disposeOfRequest(request) {
+  disposeOfRequest(request, failureFlag) {
 
-    request.el.emit('binding-failed')
+    if (failureFlag) {
+      request.el.emit('binding-failed')
+    }
+    
     const index = this.requests.indexOf(request)
     this.requests.splice(index, 1)
   
@@ -457,7 +459,7 @@ AFRAME.registerComponent('socket-fabric', {
 
     request.el.emit('binding-success')
 
-    this.disposeOfRequest(request)
+    this.disposeOfRequest(request, false)
   }
 })
 
