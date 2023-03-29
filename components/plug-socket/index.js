@@ -102,6 +102,7 @@ AFRAME.registerSystem('socket', {
     
     const checkDistance = (o) => {
       if (o.position.distanceToSquared(plugPosition) >= toleranceSq) return false
+      return true
     }
     return candidates.filter(checkDistance)
   },
@@ -215,7 +216,7 @@ AFRAME.registerSystem('socket', {
         // standardize an angle to range -PI to +PI
         const standardizeAngle = (angle) => angle - (2 * Math.PI * Math.floor((angle + Math.PI) / (2 * Math.PI)))
 
-        const rawAngle = this.testQuaternion.angleTo(this.identityQuaternion)
+        const rawAngle = this.testPlug.quaternion.angleTo(this.identityQuaternion)
         const absAngle = Math.abs(standardizeAngle(rawAngle))
 
         if (absAngle < bestAngle) {
@@ -234,10 +235,9 @@ AFRAME.registerSystem('socket', {
         if (distanceSq < bestDistanceSq) {
           bestDistanceSq = distanceSq
           bestSocket = socket
-          adjustmentObject.matrix.copy(this.testPlug.matrix)
-          this.testPlug.matrix.decompose(adjustmentObject.position,
-                                         adjustmentObject.quaternion,
-                                         adjustmentObject.scale)
+
+          adjustmentObject.position.copy(this.testPlug.position)
+          adjustmentObject.quaternion.copy(this.bestQuaternion)
         }
       }
     })
@@ -258,6 +258,13 @@ AFRAME.registerComponent('socket', {
     
     this.peer = null
     this.isSocket = (this.data.type === 'socket')
+
+    // worldSpaceObject is a world-space representation of the transform
+    // of this socket.  USed for matching sockets in space.
+    this.worldSpaceObject = new THREE.Object3D
+    this.worldSpaceObject.el = this.el
+    this.updateWorldSpaceObject()
+    
     this.addToSystem()
 
     this.bindingFailed = this.bindingFailed.bind(this)
@@ -266,23 +273,35 @@ AFRAME.registerComponent('socket', {
     this.el.addEventListener('binding-success', this.bindingSuccess)
   },
 
+  updateWorldSpaceObject() {
+
+    const wso = this.worldSpaceObject
+    wso.matrix.identity()
+    wso.matrix.decompose(wso.position,
+                         wso.quaternion,
+                         wso.scale)
+    this.el.object3D.add(wso)
+    this.el.sceneEl.object3D.attach(wso)
+
+  },
+
   addToSystem() {
 
     if (this.isSocket) {
-      this.system.addFreeSocket(this.el.object3D)
+      this.system.addFreeSocket(this.worldSpaceObject)
     }
     else {
-      this.system.addFreePlug(this.el.object3D)
+      this.system.addFreePlug(this.worldSpaceObject)
     }
   },
 
   removeFromSystem() {
 
     if (this.isSocket) {
-      this.system.removeFreeSocket(this.el.object3D)
+      this.system.removeFreeSocket(this.worldSpaceObject)
     }
     else {
-      this.system.removeFreePlug(this.el.object3D)
+      this.system.removeFreePlug(this.worldSpaceObject)
     }
   },
 
@@ -311,12 +330,15 @@ AFRAME.registerComponent('socket', {
   },
 
   tick() {
+
+    this.updateWorldSpaceObject()
+
     if (this.bindingState === PS_STATE_BINDING) {
       // update target position.
       const node = this.el.object3D
       const peer = this.peer
 
-      this.adjustmentObject.identity()
+      this.adjustmentObject.matrix.identity()
       this.adjustmentObject.matrix.decompose(this.adjustmentObject.position,
                                              this.adjustmentObject.quaternion,
                                              this.adjustmentObject.scale)
@@ -345,7 +367,7 @@ AFRAME.registerComponent('socket-fabric', {
     sourceNode = source.components['socket']
     target = sourceNode.peer // easier if this is gender-meutral - to adjust above if this proved correct.
 
-    this.requests.add(sourceNode)
+    this.requests.push(sourceNode)
 
     // processing of requests is done on tick().  We don't want to act yet - if entities are in motion
     // give all entities a chance to catch up with each other before analysing, else the first to move would be 
