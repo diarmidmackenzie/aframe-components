@@ -1,3 +1,4 @@
+require('aframe-polygon-wireframe')
 
 const PS_STATE_FREE = 0
 const PS_STATE_BINDING = 1
@@ -12,7 +13,10 @@ AFRAME.registerSystem('socket', {
     snapRotation: {default: 30},
 
     // degrees between positions at which the socket & plug can be fixed (y-axis only)
-    rotationIncrement: { default: 90 }
+    rotationIncrement: { default: 90 },
+
+    // debug visualization
+    debug: { default: false }
   },
 
   init() {
@@ -271,6 +275,56 @@ AFRAME.registerComponent('socket', {
     this.bindingSuccess = this.bindingSuccess.bind(this)
     this.el.addEventListener('binding-failed', this.bindingFailed)
     this.el.addEventListener('binding-success', this.bindingSuccess)
+
+    if (this.system.data.debug) {
+      this.debugVisual = document.createElement('a-cylinder')
+      this.updateDebugVisual()
+      this.el.appendChild(this.debugVisual)
+    }
+  },
+
+  updateDebugVisual() {
+
+    if (!this.debugVisual) return
+
+    let color, radius
+
+    switch (this.bindingState) {
+      case PS_STATE_FREE:
+        color = (this.data.type === 'socket') ? '#55f' : '#f55'
+        break
+      
+      case PS_STATE_BINDING:
+        color = (this.data.type === 'socket') ? '#5af' : '#fa5'
+        break
+
+      case PS_STATE_BOUND:
+        color = (this.data.type === 'socket') ? '#5ff' : '#ff5'
+        break
+      
+      default:
+        console.error('unexpected state', this.bindingState)
+        break
+    }
+    
+    radius = (this.data.type === 'socket') ? 0.1 : 0.08
+    
+    const sides = 360 / this.system.data.rotationIncrement
+
+    this.debugVisual.setAttribute('radius', radius)
+    this.debugVisual.setAttribute('height', 0.05)
+    this.debugVisual.setAttribute('segments-height', 1)
+    this.debugVisual.setAttribute('segments-radial', sides)
+    this.debugVisual.setAttribute('polygon-wireframe', {color: color})
+
+    const object = this.debugVisual.getObject3D('mesh')
+
+    if (object) {
+      object.material.depthWrite = false
+      object.material.depthTest = false
+      object.material.toneMapped = false
+      object.material.transparent = true
+    }
   },
 
   updateWorldSpaceObject() {
@@ -332,6 +386,7 @@ AFRAME.registerComponent('socket', {
   tick() {
 
     this.updateWorldSpaceObject()
+    this.updateDebugVisual()
 
     if (this.bindingState === PS_STATE_BINDING) {
       // update target position.
@@ -358,7 +413,7 @@ AFRAME.registerComponent('socket-fabric', {
     this.bindingRequest = this.bindingRequest.bind(this)
     this.el.addEventListener('binding-request', this.bindingRequest)
 
-    this.requests = []    
+    this.requests = []
   },
 
   bindingRequest(evt) {
@@ -469,59 +524,3 @@ AFRAME.registerComponent('plug', {
     this.el.setAttribute('socket', {type: 'plug'})
   }
 })
-
-/* Old code - plugs now represented as sockets with type 'plug'.
-AFRAME.registerComponent('plug', {
-
-  init() {
-    this.bindingState = PS_STATE_FREE
-    this.adjustmentObject = new THREE.Object3D()
-    this.plug.add(adjustmentObject)
-    this.socketSystem = this.el.sceneEl.systems.socket
-    this.socketSystem.addFreePlug(this.el.object3D)
-    this.connectedSocket = null
-  },
-
-  suggestSocket(socket) {
-
-    this.socketSystem.removeFreePlug(this.el.object3D)
-    this.socketSystem.removeFreeSocket(socket)
-    this.bindingState = PS_STATE_BINDING
-    this.connectedSocket = socket
-
-    this.el.emit('binding-request')
-  },
-
-  bindingFailed() {
-    this.socketSystem.addFreePlug(this.el.object3D)
-    this.socketSystem.addFreeSocket(this.connectedSocket)
-    this.connectedSocket = null
-  },
-
-  bindingSuccess() {
-    this.bindingState = PS_STATE_BOUND
-  },
-
-  getIntertia() {
-
-    return 1
-  },
-
-  tick() {
-    if (this.bindingState === PS_STATE_BINDING) {
-      // update target position.
-      const plug = this.el.object3D
-      const socket = this.connectedSocket
-
-      this.adjustmentObject.identity()
-      this.adjustmentObject.matrix.decompose(this.adjustmentObject.position,
-                                             this.adjustmentObject.quaternion,
-                                             this.adjustmentObject.scale)
-      socket.add(this.adjustmentObject)
-      plug.attach(this.adjustmentObject)
-
-      this.el.emit('binding-request')
-    }
-  }
-})
-*/
