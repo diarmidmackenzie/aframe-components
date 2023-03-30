@@ -5,7 +5,8 @@ AFRAME.registerComponent("polygon-wireframe", {
         dashed: { type: 'boolean', default: false },
         dashSize: { type: 'number', default: 3 },
         gapSize: { type: 'number', default: 1 },
-        dashScale: { type: 'number', default: 30 }
+        dashScale: { type: 'number', default: 30 },
+        onTop: {type: 'boolean', default: false}
     },
 
     init() {
@@ -25,6 +26,13 @@ AFRAME.registerComponent("polygon-wireframe", {
                                                        dashSize: this.data.dashSize,
                                                        gapSize: this.data.gapSize,
                                                        scale: this.data.dashScale } )
+        }
+
+        if (this.data.onTop) {
+          material.depthWrite = false
+          material.depthTest = false
+          material.toneMapped = false
+          material.transparent = true
         }
         
         const line = new THREE.LineSegments( edges, material );        
