@@ -167,7 +167,7 @@ AFRAME.registerSystem('socket', {
     const plugs = this.freePlugObjects
     const length = plugs.length
 
-    for (ii = 0; ii < length; ii++) {
+    for (let ii = 0; ii < length; ii++) {
       const plug = plugs[ii]
       const plugComponent = plug.el.components.socket
       
@@ -176,12 +176,19 @@ AFRAME.registerSystem('socket', {
 
       if (!socket) continue
 
+      console.log("Matched plug: ", ii, plug.uuid, "to socket", socket.uuid)
+      console.log("Plug WP:", plugComponent.worldSpaceObject.position)
+      console.log("Plug WQ:", plugComponent.worldSpaceObject.quaternion)
+      
       const socketComponent = socket.el.components.socket
+      console.log("Socket WP:", socketComponent.worldSpaceObject.position)
+      console.log("Socket WQ:", socketComponent.worldSpaceObject.quaternion)
 
       const socketInertia = socketComponent.getIntertia()
       const plugInertia = plugComponent.getIntertia()
 
       if (plugInertia <= socketInertia) {
+        
         plugComponent.suggestPeer(socket)
       }
       else {
@@ -215,7 +222,7 @@ AFRAME.registerSystem('socket', {
 
       let bestAngle = Infinity
 
-      for (ii = 0; ii < 360; ii += this.data.rotationIncrement) {
+      for (let ii = 0; ii < 360; ii += this.data.rotationIncrement) {
 
         // standardize an angle to range -PI to +PI
         const standardizeAngle = (angle) => angle - (2 * Math.PI * Math.floor((angle + Math.PI) / (2 * Math.PI)))
@@ -281,6 +288,8 @@ AFRAME.registerComponent('socket', {
       this.updateDebugVisual()
       this.el.appendChild(this.debugVisual)
     }
+
+    this.debugDistanceVector = new THREE.Vector3()
   },
 
   updateDebugVisual() {
@@ -295,13 +304,10 @@ AFRAME.registerComponent('socket', {
         break
       
       case PS_STATE_BINDING:
-        color = (this.data.type === 'socket') ? '#5af' : '#fa5'
-        break
-
       case PS_STATE_BOUND:
         color = (this.data.type === 'socket') ? '#5ff' : '#ff5'
         break
-      
+
       default:
         console.error('unexpected state', this.bindingState)
         break
@@ -315,16 +321,8 @@ AFRAME.registerComponent('socket', {
     this.debugVisual.setAttribute('height', 0.05)
     this.debugVisual.setAttribute('segments-height', 1)
     this.debugVisual.setAttribute('segments-radial', sides)
-    this.debugVisual.setAttribute('polygon-wireframe', {color: color})
+    this.debugVisual.setAttribute('polygon-wireframe', {color: color, onTop: true})
 
-    const object = this.debugVisual.getObject3D('mesh')
-
-    if (object) {
-      object.material.depthWrite = false
-      object.material.depthTest = false
-      object.material.toneMapped = false
-      object.material.transparent = true
-    }
   },
 
   updateWorldSpaceObject() {
@@ -366,21 +364,39 @@ AFRAME.registerComponent('socket', {
 
   suggestPeer(peer) {
 
-    this.removeFromSystem(this.el.object3D)
     this.bindingState = PS_STATE_BINDING
     this.peer = peer
+
+    // this is the adjustment needed to the socket / plug to make them fit.
+    // NOT to the socket / plug fabric (which is what is needed!!!)
+
+    this.adjustmentObject.matrix.identity()
+    this.adjustmentObject.matrix.decompose(this.adjustmentObject.position,
+                                           this.adjustmentObject.quaternion,
+                                           this.adjustmentObject.scale)
+    peer.add(this.adjustmentObject)
+    this.el.object3D.attach(this.adjustmentObject)
 
     this.el.emit('binding-request')
   },
   
   bindingFailed() {
-    this.addToSystem()
     this.peer.el.components.socket.addToSystem()
     this.connectedSocket = null
   },
 
   bindingSuccess() {
     this.bindingState = PS_STATE_BOUND
+    this.removeFromSystem()
+    const peerComponent = this.peer.el.components.socket
+    peerComponent.removeFromSystem()
+
+    if (this.system.data.debug) {
+      this.updateWorldSpaceObject()
+      peerComponent.updateWorldSpaceObject()
+      this.debugDistanceVector.subVectors(this.worldSpaceObject.position, this.peer.el.components.socket.worldSpaceObject.position)
+      console.log("socket distance:", this.debugDistanceVector.length())
+    }
   },
 
   tick() {
@@ -397,8 +413,8 @@ AFRAME.registerComponent('socket', {
       this.adjustmentObject.matrix.decompose(this.adjustmentObject.position,
                                              this.adjustmentObject.quaternion,
                                              this.adjustmentObject.scale)
-      node.add(this.adjustmentObject)
-      peer.attach(this.adjustmentObject)
+      peer.add(this.adjustmentObject)
+      node.attach(this.adjustmentObject)
 
       this.el.emit('binding-request')
     }
@@ -420,7 +436,7 @@ AFRAME.registerComponent('socket-fabric', {
 
     source = evt.target
     sourceNode = source.components['socket']
-    target = sourceNode.peer // easier if this is gender-meutral - to adjust above if this proved correct.
+    target = sourceNode.peer
 
     this.requests.push(sourceNode)
 
@@ -449,6 +465,8 @@ AFRAME.registerComponent('socket-fabric', {
     })
 
     // this.requests now contains only usable requests, that are consistent with each other.
+
+    console.log("Requests", this.requests)
   },
 
   disposeOfRequest(request, failureFlag) {
@@ -498,7 +516,7 @@ AFRAME.registerComponent('socket-fabric', {
     // for now, just snap to position 
     // - in future, will be option to do this asynchronously via physics system.
     this.el.object3D.position.add(object.position)
-    this.el.object3D.quaternion.multiply(object.quaternion)
+    this.el.object3D.quaternion.premultiply(object.quaternion)
 
     this.requests.forEach((request) => {
       this.requestCompleted(request)

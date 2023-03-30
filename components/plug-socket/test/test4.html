@@ -15,7 +15,7 @@
               if (evt.key === " ") {
 
                 this.snap += 0.1
-                this.el.setAttribute('socket', {snapDistance: this.snap})
+                this.el.setAttribute('socket', {snapDistance: this.snap, debug: true})
 
                 snapText = document.getElementById('snap-output')
                 snapText.innerHTML = this.snap.toFixed(1)
@@ -32,7 +32,7 @@
         <p>Snap distance: <span id="snap-output">0</span>.  Hit space to increase it.</p>
     </div>
       <a-scene background="color:#88f"
-               socket="snapDistance: 0"
+               socket="snapDistance: 0; debug: true"
                increase-snap-distance-on-space-keypress
                stats>
         <a-assets>

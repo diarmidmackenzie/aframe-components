@@ -20,7 +20,7 @@
   "author": "Diarmid Mackenzie",
   "license": "MIT",
   "dependencies": {
-    "aframe-polygon-wireframe": "^0.1.0"
+    "aframe-polygon-wireframe": "^0.2.1"
   },
   "devDependencies": {
     "webpack": "^5.75.0",
