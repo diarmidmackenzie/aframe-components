@@ -9,7 +9,7 @@
 
           init() {
 
-            this.snap = 0.1
+            this.snap = 0
             window.addEventListener('keyup', (evt) => {
 
               if (evt.key === " ") {
@@ -29,10 +29,10 @@
   <body>
     <div class="text-overlay">
         <p>8-stud plug-socket test - bricks at various offsets and angles</p>
-        <p>Snap distance: <span id="snap-output">0.1</span>.  Hit space to increase it.</p>
+        <p>Snap distance: <span id="snap-output">0</span>.  Hit space to increase it.</p>
     </div>
       <a-scene background="color:#88f"
-               socket="snapDistance: 0.1"
+               socket="snapDistance: 0"
                increase-snap-distance-on-space-keypress
                stats>
         <a-assets>
