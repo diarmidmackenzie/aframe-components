@@ -8,6 +8,9 @@ AFRAME.registerComponent('mouse-manipulation', {
     schema: {
         debug: {type: 'boolean', default: false},
         showHints: {type: 'boolean', default: true},
+        grabEvents: {type: 'boolean', default: false},
+        grabEvent: {type: 'string', default: 'mouseGrab'},
+        releaseEvent: {type: 'string', default: 'mouseRelease'}
     },
 
     events: {
@@ -314,11 +317,20 @@ AFRAME.registerComponent('mouse-manipulation', {
 
         this.hints.object3D.position.set(0, 0 , 0)
         contactPoint.object3D.add(this.hints.object3D)
+
+        if (this.data.grabEvents) {
+          this.grabbedEl.emit(this.data.grabEvent)
+        }
     },
 
     releaseEl() {
         const contactPoint = this.grabbedEl.object3D.parent
         this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.originalParentEl.id}`)
+
+        if (this.data.grabEvents) {
+          this.grabbedEl.emit(this.data.releaseEvent)
+        }
+
         this.grabbedEl = null
         this.originalParentEl = null
         

@@ -49,11 +49,17 @@ AFRAME.registerComponent("polygon-wireframe", {
         this.el.getObject3D('mesh').visible = false;
 
         // dispose of old material & line
-        if (oldMaterial) {
-          oldMaterial.dispose()
-        }
         if (oldLine) {
           oldLine.removeFromParent()
         }
+        if (oldMaterial) {
+          oldMaterial.dispose()
+        }
+    },
+
+    remove() {
+      this.el.getObject3D('mesh').visible = true;
+      this.material.dispose()
+      this.line.removeFromParent()
     }
 })

@@ -3,18 +3,17 @@ require('aframe-polygon-wireframe')
 AFRAME.registerComponent("dynamic-snap", {
 
     schema: {
-
-    },
-
-    events: {
-      snapStart(e) { this.snapStart(e) },
-      snapEnd(e) { this.snapEnd(e) },
-      snapGrabbed(e) { this.grabbed(e) },
-      snapReleased(e) { this.released(e) },
+      grabEvent: {type: 'string', default: 'mouseGrab'},
+      releaseEvent: {type: 'string', default: 'mouseRelease'}
     },
 
     init() {
 
+      this.snapStart = this.snapStart.bind(this)
+      this.snapEnd = this.snapEnd.bind(this)
+      this.grabbed = this.grabbed.bind(this)
+      this.released = this.released.bind(this)
+      
       this.projectedEl = document.createElement('a-entity')
       const geometry = this.el.getAttribute('geometry')
       this.projectedEl.setAttribute('geometry', geometry)
@@ -22,13 +21,39 @@ AFRAME.registerComponent("dynamic-snap", {
       this.projectedEl.object3D.visible = false
       this.el.sceneEl.appendChild(this.projectedEl)
       this.snappable = false
+      this.elGrabbed = false
 
+    },
+
+    addEventListeners() {
+      this.el.addEventListener('snapStart', this.snapStart)
+      this.el.addEventListener('snapEnd', this.snapEnd)
+      this.el.addEventListener(this.data.grabEvent, this.grabbed)
+      this.el.addEventListener(this.data.releaseEvent, this.released)
+    },
+
+    removeEventListeners() {
+      this.el.removeEventListener('snapStart', this.snapStart)
+      this.el.removeEventListener('snapEnd', this.snapEnd)
+      this.el.removeEventListener(this.data.grabEvent, this.grabbed)
+      this.el.removeEventListener(this.data.releaseEvent, this.released)
+    },
+
+    pause() {
+      this.removeEventListeners()
+    },
+
+    play() {
+      this.addEventListeners()
     },
 
     snapStart(evt) {
 
-      this.showProjectedObject(evt.detail.worldTransform)
       this.snappable = true
+
+      if (this.elGrabbed) {
+        this.showProjectedObject(evt.detail.worldTransform)
+      }
     },
 
     snapEnd(evt) {
@@ -49,17 +74,22 @@ AFRAME.registerComponent("dynamic-snap", {
     },
 
     hideProjectedObject() {
+
       this.projectedEl.object3D.visible = false
     },
 
     grabbed() {
 
+      this.elGrabbed = true
       if (this.snappable) {
         this.showProjectedObject(this.projectedEl.object3D) 
       }
     },
 
     released() {
+
+      this.elGrabbed = false
+
       if (this.snappable) {
 
         // this object takes transform of projected object, while keeping current parent.
@@ -72,7 +102,7 @@ AFRAME.registerComponent("dynamic-snap", {
         projectedObject.add(object)
         parent.attach(object)
 
-        hideProjectedObject()
+        this.hideProjectedObject()
       }
     }
 })

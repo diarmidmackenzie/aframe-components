@@ -1,6 +1,6 @@
 {
   "name": "aframe-polygon-wireframe",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Render wireframes composed of polygons, rather than triangles.",
   "main": "index.js",
   "scripts": {
