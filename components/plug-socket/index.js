@@ -171,18 +171,18 @@ AFRAME.registerSystem('socket', {
       const plug = plugs[ii]
       const plugComponent = plug.el.components.socket
       
-      adjustmentObject = plugComponent.adjustmentObject
-      const socket = this.matchPlugToSocket(plug, adjustmentObject)
+      adjustmentTransform = plugComponent.adjustmentTransform
+      const socket = this.matchPlugToSocket(plug, adjustmentTransform)
 
       if (!socket) continue
 
-      console.log("Matched plug: ", ii, plug.uuid, "to socket", socket.uuid)
-      console.log("Plug WP:", plugComponent.worldSpaceObject.position)
-      console.log("Plug WQ:", plugComponent.worldSpaceObject.quaternion)
+      //console.log("Matched plug: ", ii, plug.uuid, "to socket", socket.uuid)
+      //console.log("Plug WP:", plugComponent.worldSpaceObject.position)
+      //console.log("Plug WQ:", plugComponent.worldSpaceObject.quaternion)
       
       const socketComponent = socket.el.components.socket
-      console.log("Socket WP:", socketComponent.worldSpaceObject.position)
-      console.log("Socket WQ:", socketComponent.worldSpaceObject.quaternion)
+      //console.log("Socket WP:", socketComponent.worldSpaceObject.position)
+      //console.log("Socket WQ:", socketComponent.worldSpaceObject.quaternion)
 
       const socketInertia = socketComponent.getIntertia()
       const plugInertia = plugComponent.getIntertia()
@@ -199,9 +199,9 @@ AFRAME.registerSystem('socket', {
 
   // params:
   // plug to match to a socket
-  // adjustmentObject - an object3D, child of the plug, whose transform will be set to the 
+  // adjustmentTransform - an object3D, child of the plug, whose transform will be set to the 
   //                adjustment required from the plug transform to the chosen socket's transform.
-  matchPlugToSocket(plug, adjustmentObject) {
+  matchPlugToSocket(plug, adjustmentTransform) {
 
     let bestSocket = null
     let bestDistanceSq = Infinity
@@ -247,8 +247,8 @@ AFRAME.registerSystem('socket', {
           bestDistanceSq = distanceSq
           bestSocket = socket
 
-          adjustmentObject.position.copy(this.testPlug.position)
-          adjustmentObject.quaternion.copy(this.bestQuaternion)
+          adjustmentTransform.position.copy(this.testPlug.position)
+          adjustmentTransform.quaternion.copy(this.bestQuaternion)
         }
       }
     })
@@ -265,7 +265,8 @@ AFRAME.registerComponent('socket', {
 
   init() {
     this.bindingState = PS_STATE_FREE
-    this.adjustmentObject = new THREE.Object3D()
+    this.adjustmentTransform = new THREE.Object3D()
+    this.fabricAdjustmentTransform = new THREE.Object3D()
     
     this.peer = null
     this.isSocket = (this.data.type === 'socket')
@@ -368,14 +369,14 @@ AFRAME.registerComponent('socket', {
     this.peer = peer
 
     // this is the adjustment needed to the socket / plug to make them fit.
-    // NOT to the socket / plug fabric (which is what is needed!!!)
+    // NOT to the socket / plug fabric itself - which is computed in the socket-fabric component.
 
-    this.adjustmentObject.matrix.identity()
-    this.adjustmentObject.matrix.decompose(this.adjustmentObject.position,
-                                           this.adjustmentObject.quaternion,
-                                           this.adjustmentObject.scale)
-    peer.add(this.adjustmentObject)
-    this.el.object3D.attach(this.adjustmentObject)
+    this.adjustmentTransform.matrix.identity()
+    this.adjustmentTransform.matrix.decompose(this.adjustmentTransform.position,
+                                           this.adjustmentTransform.quaternion,
+                                           this.adjustmentTransform.scale)
+    peer.add(this.adjustmentTransform)
+    this.el.object3D.attach(this.adjustmentTransform)
 
     this.el.emit('binding-request')
   },
@@ -395,7 +396,7 @@ AFRAME.registerComponent('socket', {
       this.updateWorldSpaceObject()
       peerComponent.updateWorldSpaceObject()
       this.debugDistanceVector.subVectors(this.worldSpaceObject.position, this.peer.el.components.socket.worldSpaceObject.position)
-      console.log("socket distance:", this.debugDistanceVector.length())
+      console.log("socket distance:", this.debugDistanceVector.length().toFixed(10))
     }
   },
 
@@ -409,12 +410,12 @@ AFRAME.registerComponent('socket', {
       const node = this.el.object3D
       const peer = this.peer
 
-      this.adjustmentObject.matrix.identity()
-      this.adjustmentObject.matrix.decompose(this.adjustmentObject.position,
-                                             this.adjustmentObject.quaternion,
-                                             this.adjustmentObject.scale)
-      peer.add(this.adjustmentObject)
-      node.attach(this.adjustmentObject)
+      this.adjustmentTransform.matrix.identity()
+      this.adjustmentTransform.matrix.decompose(this.adjustmentTransform.position,
+                                             this.adjustmentTransform.quaternion,
+                                             this.adjustmentTransform.scale)
+      peer.add(this.adjustmentTransform)
+      node.attach(this.adjustmentTransform)
 
       this.el.emit('binding-request')
     }
@@ -430,6 +431,7 @@ AFRAME.registerComponent('socket-fabric', {
     this.el.addEventListener('binding-request', this.bindingRequest)
 
     this.requests = []
+    this.adjustmentVector = new THREE.Vector3()
   },
 
   bindingRequest(evt) {
@@ -445,11 +447,40 @@ AFRAME.registerComponent('socket-fabric', {
     // designated as inconsistent with the others & discarded.
   },
 
+  computeFabricAdjustmentTransforms() {
+
+    // adjustmentTransform is the transform that would move one plug or socket to the correct position.
+    // we need to compute fabric Adjustment Transform, which would move the entire fabric to the correct position.
+
+    this.requests.forEach((request) => {
+      
+      const fabricAdjustmentTransform = request.fabricAdjustmentTransform
+      const socketAdjustmentTransform = request.adjustmentTransform
+      fabricAdjustmentTransform.scale.set(1, 1, 1)
+      
+      const quaternion = fabricAdjustmentTransform.quaternion
+      quaternion.copy(socketAdjustmentTransform.quaternion)
+
+      const socketPosition = request.el.object3D.position
+      const position = fabricAdjustmentTransform.position
+      // translation required for socket to reach socket
+      position.copy(socketAdjustmentTransform.position)
+
+      // minus socket->fabric translation post-quaternion
+      this.adjustmentVector.copy(socketPosition)
+      this.adjustmentVector.applyQuaternion(fabricAdjustmentTransform.quaternion)
+      position.sub(this.adjustmentVector)
+
+      // minus socket->fabric translation pre-quaternion
+      position.add(socketPosition)
+    })
+  },
+
   buildConsensus() {
 
     const countMatchingRequests = (request) => 
-      (this.requests.filter((item) => this.compareTransforms(request.adjustmentObject,
-                                                             item.adjustmentObject)).length)
+      (this.requests.filter((item) => this.compareTransforms(request.fabricAdjustmentTransform,
+                                                             item.fabricAdjustmentTransform)).length)
 
     const matchCounts = this.requests.map((request) => countMatchingRequests(request))
 
@@ -458,15 +489,15 @@ AFRAME.registerComponent('socket-fabric', {
 
     const usableRequest = this.requests[maxMatchesIndex]
 
-    const disposableRequests = this.requests.filter((item) => !this.compareTransforms(usableRequest.adjustmentObject,
-                                                                                item.adjustmentObject))
+    const disposableRequests = this.requests.filter((item) => !this.compareTransforms(usableRequest.fabricAdjustmentTransform,
+                                                                                      item.fabricAdjustmentTransform))
     disposableRequests.forEach((request) => {
       this.disposeOfRequest(request, true)
     })
 
     // this.requests now contains only usable requests, that are consistent with each other.
 
-    console.log("Requests", this.requests)
+    //console.log("Requests", this.requests)
   },
 
   disposeOfRequest(request, failureFlag) {
@@ -504,11 +535,13 @@ AFRAME.registerComponent('socket-fabric', {
 
     if (!this.requests.length) return
 
+    this.computeFabricAdjustmentTransforms()
+
     // dispose of any requests that are inconsistent with other requests.
     this.buildConsensus()
 
     // Now all requests are consistent, so fine to pick any of them to apply.
-    this.moveTowards(this.requests[0].adjustmentObject)
+    this.moveTowards(this.requests[0].fabricAdjustmentTransform)
   },
 
   moveTowards(object) {
