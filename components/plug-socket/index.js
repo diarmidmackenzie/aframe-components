@@ -176,13 +176,21 @@ AFRAME.registerSystem('socket', {
 
       if (!socket) continue
 
-      //console.log("Matched plug: ", ii, plug.uuid, "to socket", socket.uuid)
-      //console.log("Plug WP:", plugComponent.worldSpaceObject.position)
-      //console.log("Plug WQ:", plugComponent.worldSpaceObject.quaternion)
-      
       const socketComponent = socket.el.components.socket
-      //console.log("Socket WP:", socketComponent.worldSpaceObject.position)
-      //console.log("Socket WQ:", socketComponent.worldSpaceObject.quaternion)
+
+      if (this.data.debug) {
+
+        console.log("Matched plug: ", ii, plug.uuid, "to socket", socket.uuid)
+        console.log("Plug WP:", plugComponent.worldSpaceObject.position)
+        console.log("Plug WQ:", plugComponent.worldSpaceObject.quaternion)
+        
+      
+        console.log("Socket WP:", socketComponent.worldSpaceObject.position)
+        console.log("Socket WQ:", socketComponent.worldSpaceObject.quaternion)
+
+        console.log("Adjustment Transform P:", adjustmentTransform.quaternion)
+        console.log("Adjustment Transform Q:", adjustmentTransform.quaternion)
+      }
 
       const socketInertia = socketComponent.getIntertia()
       const plugInertia = plugComponent.getIntertia()
@@ -368,15 +376,7 @@ AFRAME.registerComponent('socket', {
     this.bindingState = PS_STATE_BINDING
     this.peer = peer
 
-    // this is the adjustment needed to the socket / plug to make them fit.
-    // NOT to the socket / plug fabric itself - which is computed in the socket-fabric component.
-
-    this.adjustmentTransform.matrix.identity()
-    this.adjustmentTransform.matrix.decompose(this.adjustmentTransform.position,
-                                           this.adjustmentTransform.quaternion,
-                                           this.adjustmentTransform.scale)
-    peer.add(this.adjustmentTransform)
-    this.el.object3D.attach(this.adjustmentTransform)
+    // adjustment transform already set up when matching sockets.
 
     this.el.emit('binding-request')
   },
@@ -396,7 +396,7 @@ AFRAME.registerComponent('socket', {
       this.updateWorldSpaceObject()
       peerComponent.updateWorldSpaceObject()
       this.debugDistanceVector.subVectors(this.worldSpaceObject.position, this.peer.el.components.socket.worldSpaceObject.position)
-      console.log("socket distance:", this.debugDistanceVector.length().toFixed(10))
+      console.log("Binding Success: socket distance:", this.debugDistanceVector.length().toFixed(10))
     }
   },
 
@@ -405,7 +405,9 @@ AFRAME.registerComponent('socket', {
     this.updateWorldSpaceObject()
     this.updateDebugVisual()
 
-    if (this.bindingState === PS_STATE_BINDING) {
+    // Unclear this is needed... moe thought needed about case where sockets don't bind to plug immediately
+    // best to work this out when integrating with physics / manipulation controls...
+    /*if (this.bindingState === PS_STATE_BINDING) {
       // update target position.
       const node = this.el.object3D
       const peer = this.peer
@@ -418,7 +420,7 @@ AFRAME.registerComponent('socket', {
       node.attach(this.adjustmentTransform)
 
       this.el.emit('binding-request')
-    }
+    }*/
   }
 
 })
