@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>      
+      <script src="../../components/bricks/index.js"></script>
+      <script src="../../components/mouse-manipulation/dist/mouse-manipulation.js"></script>
+      <script src="../../components/raycast-target/index.js"></script>
+      <script src="../../components/dynamic-snap/dist/dynamic-snap.js"></script>
+      <script src="../../components/plug-socket/dist/plug-socket.js"></script>
+      <script src="./colors.js"></script>
+      <script>
+        const BRICK_WIDTH = 4
+        const BRICK_DEPTH = 2
+        const BRICK_HEIGHT = 3
+        AFRAME.registerComponent('brick-wall', {
+          schema: {
+            width: {default: 2},
+            height: {default: 2},
+          },  
+          init() {
+
+            let delay = 0;
+
+            for (let ii = 0; ii < this.data.height; ii++) {
+
+              for (let jj = 0; jj < this.data.width; jj++) {
+
+                setTimeout(() => this.createAndBindBrick(ii, jj), delay)
+                delay += 0
+              }
+            }
+          },
+
+          createAndBindBrick(ii, jj) {
+
+            const y = (ii + 1) * BRICK_HEIGHT * 2 * PLATE_HEIGHT
+
+            const offset = (ii % 2) /2
+            const x = (jj + offset - (this.data.width / 2)) * 2 * UNIT_WIDTH * BRICK_WIDTH
+
+            const id = `brick-${ii}-${jj}`
+            const brick = this.createBrick(x, y, 0, id)
+
+          },
+
+          createBrick(x, y, z, id) {
+
+            const randomMember = (array) => {
+              const index = Math.floor(Math.random() * array.length)
+              return array[index]
+            }
+
+            const color = randomMember(COLORS)
+
+            const brick = document.createElement('a-entity')
+            brick.setAttribute("id", id)
+            brick.object3D.position.set(x, y, z)
+            brick.setAttribute("brick", {width: BRICK_WIDTH,
+                                         height: BRICK_HEIGHT,
+                                         depth: BRICK_DEPTH,
+                                         color: color})
+
+            brick.setAttribute('dynamic-snap', { renderPrecise: 'transparent',
+                                                 renderSnap: 'wireframe' })
+            this.el.appendChild(brick)
+
+            return brick
+          }
+        })
+      </script>
+      <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Building a wall with bricks - fixed joints are not rigid enough to work at scale.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/snapping.html">
+        view code
+    </a>
+      <a-scene background="color:#88f"
+               socket="snapDistance: 0.02; debug: true"
+               stats>
+        <a-entity id="cursor"
+                  cursor="rayOrigin: mouse"
+                  raycaster="objects: [raycast-target]; far: Infinity"
+                  mouse-manipulation="grabEvents: true">
+        </a-entity>
+        <a-entity position = "0 1 -1.5" scale="0.01 0.01 0.01" brick-wall>
+            <a-brick id="base" width="20" 
+                     movement="static" depth="8" height="3" color="#4B9F4A" position="0 0 0"
+                     plugs="false">
+            </a-brick>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>

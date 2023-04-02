@@ -1,4 +1,4 @@
-require('aframe-polygon-wireframe')
+if (!AFRAME.components['polygon-wireframe']) require('aframe-polygon-wireframe')
 
 const PS_STATE_FREE = 0
 const PS_STATE_BINDING = 1
@@ -175,6 +175,7 @@ AFRAME.registerSystem('socket', {
       const socket = this.matchPlugToSocket(plug, adjustmentTransform)
 
       if (!socket) continue
+      // TO DO - How to clear suggestions for both plugs & sockets that are no longer valid???
 
       const socketComponent = socket.el.components.socket
 
@@ -368,7 +369,15 @@ AFRAME.registerComponent('socket', {
 
   getIntertia() {
 
-    return 1
+    // Temporary hack to promote snapping of entities that are being manipulated.
+    // !! Needs to be made more generic & less hacky!
+    const dynamicSnap = this.el.parentEl.components['dynamic-snap']
+    if (dynamicSnap?.diverged) {
+      return 0.1
+    }
+    else {
+      return 1
+    }
   },
 
   suggestPeer(peer) {
@@ -427,6 +436,10 @@ AFRAME.registerComponent('socket', {
 
 AFRAME.registerComponent('socket-fabric', {
 
+  schema: {
+    snap: {type: 'string', oneOf: ['auto', 'events'], default: 'auto'}
+  },
+
   init() {
 
     this.bindingRequest = this.bindingRequest.bind(this)
@@ -434,6 +447,9 @@ AFRAME.registerComponent('socket-fabric', {
 
     this.requests = []
     this.adjustmentVector = new THREE.Vector3()
+
+    this.transform = new THREE.Object3D()
+    this.eventData = {worldTransform: this.transform}
   },
 
   bindingRequest(evt) {
@@ -442,7 +458,9 @@ AFRAME.registerComponent('socket-fabric', {
     sourceNode = source.components['socket']
     target = sourceNode.peer
 
-    this.requests.push(sourceNode)
+    if (!this.requests.includes(sourceNode)) {
+      this.requests.push(sourceNode)
+    }
 
     // processing of requests is done on tick().  We don't want to act yet - if entities are in motion
     // give all entities a chance to catch up with each other before analysing, else the first to move would be 
@@ -548,19 +566,41 @@ AFRAME.registerComponent('socket-fabric', {
 
   moveTowards(object) {
 
-    // for now, just snap to position 
-    // - in future, will be option to do this asynchronously via physics system.
-    this.el.object3D.position.add(object.position)
-    this.el.object3D.quaternion.premultiply(object.quaternion)
+    if (this.data.snap === 'auto') {
+      // for now, just snap to position 
+      // - in future, will be option to do this asynchronously via physics system.
+      this.el.object3D.position.add(object.position)
+      this.el.object3D.quaternion.premultiply(object.quaternion)
 
-    this.requests.forEach((request) => {
-      this.requestCompleted(request)
-    })
+      this.requests.forEach((request) => {
+        this.requestCompleted(request)
+      })
 
-    // !! Will need to do better when objects are moving - need to mediate between
-    // whatever is controlling movement (animation etc.) and this change to position.
-    // An additional Objet3D needed to track the offset transform?
-    // Details to be worked out...
+      // !! Will need to do better when objects are moving - need to mediate between
+      // whatever is controlling movement (animation etc.) and this change to position.
+      // An additional Objet3D needed to track the offset transform?
+      // Details to be worked out...
+    }
+    else {
+      // signal events, to allow snap to be controlled externally.
+      const transform = this.transform
+      transform.position.copy(this.el.object3D.position)
+      transform.quaternion.copy(this.el.object3D.quaternion)
+      transform.scale.copy(this.el.object3D.scale)
+      this.el.object3D.parent.add(transform)
+
+      transform.position.add(object.position)
+      transform.quaternion.premultiply(object.quaternion)
+      this.el.sceneEl.object3D.attach(transform)
+
+      this.el.emit('snapStart', this.eventData)
+
+      this.el.addEventListener('snapped-to-position', () => {
+        this.requests.forEach((request) => {
+          this.requestCompleted(request)
+        })
+      })
+    }
   },
 
   requestCompleted(request) {

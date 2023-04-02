@@ -1,4 +1,4 @@
-require('aframe-polygon-wireframe')
+if (!AFRAME.components['polygon-wireframe']) require('aframe-polygon-wireframe')
 
 AFRAME.registerComponent("dynamic-snap", {
 
@@ -139,15 +139,17 @@ AFRAME.registerComponent("dynamic-snap", {
 
     snapStart(evt) {
 
+      console.log("Snap Start: ", evt.detail.worldTransform)
       this.snappable = true
 
       if (this.diverged) {
         this.showProjectedObject(evt.detail.worldTransform)
-        
       }
     },
 
     snapEnd(evt) {
+
+      console.log("Snap End: ", evt.detail.worldTransform)
 
       const transform = evt.detail.transform
       this.snappable = false
@@ -197,6 +199,8 @@ AFRAME.registerComponent("dynamic-snap", {
         parent.attach(object)
 
         this.hideProjectedObject()
+
+        this.el.emit('snapped-to-position')
       }
 
       this.diverged = false

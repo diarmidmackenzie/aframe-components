@@ -3,10 +3,12 @@
 A component to dynamically snap to positions, as controlled by another component that implements the snap-position interface.
 
 
-
 ## Schema
 
-TBC
+
+## Interfaces
+
+
 
 ## Installation
 
@@ -26,8 +28,9 @@ npm install aframe-dynamic-snap
 
 [dynamic-snap.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/dynamic-snap.html)
 
+See also: [tests]((https://diarmidmackenzie.github.io/aframe-components/components/dynamic-snap/test/)
 
 
 ## Code
 
-  [dynamic-snap](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/dynamic-snap/index.js)
+[dynamic-snap](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/dynamic-snap/index.js)

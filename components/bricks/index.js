@@ -95,7 +95,8 @@ AFRAME.registerPrimitive('a-brick', {
     height: 'brick.height',
     width: 'brick.width',
     movement: 'brick.movement',
-    color: 'brick.color'
+    color: 'brick.color',
+    plugs: 'brick.plugs'
   }
 });
 
@@ -106,7 +107,8 @@ AFRAME.registerComponent('brick', {
     depth: {default: 2},
     height: {default: 3},
     movement: {default: 'dynamic'},
-    color: {default: 'red'}
+    color: {default: 'red'},
+    plugs: {default: true}
   },
 
   init() {
@@ -128,6 +130,14 @@ AFRAME.registerComponent('brick', {
     }
 
     this.visual = document.createElement('a-entity')
+    // !! Hack to get integration with dynamic-snap working...
+    // without this is struggles to find the mesh.
+    // !! TO DO BETTER... !!
+    this.visual.addEventListener('loaded', () => {
+      this.el.setObject3D('mesh', this.visual.getObject3D('mesh'))
+      this.el.emit('model-loaded')
+    })
+
     this.visual.setAttribute('geometry', {primitive: 'brick', 
                                           width: this.data.width,
                                           height: this.data.height,
@@ -148,5 +158,40 @@ AFRAME.registerComponent('brick', {
 
     this.el.setAttribute('physx-body', {type: this.data.movement,
                                         highPrecision: true})
+
+    if (this.data.plugs) {
+      this.createPlugsAndSockets()
+    }
+  },
+
+  createPlugsAndSockets() {
+
+    const data = this.data
+    
+    const blockWidth = data.width * UNIT_WIDTH
+    const blockDepth = data.depth * UNIT_WIDTH
+    const blockHeight = data.height * PLATE_HEIGHT
+    const topOffset = blockHeight / 2
+
+    let xStart = (UNIT_WIDTH - blockWidth) / 2
+    let zStart = (UNIT_WIDTH - blockDepth) / 2
+
+    this.el.setAttribute('socket-fabric', {snap: 'events'} )
+
+    for (let ii = 0; ii < data.width; ii++) {
+      for (let jj = 0; jj < data.depth; jj++) {
+        plug = document.createElement('a-entity')
+        plug.object3D.position.set(xStart + ii * UNIT_WIDTH, topOffset, zStart + jj * UNIT_WIDTH)
+        plug.id = `${this.el.id}-plug-${ii}-${jj}`
+        plug.setAttribute('plug', '')
+        this.el.appendChild(plug)
+
+        socket = document.createElement('a-entity')
+        socket.object3D.position.set(xStart + ii * UNIT_WIDTH, -topOffset, zStart + jj * UNIT_WIDTH)
+        socket.id = `${this.el.id}-socket-${ii}-${jj}`
+        socket.setAttribute('socket', '')
+        this.el.appendChild(socket)
+      }
+    }
   }
 })

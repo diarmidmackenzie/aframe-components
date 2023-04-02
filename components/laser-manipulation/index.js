@@ -5,7 +5,10 @@ AFRAME.registerComponent('laser-manipulation', {
 
     schema: {
       rotateRate: {type: 'number', default: 45},
-      center: {type: 'string', default: 'center', oneOf: ['center','contact']}
+      center: {type: 'string', default: 'center', oneOf: ['center','contact']},
+      grabEvents: {type: 'boolean', default: false},
+      grabEvent: {type: 'string', default: 'laserGrab'},
+      releaseEvent: {type: 'string', default: 'laserRelease'}
     },
   
     update: function() {
@@ -111,6 +114,10 @@ AFRAME.registerComponent('laser-manipulation', {
 
       // store reference to grabbed element
       this.grabbedEl = element
+
+      if (this.data.grabEvents) {
+        this.grabbedEl.emit(this.data.grabEvent)
+      }
     },
   
     triggerUp() {
@@ -119,6 +126,10 @@ AFRAME.registerComponent('laser-manipulation', {
   
       this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.originalParentEl.id}`)
       this.grabbedEl = null
+
+      if (this.data.grabEvents) {
+        this.grabbedEl.emit(this.data.releaseEvent)
+      }
     },
   
     getIntersections(controllerEl) {
