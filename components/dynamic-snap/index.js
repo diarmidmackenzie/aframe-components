@@ -3,40 +3,128 @@ require('aframe-polygon-wireframe')
 AFRAME.registerComponent("dynamic-snap", {
 
     schema: {
-      grabEvent: {type: 'string', default: 'mouseGrab'},
-      releaseEvent: {type: 'string', default: 'mouseRelease'}
+      divergeEvent: {type: 'string', default: 'mouseGrab'},
+      convergeEvent: {type: 'string', default: 'mouseRelease'},
+      renderSnap: {type: 'string', oneOf: ['object', 'wireframe', 'transparent', 'none'], default: 'object'},
+      renderPrecise: {type: 'string', oneOf: ['object', 'wireframe', 'transparent', 'none'], default: 'transparent'}
     },
 
     init() {
 
       this.snapStart = this.snapStart.bind(this)
       this.snapEnd = this.snapEnd.bind(this)
-      this.grabbed = this.grabbed.bind(this)
-      this.released = this.released.bind(this)
-      
+      this.diverge = this.diverge.bind(this)
+      this.converge = this.converge.bind(this)
+      this.configureThisEl('object')
       this.projectedEl = document.createElement('a-entity')
-      const geometry = this.el.getAttribute('geometry')
-      this.projectedEl.setAttribute('geometry', geometry)
-      this.projectedEl.setAttribute('polygon-wireframe', {color: 'yellow', onTop: true})
-      this.projectedEl.object3D.visible = false
+      this.configureProjectedEl()
       this.el.sceneEl.appendChild(this.projectedEl)
       this.snappable = false
-      this.elGrabbed = false
+      this.diverged = false
 
+      this.hideProjectedObject()
+    },
+
+    configureProjectedEl() {
+
+      const mesh = this.el.getObject3D('mesh')
+
+      if (mesh) {
+
+        const projectedMesh = mesh.clone(true)
+        this.projectedEl.setObject3D('mesh', projectedMesh)
+
+        this.setMaterials(this.projectedEl, projectedMesh, this.data.renderSnap)
+      }
+      else {
+        this.el.addEventListener('model-loaded', () => this.configureProjectedEl())
+      }
+    },
+
+    configureThisEl(renderString) {
+
+      const mesh = this.el.getObject3D('mesh')
+
+      if (mesh) {
+
+        this.setMaterials(this.el, mesh, renderString)
+      }
+      else {
+        this.el.addEventListener('model-loaded', () => {
+          this.configureThisEl(renderString)
+        })
+      }
+    },
+
+    setMaterials(el, mesh, renderString) {
+
+      const switchMaterials = (object, transparent) => {
+
+        const material = object.material
+        if (!material) return
+        const type = material.userData.type
+
+        if (!type) {
+          // uncloned material
+          material.userData.type = 'original'
+          const transparentClone = material.clone()
+          transparentClone.opacity = 0.5
+          transparentClone.transparent = true
+          transparentClone.userData.type = 'transparentClone'
+          transparentClone.userData.original = material
+          material.userData.transparentClone = transparentClone
+        }
+        else if (type === 'original') {
+          if (transparent) {
+            object.material = material.userData.transparentClone
+          }
+        }
+        else if (type === 'transparentClone') {
+          if (!transparent) {
+            object.material = material.userData.original
+          }
+        }
+      }
+
+      if (renderString === 'wireframe') {
+        el.setAttribute('polygon-wireframe', {color: 'yellow', onTop: true})
+      }
+      else {
+        el.removeAttribute('polygon-wireframe')
+      }
+
+      if (renderString === 'transparent') {
+        mesh.traverse((o) => {
+          switchMaterials(o, true)
+        })
+      }
+      else {
+        mesh.traverse((o) => {
+          switchMaterials(o, false)
+        })
+      }
+
+      if (renderString === 'none' || renderString === 'wireframe') {
+        // polygon-wireframe sets original mesh visibility to false.  Don't mess with this.
+        mesh.visible = false
+      }
+      else {
+        mesh.visible = true
+      }
     },
 
     addEventListeners() {
       this.el.addEventListener('snapStart', this.snapStart)
       this.el.addEventListener('snapEnd', this.snapEnd)
-      this.el.addEventListener(this.data.grabEvent, this.grabbed)
-      this.el.addEventListener(this.data.releaseEvent, this.released)
+      this.el.addEventListener(this.data.divergeEvent, this.diverge)
+      this.el.addEventListener(this.data.convergeEvent, this.converge)
     },
 
     removeEventListeners() {
       this.el.removeEventListener('snapStart', this.snapStart)
       this.el.removeEventListener('snapEnd', this.snapEnd)
-      this.el.removeEventListener(this.data.grabEvent, this.grabbed)
-      this.el.removeEventListener(this.data.releaseEvent, this.released)
+      this.el.removeEventListener(this.data.divergeEvent, this.diverge)
+      this.el.removeEventListener(this.data.convergeEvent, this.converge)
     },
 
     pause() {
@@ -51,8 +139,9 @@ AFRAME.registerComponent("dynamic-snap", {
 
       this.snappable = true
 
-      if (this.elGrabbed) {
+      if (this.diverged) {
         this.showProjectedObject(evt.detail.worldTransform)
+        
       }
     },
 
@@ -71,24 +160,27 @@ AFRAME.registerComponent("dynamic-snap", {
       projectedObject.scale.copy(worldTransform.scale)
       projectedObject.visible = true
 
+      // switch precise object to configured view.
+      this.configureThisEl(this.data.renderPrecise)
     },
 
     hideProjectedObject() {
 
       this.projectedEl.object3D.visible = false
+
+      // switch precise object to standard visibility.
+      this.configureThisEl('object')
     },
 
-    grabbed() {
+    diverge() {
 
-      this.elGrabbed = true
+      this.diverged = true
       if (this.snappable) {
         this.showProjectedObject(this.projectedEl.object3D) 
       }
     },
 
-    released() {
-
-      this.elGrabbed = false
+    converge() {
 
       if (this.snappable) {
 
@@ -104,5 +196,7 @@ AFRAME.registerComponent("dynamic-snap", {
 
         this.hideProjectedObject()
       }
+
+      this.diverged = false
     }
 })

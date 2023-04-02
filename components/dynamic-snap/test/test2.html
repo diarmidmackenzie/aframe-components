@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../../mouse-manipulation/dist/mouse-manipulation.js"></script>
+      <script src="../../low-cost-raycasting.js"></script>
+      <script src="../dist/dynamic-snap.js"></script>
+      <script src="./snap-to-grid.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Dynamic snap to grid - using GLTF models and various different styles</p>
+        <p>Note: wireframe rendering is not supported for GLTF models</p>
+    </div>
+      <a-scene background="color:#88f"
+               socket="snapDistance: 0.2; debug: true">
+
+        <a-assets>
+          <a-asset-item id="trex-model"
+              src="../../../assets/t-rex/scene.gltf"
+              response-type="arraybuffer" crossorigin="anonymous">
+          </a-asset-item>
+          <a-asset-item id="eiffel-model"
+              src="../../../assets/eiffel/scene.gltf"
+              response-type="arraybuffer" crossorigin="anonymous">
+          </a-asset-item>
+          <a-asset-item id="cell-model"
+              src="../../../assets/cell/scene.gltf"
+              response-type="arraybuffer" crossorigin="anonymous">
+          </a-asset-item>
+        </a-assets>
+        <a-entity id="cursor"
+                  cursor="rayOrigin: mouse"
+                  raycaster="objects: [raycast-target]; far: Infinity"
+                  mouse-manipulation="grabEvents: true">
+        </a-entity>
+
+        <a-entity id="container"
+                position="0 1 -2">
+          <a-entity id="eiffel" position="-2 0 0"
+                    snap-to-grid
+                    dynamic-snap="renderPrecise: object; renderSnap: transparent"
+                    gltf-model="#eiffel-model"
+                    raycast-target
+                    scale="0.01 0.01 0.01">
+          </a-entity>
+          <a-entity id="trex" position="0 0 0"
+                    snap-to-grid
+                    dynamic-snap="renderPrecise: transparent; renderSnap: object"
+                    gltf-model="#trex-model"
+                    raycast-target
+                    scale="0.01 0.01 0.01">
+          </a-entity>
+          <a-entity id="cell" position="2 0 0"
+                    snap-to-grid
+                    dynamic-snap="renderPrecise: none; renderSnap: object"
+                    gltf-model="#cell-model"
+                    raycast-target
+                    scale="0.1 0.1 0.1">
+          </a-entity>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>

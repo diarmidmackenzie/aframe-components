@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="https://unpkg.com/aframe-template-component@3.2.1/dist/aframe-template-component.min.js"></script>
+      <script src="../components/mouse-manipulation/dist/mouse-manipulation.js"></script>
+      <script src="../components/dynamic-snap/dist/dynamic-snap.js"></script>
+      <script src="../components/dynamic-snap/test/snap-to-grid.js"></script>
+      <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Dynamic snap to 0.5m grid - top & bottom row are aligned to grid at start; middle rows are not.</p>
+        <p>Text on each box indicates the style of rendering used for the snap position and the precise position.</p>
+    </div>
+    <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/dynamic-snap.html">
+        view code
+    </a>
+    <a-scene background="color:#88f"
+              socket="snapDistance: 0.2; debug: true">
+      <a-assets>
+        <script id="boxTemplate" type="text/html">
+          <a-box color="#555"
+                  snap-to-grid
+                  dynamic-snap="renderPrecise: ${renderPrecise}; renderSnap: ${renderSnap}"
+                  raycast-target>
+            <a-text value="Snap: ${renderSnap}\nPrecise: ${renderPrecise}"
+                    position="0 0 0.5"
+                    align="center"
+                    width="2.5">
+            </a-text>
+          </a-box>
+        </script>
+      </a-assets>
+      <a-entity id="cursor"
+                cursor="rayOrigin: mouse"
+                raycaster="objects: [raycast-target]; far: Infinity"
+                mouse-manipulation="grabEvents: true">
+      </a-entity>
+      <a-entity position = "0 1 -5">
+        <a-entity position = "-3 2.5 0"
+          template="src: #boxTemplate"
+          data-render-snap="object"
+          data-render-precise="object">
+        </a-entity>
+        <a-entity position = "-1 2.5 0"
+          template="src: #boxTemplate"
+          data-render-snap="object"
+          data-render-precise="transparent">
+        </a-entity>
+        <a-entity position = "1 2.5 0"
+          template="src: #boxTemplate"
+          data-render-snap="object"
+          data-render-precise="wireframe">
+        </a-entity>
+        <a-entity position = "3 2.5 0"
+          template="src: #boxTemplate"
+          data-render-snap="object"
+          data-render-precise="none">
+        </a-entity>
+        <a-entity position = "-3 0.75 0"
+          template="src: #boxTemplate"
+          data-render-snap="transparent"
+          data-render-precise="object">
+        </a-entity>
+        <a-entity position = "-1 0.75 0"
+          template="src: #boxTemplate"
+          data-render-snap="transparent"
+          data-render-precise="transparent">
+        </a-entity>
+        <a-entity position = "1 0.75 0"
+          template="src: #boxTemplate"
+          data-render-snap="transparent"
+          data-render-precise="wireframe">
+        </a-entity>
+        <a-entity position = "3 0.75 0"
+          template="src: #boxTemplate"
+          data-render-snap="transparent"
+          data-render-precise="none">
+        </a-entity>
+        <a-entity position = "-3 -0.75 0"
+          template="src: #boxTemplate"
+          data-render-snap="wireframe"
+          data-render-precise="object">
+        </a-entity>
+        <a-entity position = "-1 -0.75 0"
+          template="src: #boxTemplate"
+          data-render-snap="wireframe"
+          data-render-precise="transparent">
+        </a-entity>
+        <a-entity position = "1 -0.75 0"
+          template="src: #boxTemplate"
+          data-render-snap="wireframe"
+          data-render-precise="wireframe">
+        </a-entity>
+        <a-entity position = "3 -0.75 0"
+          template="src: #boxTemplate"
+          data-render-snap="wireframe"
+          data-render-precise="none">
+        </a-entity>
+        <a-entity position = "-3 -2.5 0"
+          template="src: #boxTemplate"
+          data-render-snap="none"
+          data-render-precise="object">
+        </a-entity>
+        <a-entity position = "-1 -2.5 0"
+          template="src: #boxTemplate"
+          data-render-snap="none"
+          data-render-precise="transparent">
+        </a-entity>
+        <a-entity position = "1 -2.5 0"
+          template="src: #boxTemplate"
+          data-render-snap="none"
+          data-render-precise="wireframe">
+        </a-entity>
+        <a-entity position = "3 -2.5 0"
+          template="src: #boxTemplate"
+          data-render-snap="none"
+          data-render-precise="none">
+        </a-entity>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
