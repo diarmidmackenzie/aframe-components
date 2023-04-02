@@ -6,7 +6,9 @@ AFRAME.registerComponent("dynamic-snap", {
       divergeEvent: {type: 'string', default: 'mouseGrab'},
       convergeEvent: {type: 'string', default: 'mouseRelease'},
       renderSnap: {type: 'string', oneOf: ['object', 'wireframe', 'transparent', 'none'], default: 'object'},
-      renderPrecise: {type: 'string', oneOf: ['object', 'wireframe', 'transparent', 'none'], default: 'transparent'}
+      renderPrecise: {type: 'string', oneOf: ['object', 'wireframe', 'transparent', 'none'], default: 'transparent'},
+      wireframeColor: { default: 'yellow' },
+      opacity: { default: 0.5 },
     },
 
     init() {
@@ -68,7 +70,7 @@ AFRAME.registerComponent("dynamic-snap", {
           // uncloned material
           material.userData.type = 'original'
           const transparentClone = material.clone()
-          transparentClone.opacity = 0.5
+          transparentClone.opacity = this.data.opacity
           transparentClone.transparent = true
           transparentClone.userData.type = 'transparentClone'
           transparentClone.userData.original = material
@@ -87,7 +89,7 @@ AFRAME.registerComponent("dynamic-snap", {
       }
 
       if (renderString === 'wireframe') {
-        el.setAttribute('polygon-wireframe', {color: 'yellow', onTop: true})
+        el.setAttribute('polygon-wireframe', {color: this.data.wireframeColor, onTop: true})
       }
       else {
         el.removeAttribute('polygon-wireframe')

@@ -11,7 +11,7 @@
   <body>
     <div class="text-overlay">
         <p>Dynamic snap to grid - using GLTF models and various different styles</p>
-        <p>Note: wireframe rendering is not supported for GLTF models</p>
+        <p>Note: wireframe rendering option is not supported for GLTF models</p>
     </div>
       <a-scene background="color:#88f"
                socket="snapDistance: 0.2; debug: true">
@@ -40,14 +40,14 @@
                 position="0 1 -2">
           <a-entity id="eiffel" position="-2 0 0"
                     snap-to-grid
-                    dynamic-snap="renderPrecise: object; renderSnap: transparent"
+                    dynamic-snap="renderPrecise: object; renderSnap: transparent; opacity: 0.1"
                     gltf-model="#eiffel-model"
                     raycast-target
                     scale="0.01 0.01 0.01">
           </a-entity>
           <a-entity id="trex" position="0 0 0"
                     snap-to-grid
-                    dynamic-snap="renderPrecise: transparent; renderSnap: object"
+                    dynamic-snap="renderPrecise: transparent; renderSnap: object; opacity: 0.6"
                     gltf-model="#trex-model"
                     raycast-target
                     scale="0.01 0.01 0.01">
