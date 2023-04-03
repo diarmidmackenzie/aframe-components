@@ -416,7 +416,8 @@ AFRAME.registerComponent('socket', {
 
     // Unclear this is needed... moe thought needed about case where sockets don't bind to plug immediately
     // best to work this out when integrating with physics / manipulation controls...
-    /*if (this.bindingState === PS_STATE_BINDING) {
+    /// !! WORKING ON THIS
+    if (this.bindingState === PS_STATE_BINDING) {
       // update target position.
       const node = this.el.object3D
       const peer = this.peer
@@ -429,7 +430,7 @@ AFRAME.registerComponent('socket', {
       node.attach(this.adjustmentTransform)
 
       this.el.emit('binding-request')
-    }*/
+    }
   }
 
 })
