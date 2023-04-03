@@ -5,8 +5,8 @@ AFRAME.registerComponent("dynamic-snap", {
     schema: {
       divergeEvent: {type: 'string', default: 'mouseGrab'},
       convergeEvent: {type: 'string', default: 'mouseRelease'},
-      renderSnap: {type: 'string', oneOf: ['object', 'wireframe', 'transparent', 'none'], default: 'object'},
-      renderPrecise: {type: 'string', oneOf: ['object', 'wireframe', 'transparent', 'none'], default: 'transparent'},
+      renderSnap: {type: 'string', oneOf: ['object', 'wireframe', 'transparent', 'none'], default: 'transparent'},
+      renderPrecise: {type: 'string', oneOf: ['object', 'wireframe', 'transparent', 'none'], default: 'object'},
       wireframeColor: { default: 'yellow' },
       opacity: { default: 0.5 },
     },
