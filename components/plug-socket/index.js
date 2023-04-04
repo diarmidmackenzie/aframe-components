@@ -429,11 +429,14 @@ AFRAME.registerComponent('socket', {
   },
   
   bindingFailed() {
-    this.peer.el.components.socket.addToSystem()
-    this.connectedSocket = null
+
+    this.cancelPeer()
   },
 
   bindingSuccess() {
+
+    if (!this.peer) return
+
     this.bindingState = PS_STATE_BOUND
     this.removeFromSystem()
     const peerComponent = this.peer.el.components.socket
@@ -445,6 +448,16 @@ AFRAME.registerComponent('socket', {
       this.debugDistanceVector.subVectors(this.worldSpaceObject.position, this.peer.el.components.socket.worldSpaceObject.position)
       console.log("Binding Success: socket distance:", this.debugDistanceVector.length().toFixed(10))
     }
+  },
+
+  bindingBroken() {
+
+    if (!this.peer) return
+
+    this.addToSystem()
+    const peerComponent = this.peer.el.components.socket
+    peerComponent.addToSystem()
+    this.cancelPeer()
   },
 
   tick() {
@@ -490,6 +503,11 @@ AFRAME.registerComponent('socket-fabric', {
 
     this.bindingCancel = this.bindingCancel.bind(this)
     this.el.addEventListener('binding-cancel', this.bindingCancel)
+
+    // Temporary solution to break bonds when brick is selected.
+    // !! Need to figure out correct mechanism to use here.
+    this.breakBonds = this.breakBonds.bind(this)
+    this.el.addEventListener('mouseGrab', this.breakBonds)
 
     this.requests = []
     this.prevRequestsLength = 0
@@ -680,6 +698,16 @@ AFRAME.registerComponent('socket-fabric', {
     request.el.emit('binding-success')
 
     this.disposeOfRequest(request, false)
+  },
+
+  breakBonds() {
+
+    const sockets = this.el.querySelectorAll('[socket]')
+
+    sockets.forEach((socket) => {
+      const socketComponent = socket.components.socket
+      socketComponent.bindingBroken()
+    })
   }
 })
 
