@@ -3,6 +3,7 @@ if (!AFRAME.components['polygon-wireframe']) require('aframe-polygon-wireframe')
 const PS_STATE_FREE = 0
 const PS_STATE_BINDING = 1
 const PS_STATE_BOUND = 2
+const PS_STATE_TARGET = 3
 
 AFRAME.registerSystem('socket', {
 
@@ -174,34 +175,38 @@ AFRAME.registerSystem('socket', {
       adjustmentTransform = plugComponent.adjustmentTransform
       const socket = this.matchPlugToSocket(plug, adjustmentTransform)
 
-      if (!socket) continue
-      // TO DO - How to clear suggestions for both plugs & sockets that are no longer valid???
-
-      const socketComponent = socket.el.components.socket
-
-      if (this.data.debug) {
-
-        console.log("Matched plug: ", ii, plug.uuid, "to socket", socket.uuid)
-        console.log("Plug WP:", plugComponent.worldSpaceObject.position)
-        console.log("Plug WQ:", plugComponent.worldSpaceObject.quaternion)
+      if (socket) {
         
-      
-        console.log("Socket WP:", socketComponent.worldSpaceObject.position)
-        console.log("Socket WQ:", socketComponent.worldSpaceObject.quaternion)
+        const socketComponent = socket.el.components.socket
 
-        console.log("Adjustment Transform P:", adjustmentTransform.quaternion)
-        console.log("Adjustment Transform Q:", adjustmentTransform.quaternion)
-      }
+        if (this.data.debug) {
 
-      const socketInertia = socketComponent.getIntertia()
-      const plugInertia = plugComponent.getIntertia()
-
-      if (plugInertia <= socketInertia) {
+          console.log("Matched plug: ", ii, plug.uuid, "to socket", socket.uuid)
+          console.log("Plug WP:", plugComponent.worldSpaceObject.position)
+          console.log("Plug WQ:", plugComponent.worldSpaceObject.quaternion)
+          
         
-        plugComponent.suggestPeer(socket)
+          console.log("Socket WP:", socketComponent.worldSpaceObject.position)
+          console.log("Socket WQ:", socketComponent.worldSpaceObject.quaternion)
+
+          console.log("Adjustment Transform P:", adjustmentTransform.quaternion)
+          console.log("Adjustment Transform Q:", adjustmentTransform.quaternion)
+        }
+
+        const socketInertia = socketComponent.getIntertia()
+        const plugInertia = plugComponent.getIntertia()
+
+        if (plugInertia <= socketInertia) {
+          
+          plugComponent.suggestPeer(socket)
+        }
+        else {
+          socketComponent.suggestPeer(plug)
+        }
       }
       else {
-        socketComponent.suggestPeer(plug)
+        // plug no longer connects to any socket.
+        plugComponent.cancelPeer()
       }
     }
   },
@@ -258,6 +263,7 @@ AFRAME.registerSystem('socket', {
 
           adjustmentTransform.position.copy(this.testPlug.position)
           adjustmentTransform.quaternion.copy(this.bestQuaternion)
+          //console.log("adjustmentTransform position: ", this.testPlug.position)
         }
       }
     })
@@ -384,10 +390,42 @@ AFRAME.registerComponent('socket', {
 
     this.bindingState = PS_STATE_BINDING
     this.peer = peer
+    const peerComponent = peer.el.components.socket
+    peerComponent.trackPeer(this.el.object3D)
 
     // adjustment transform already set up when matching sockets.
 
     this.el.emit('binding-request')
+  },
+
+  trackPeer(peer) {
+
+    this.bindingState = PS_STATE_TARGET
+    this.peer = peer
+
+  },
+
+  untrackPeer(peer) {
+
+    this.bindingState = PS_STATE_FREE
+    this.peer = null
+
+  },
+
+  cancelPeer() {
+    if (this.peer) {
+
+      if ((this.bindingState === PS_STATE_BINDING) || 
+          (this.bindingState === PS_STATE_BOUND)) {
+
+        this.el.emit('binding-cancel')
+      }
+      const peerComponent = this.peer.el.components.socket
+      peerComponent.untrackPeer()
+      this.untrackPeer()
+    }
+
+    this.bindingState = PS_STATE_FREE
   },
   
   bindingFailed() {
@@ -417,6 +455,9 @@ AFRAME.registerComponent('socket', {
     // Unclear this is needed... moe thought needed about case where sockets don't bind to plug immediately
     // best to work this out when integrating with physics / manipulation controls...
     /// !! WORKING ON THIS
+    // !! WRONG place to do this - can't factor in e.g. rotation preference.
+    // need to continue socket bdingin process while in state "binding..."
+    /*
     if (this.bindingState === PS_STATE_BINDING) {
       // update target position.
       const node = this.el.object3D
@@ -431,6 +472,7 @@ AFRAME.registerComponent('socket', {
 
       this.el.emit('binding-request')
     }
+    */
   }
 
 })
@@ -446,7 +488,11 @@ AFRAME.registerComponent('socket-fabric', {
     this.bindingRequest = this.bindingRequest.bind(this)
     this.el.addEventListener('binding-request', this.bindingRequest)
 
+    this.bindingCancel = this.bindingCancel.bind(this)
+    this.el.addEventListener('binding-cancel', this.bindingCancel)
+
     this.requests = []
+    this.prevRequestsLength = 0
     this.adjustmentVector = new THREE.Vector3()
 
     this.transform = new THREE.Object3D()
@@ -466,6 +512,13 @@ AFRAME.registerComponent('socket-fabric', {
     // processing of requests is done on tick().  We don't want to act yet - if entities are in motion
     // give all entities a chance to catch up with each other before analysing, else the first to move would be 
     // designated as inconsistent with the others & discarded.
+  },
+
+  bindingCancel(evt) {
+
+    source = evt.target
+    sourceNode = source.components['socket']
+    this.disposeOfRequest(sourceNode, false)
   },
 
   computeFabricAdjustmentTransforms() {
@@ -554,17 +607,29 @@ AFRAME.registerComponent('socket-fabric', {
 
   tick() {
 
-    if (!this.requests.length) return
+    if (this.requests.length) {
+      
+      this.computeFabricAdjustmentTransforms()
 
-    this.computeFabricAdjustmentTransforms()
+      // dispose of any requests that are inconsistent with other requests.
+      this.buildConsensus()
 
-    // dispose of any requests that are inconsistent with other requests.
-    this.buildConsensus()
+      // Now all requests are consistent, so fine to pick any of them to apply.
+      // !! SHOULD RENAME THIS FUNCTION - DOESN'T ALWAYS RESULT IN MOVEMENT
+      this.moveTowards(this.requests[0].fabricAdjustmentTransform)
+    }
+    else {
+      if (this.prevRequestsLength) {
+        // just moved from having some requests, to having none.
+        this.el.emit('snapEnd')
+      }
+    }
 
-    // Now all requests are consistent, so fine to pick any of them to apply.
-    this.moveTowards(this.requests[0].fabricAdjustmentTransform)
+    // Record number of requests, for review next tick.
+    this.prevRequestsLength = this.requests.length
   },
 
+  // !! SHOULD RENAME THIS FUNCTION - DOESN'T ALWAYS RESULT IN MOVEMENT
   moveTowards(object) {
 
     if (this.data.snap === 'auto') {
@@ -590,9 +655,15 @@ AFRAME.registerComponent('socket-fabric', {
       transform.scale.copy(this.el.object3D.scale)
       this.el.object3D.parent.add(transform)
 
-      transform.position.add(object.position)
       transform.quaternion.premultiply(object.quaternion)
+      transform.position.add(object.position)
+
+      //console.log("Local transform: position: ", transform.position)
+      //console.log("Local transform: quaternion: ", transform.quaternion)
+
       this.el.sceneEl.object3D.attach(transform)
+      //console.log("World transform: position: ", transform.position)
+      //console.log("World transform: quaternion: ", transform.quaternion)
 
       this.el.emit('snapStart', this.eventData)
 

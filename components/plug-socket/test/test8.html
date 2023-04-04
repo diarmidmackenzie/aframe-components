@@ -11,14 +11,13 @@
   <body>
     <!-- issues:
       1. works for plug, not for socket
-      2. positioning not 100% accurate on snap
-      3. no "unsnap"
+      2. can't snap plug to socket twice in a row (after unplugging)
     -->
     <div class="text-overlay">
         <p>Simple plug-socket test - bricks move under user control and snap into place</p>
     </div>
       <a-scene background="color:#88f"
-               socket="snapDistance: 0.1">
+               socket="snapDistance: 0.2">
 
       <a-entity id="cursor"
                 cursor="rayOrigin: mouse"
@@ -26,7 +25,7 @@
                 mouse-manipulation="grabEvents: true">
       </a-entity>
       <a-entity position = "0 1 -4">
-        <a-box position = "0 1.2 0"
+        <a-box position = "0 1.3 0"
               dynamic-snap
               raycast-target
               socket-fabric="snap:events"

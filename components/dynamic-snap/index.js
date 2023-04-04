@@ -139,7 +139,7 @@ AFRAME.registerComponent("dynamic-snap", {
 
     snapStart(evt) {
 
-      console.log("Snap Start: ", evt.detail.worldTransform)
+      //console.log("Snap Start: ", evt.detail.worldTransform)
       this.snappable = true
 
       if (this.diverged) {
@@ -149,10 +149,11 @@ AFRAME.registerComponent("dynamic-snap", {
 
     snapEnd(evt) {
 
-      console.log("Snap End: ", evt.detail.worldTransform)
-
-      const transform = evt.detail.transform
       this.snappable = false
+
+      if (this.diverged) {
+        this.hideProjectedObject()
+      }
     },
 
     showProjectedObject(worldTransform) {
