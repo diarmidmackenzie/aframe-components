@@ -193,8 +193,8 @@ AFRAME.registerSystem('socket', {
           console.log("Adjustment Transform Q:", adjustmentTransform.quaternion)
         }
 
-        const socketInertia = socketComponent.getIntertia()
-        const plugInertia = plugComponent.getIntertia()
+        const socketInertia = socketComponent.getInertia()
+        const plugInertia = plugComponent.getInertia()
 
         if (plugInertia <= socketInertia) {
           
@@ -287,7 +287,7 @@ AFRAME.registerComponent('socket', {
     this.isSocket = (this.data.type === 'socket')
 
     // worldSpaceObject is a world-space representation of the transform
-    // of this socket.  USed for matching sockets in space.
+    // of this socket.  Used for matching sockets in space.
     this.worldSpaceObject = new THREE.Object3D
     this.worldSpaceObject.el = this.el
     this.updateWorldSpaceObject()
@@ -373,7 +373,7 @@ AFRAME.registerComponent('socket', {
     }
   },
 
-  getIntertia() {
+  getInertia() {
 
     // Temporary hack to promote snapping of entities that are being manipulated.
     // !! Needs to be made more generic & less hacky!
