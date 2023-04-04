@@ -201,6 +201,8 @@ AFRAME.registerSystem('socket', {
           plugComponent.suggestPeer(socket)
         }
         else {
+          socketComponent.adjustmentTransform.position.copy(adjustmentTransform.position).multiplyScalar(-1)
+          socketComponent.adjustmentTransform.quaternion.copy(adjustmentTransform.quaternion).invert()
           socketComponent.suggestPeer(plug)
         }
       }
@@ -419,6 +421,9 @@ AFRAME.registerComponent('socket', {
           (this.bindingState === PS_STATE_BOUND)) {
 
         this.el.emit('binding-cancel')
+      }
+      else if (this.bindingState === PS_STATE_TARGET) {
+        this.peer.el.emit('binding-cancel')
       }
       const peerComponent = this.peer.el.components.socket
       peerComponent.untrackPeer()

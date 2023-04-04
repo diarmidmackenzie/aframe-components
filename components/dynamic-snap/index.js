@@ -139,7 +139,7 @@ AFRAME.registerComponent("dynamic-snap", {
 
     snapStart(evt) {
 
-      //console.log("Snap Start: ", evt.detail.worldTransform)
+      //console.log("Snap Start: ", evt.detail.worldTransform.position)
       this.snappable = true
 
       if (this.diverged) {
