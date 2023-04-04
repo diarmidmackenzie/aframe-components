@@ -4,6 +4,7 @@ const PS_STATE_FREE = 0
 const PS_STATE_BINDING = 1
 const PS_STATE_BOUND = 2
 const PS_STATE_TARGET = 3
+const PS_STATE_FAILED = 3
 
 AFRAME.registerSystem('socket', {
 
@@ -323,6 +324,7 @@ AFRAME.registerComponent('socket', {
       
       case PS_STATE_BINDING:
       case PS_STATE_BOUND:
+      case PS_STATE_TARGET:
         color = (this.data.type === 'socket') ? '#5ff' : '#ff5'
         break
 
@@ -434,7 +436,7 @@ AFRAME.registerComponent('socket', {
   },
   
   bindingFailed() {
-
+    this.bindingState = PS_STATE_FAILED
     this.cancelPeer()
   },
 
@@ -580,7 +582,7 @@ AFRAME.registerComponent('socket-fabric', {
                                                              item.fabricAdjustmentTransform)).length)
 
     const matchCounts = this.requests.map((request) => countMatchingRequests(request))
-
+    
     const maxMatches = Math.max(...matchCounts)
     const maxMatchesIndex = matchCounts.indexOf(maxMatches)
 
@@ -591,6 +593,10 @@ AFRAME.registerComponent('socket-fabric', {
     disposableRequests.forEach((request) => {
       this.disposeOfRequest(request, true)
     })
+
+    if (!this.requests.length) {
+      console.error("All requests disposed of:", disposableRequests)
+    }
 
     // this.requests now contains only usable requests, that are consistent with each other.
 
@@ -609,6 +615,8 @@ AFRAME.registerComponent('socket-fabric', {
   },
 
   compareTransforms(a, b, precision = 6) {
+
+    if (a === b) return true
 
     const compare = (x, y) => (Math.abs(x - y) < Math.pow(10, -precision))
 
