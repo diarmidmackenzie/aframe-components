@@ -88,6 +88,7 @@
       <a-scene background="color:#88f"
                socket="snapDistance: 4"
                stats>
+        <a-entity camera look-controls wasd-controls="acceleration:1000" position="0 1.6 0"></a-entity>
         <a-entity id="cursor"
                   cursor="rayOrigin: mouse"
                   raycaster="objects: [raycast-target]; far: Infinity"
