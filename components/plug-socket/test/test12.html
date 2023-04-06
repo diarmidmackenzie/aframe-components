@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="https://unpkg.com/aframe-template-component@3.2.1/dist/aframe-template-component.min.js"></script>
+      <script src="../dist/plug-socket.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>8-stud plug-socket test - bricks at various offsets and angles</p>
+        <p>Snap distance: <span id="snap-output">0</span>.  Hit space to increase it (behaviour will degenerate above 0.9)</p>
+    </div>
+      <a-scene background="color:#88f"
+               socket="snapDistance: 0.2; debug: true"
+               stats>
+        <a-assets>
+          <script id="blocksTemplate" type="text/html">
+            <a-box position="${box1position}"
+                   rotation="${box1rotation}"
+                   socket-fabric
+                   width="4"
+                   depth="2"
+                   color="red">
+              <a-entity socket position = "-1.5 -0.5 -0.5">
+              </a-entity>
+            </a-box>
+            <a-box position="${box2position}"
+                   rotation="${box2rotation}"
+                   socket-fabric
+                   width="4"
+                   depth="2"
+                   color="blue">
+              <a-entity plug position = "-0.5 0.5 0.5">
+              </a-entity>
+            </a-box>
+          </script>
+        </a-assets>
+        <a-entity position = "0 0 -20">
+          
+          <!-- 2nd row - y rotations.-->
+          <!-- View rotated about x axis for improved visibility-->
+          <a-entity rotation="90 0 0">
+          
+            <a-entity position = "-10 0 0"
+                      template="src: #blocksTemplate"
+                      data-box1position="1 1.1 0"
+                      data-box1rotation="0 35 0"
+                      data-box2position="0 0 0"
+                      data-box2rotation="0 0 0">
+            </a-entity>
+          
+          </a-entity>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>
