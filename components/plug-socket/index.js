@@ -190,7 +190,7 @@ AFRAME.registerSystem('socket', {
           console.log("Socket WP:", socketComponent.worldSpaceObject.position)
           console.log("Socket WQ:", socketComponent.worldSpaceObject.quaternion)
 
-          console.log("Adjustment Transform P:", adjustmentTransform.quaternion)
+          console.log("Adjustment Transform P:", adjustmentTransform.position)
           console.log("Adjustment Transform Q:", adjustmentTransform.quaternion)
         }
 
@@ -216,8 +216,9 @@ AFRAME.registerSystem('socket', {
 
   // params:
   // plug to match to a socket
-  // adjustmentTransform - an object3D, child of the plug, whose transform will be set to the 
+  // adjustmentTransform - an object3D, whose transform will be set to the 
   //                adjustment required from the plug transform to the chosen socket's transform.
+  //                all in world space.
   matchPlugToSocket(plug, adjustmentTransform) {
 
     let bestSocket = null
@@ -264,9 +265,10 @@ AFRAME.registerSystem('socket', {
           bestDistanceSq = distanceSq
           bestSocket = socket
 
-          adjustmentTransform.position.copy(this.testPlug.position)
+          adjustmentTransform.position.subVectors(socket.position, plug.position)
           adjustmentTransform.quaternion.copy(this.bestQuaternion)
-          //console.log("adjustmentTransform position: ", this.testPlug.position)
+          console.log("adjustmentTransform position: ", adjustmentTransform.position)
+          console.log("adjustmentTransform quaternion: ", adjustmentTransform.quaternion)
         }
       }
     })
@@ -454,6 +456,13 @@ AFRAME.registerComponent('socket', {
       peerComponent.updateWorldSpaceObject()
       this.debugDistanceVector.subVectors(this.worldSpaceObject.position, this.peer.el.components.socket.worldSpaceObject.position)
       console.log("Binding Success: socket distance:", this.debugDistanceVector.length().toFixed(10))
+
+      if (Math.abs(this.debugDistanceVector.length()) > 0.001) {
+        console.error("Inaccurate binding")
+        console.log("This position:", this.worldSpaceObject.position)
+        console.log("Peer position:", this.peer.el.components.socket.worldSpaceObject.position)
+        
+      }
     }
   },
 
@@ -548,7 +557,7 @@ AFRAME.registerComponent('socket-fabric', {
 
   computeFabricAdjustmentTransforms() {
 
-    // adjustmentTransform is the transform that would move one plug or socket to the correct position.
+    // adjustmentTransform is the transform that would move one plug or socket to the correct position in world space.
     // we need to compute fabric Adjustment Transform, which would move the entire fabric to the correct position.
 
     this.requests.forEach((request) => {
@@ -556,6 +565,9 @@ AFRAME.registerComponent('socket-fabric', {
       const fabricAdjustmentTransform = request.fabricAdjustmentTransform
       const socketAdjustmentTransform = request.adjustmentTransform
       fabricAdjustmentTransform.scale.set(1, 1, 1)
+
+      console.log("Socket adjustment transform: position: ", socketAdjustmentTransform.position)
+      console.log("Socket adjustment transform: quaternion: ", socketAdjustmentTransform.quaternion)
       
       const quaternion = fabricAdjustmentTransform.quaternion
       quaternion.copy(socketAdjustmentTransform.quaternion)
@@ -565,6 +577,9 @@ AFRAME.registerComponent('socket-fabric', {
       // translation required for socket to reach socket
       position.copy(socketAdjustmentTransform.position)
 
+      /* expermental - but wrong? const q = new THREE.Quaternion()
+      q.copy(fabricAdjustmentTransform.quaternion)
+      q.invert()*/
       // minus socket->fabric translation post-quaternion
       this.adjustmentVector.copy(socketPosition)
       this.adjustmentVector.applyQuaternion(fabricAdjustmentTransform.quaternion)
@@ -572,6 +587,10 @@ AFRAME.registerComponent('socket-fabric', {
 
       // minus socket->fabric translation pre-quaternion
       position.add(socketPosition)
+
+      console.log("World Space Fabric adjustment transform: position: ", fabricAdjustmentTransform.position)
+      console.log("World Space Fabric adjustment transform: quaternion: ", fabricAdjustmentTransform.quaternion)
+
     })
   },
 
@@ -666,8 +685,14 @@ AFRAME.registerComponent('socket-fabric', {
     if (this.data.snap === 'auto') {
       // for now, just snap to position 
       // - in future, will be option to do this asynchronously via physics system.
+
+      const scene = this.el.sceneEl.object3D
+      const parent = this.el.object3D.parent
+
+      scene.attach(this.el.object3D)
       this.el.object3D.position.add(object.position)
       this.el.object3D.quaternion.premultiply(object.quaternion)
+      parent.attach(this.el.object3D)
 
       this.requests.forEach((request) => {
         this.requestCompleted(request)
@@ -685,16 +710,17 @@ AFRAME.registerComponent('socket-fabric', {
       transform.quaternion.copy(this.el.object3D.quaternion)
       transform.scale.copy(this.el.object3D.scale)
       this.el.object3D.parent.add(transform)
+      this.el.sceneEl.object3D.attach(transform)
 
       transform.quaternion.premultiply(object.quaternion)
       transform.position.add(object.position)
 
-      //console.log("Local transform: position: ", transform.position)
-      //console.log("Local transform: quaternion: ", transform.quaternion)
+      console.log("Local transform: position: ", transform.position)
+      console.log("Local transform: quaternion: ", transform.quaternion)
 
-      this.el.sceneEl.object3D.attach(transform)
-      //console.log("World transform: position: ", transform.position)
-      //console.log("World transform: quaternion: ", transform.quaternion)
+      /*
+      console.log("World transform: position: ", transform.position)
+      console.log("World transform: quaternion: ", transform.quaternion)*/
 
       this.el.emit('snapStart', this.eventData)
 

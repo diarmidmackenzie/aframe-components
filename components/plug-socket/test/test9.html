@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="https://unpkg.com/aframe-template-component@3.2.1/dist/aframe-template-component.min.js"></script>
+      <script src="../../mouse-manipulation/dist/mouse-manipulation.js"></script>
+      <script src="../../raycast-target/index.js"></script>
+      <script src="../../dynamic-snap/dist/dynamic-snap.js"></script>
+      <script src="../dist/plug-socket.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Plug-socket test with dynamic snap - bricks at various different positions</p>
+        <p>Can plug in above or below any block</p>
+    </div>
+      <a-scene background="color:#88f"
+               socket="snapDistance: 0.5; debug: true"
+               stats>
+        <a-assets>
+          <script id="blocks" type="text/x-nunjucks-template">
+            {% for x in range(-5, 5) %}
+              {% for y in range(-5, 5) %}
+                <a-box id="red-box-{{x}}-{{y}}"
+                       position="{{ x * 2 + 1 }} {{y * 3 + 1}} 0"
+                       socket-fabric
+                       color="red">
+                  <a-entity socket position = "0 -0.5 0">
+                  </a-entity>
+                  <a-entity plug position = "0 0.5 0">
+                  </a-entity>
+                </a-box>
+              {% endfor %}
+            {% endfor %}
+          </script> 
+        </a-assets>
+        <a-entity id="cursor"
+                  cursor="rayOrigin: mouse"
+                  raycaster="objects: [raycast-target]; far: Infinity"
+                  mouse-manipulation="grabEvents: true">
+          </a-entity>
+        <a-entity position = "0 0 -10">
+          <!-- 1st row - z rotations -->
+          <a-entity template="src: #blocks"></a-entity>
+          <a-box id="blue-box" 
+               position = "0 0 0"
+               dynamic-snap="renderSnap: wireframe"
+               raycast-target
+               socket-fabric="snap:events"
+               color="blue">
+          <a-entity socket position = "0 -0.5 0">
+          </a-entity>
+          <a-entity plug position = "0 0.5 0">
+          </a-entity>
+        </a-box>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>

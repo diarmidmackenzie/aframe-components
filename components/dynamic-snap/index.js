@@ -194,10 +194,17 @@ AFRAME.registerComponent("dynamic-snap", {
         const parent = object.parent
         const projectedObject = this.projectedEl.object3D
 
+        //console.log("Projected Object transform: position: ", projectedObject.position)
+        //console.log("Prjected Object transform: quaternion: ", projectedObject.quaternion)
+
         object.matrix.identity()
         object.matrix.decompose(object.position, object.quaternion, object.scale)
         projectedObject.add(object)
+
         parent.attach(object)
+
+        //console.log("Object transform: position: ", object.position)
+        //console.log("Object transform: quaternion: ", object.quaternion)
 
         this.hideProjectedObject()
 
