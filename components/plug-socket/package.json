@@ -7,7 +7,7 @@
     "dist": "npm run dist:dev && npm run dist:prod",
     "dist:dev": "webpack --config webpack.config.js",
     "dist:prod": "webpack --config webpack.prod.config.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "qunit"
   },
   "keywords": [
     "A-Frame",
@@ -23,6 +23,7 @@
     "aframe-polygon-wireframe": "^0.2.1"
   },
   "devDependencies": {
+    "qunit": "^2.19.4",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1"
   }
