@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Test Suite</title>
-<link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.19.4.css">
+<head>
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.19.4.css">
+  <script src="https://code.jquery.com/qunit/qunit-2.19.4.js"></script>
+  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+</head>
 <body>
+  <a-scene></a-scene>
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
-  <script src="https://code.jquery.com/qunit/qunit-2.19.4.js"></script>
+  <script src="../dist/plug-socket.js"></script>
   <script src = "./ut/add.js"></script>
   <script src = "./ut/ut1.js"></script>
 </body>
