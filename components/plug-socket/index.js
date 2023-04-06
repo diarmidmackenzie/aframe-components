@@ -58,7 +58,7 @@ AFRAME.registerSystem('socket', {
   removeFreePlug(plug) {
     const index = this.freePlugObjects.indexOf(plug)
 
-    if (index > 0) {
+    if (index > -1) {
       this.freePlugObjects.splice(index, 1)
     }
   },
@@ -70,7 +70,7 @@ AFRAME.registerSystem('socket', {
   removeFreeSocket(socket) {
     const index = this.freeSocketObjects.indexOf(socket)
 
-    if (index > 0) {
+    if (index > -1) {
       this.freeSocketObjects.splice(index, 1)
     }
   },
