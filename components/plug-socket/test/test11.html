@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../dist/plug-socket.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Simple plug-socket test - bricks should snap together.  Both have non-zero rotations.</p>
+    </div>
+      <a-scene background="color:#88f"
+               socket="snapDistance: 0.2; debug: true">
+        <a-entity position = "0 1 -4"
+                  animation="property: rotation; from: 0 0 0; to: 0 360 0; loop: true; easing: linear; dur: 10000">
+          <a-box position = "0 1.1 0"
+                 rotation="0 35 0"
+                socket-fabric
+                color="red">
+            <a-entity socket position = "0 -0.5 0">
+            </a-entity>
+            <a-entity plug position = "0 0.5 0">
+            </a-entity>
+          </a-box>
+          <a-box position = "0 0 0"
+                 rotation="0 0 0"
+                socket-fabric
+                color="blue">
+            <a-entity socket position = "0 -0.5 0">
+            </a-entity>
+            <a-entity plug position = "0 0.5 0">
+            </a-entity>
+          </a-box>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>
