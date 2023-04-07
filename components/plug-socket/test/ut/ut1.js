@@ -99,6 +99,14 @@ QUnit.assert.rotationsEqual = function (actual, expected, options = {}, message)
   });
 };
 
+// Destroy scene at the end of every test.  This has the important side-benefit of clearing
+// up all event listeners that were registered on the scene or its children.
+QUnit.testDone(function() {
+  const scene = document.querySelector('a-scene')
+  if (scene) {
+    scene.parentElement.removeChild(scene)
+  }
+});
 
 const createScene = () => {
   const scene = document.createElement('a-scene')
@@ -107,13 +115,12 @@ const createScene = () => {
   return scene
 }
 
-const createFabric = (pos = "0 0 0", rot = "0 0 0") => {
-  const scene = document.querySelector('a-scene')
+const createFabric = (pos = "0 0 0", rot = "0 0 0", parent = document.querySelector('a-scene')) => {
   const el = document.createElement('a-entity')
   el.setAttribute('socket-fabric', '')
   el.setAttribute('position', pos)
   el.setAttribute('rotation', rot)
-  scene.appendChild(el)
+  parent.appendChild(el)
   return el
 }
 
@@ -136,10 +143,13 @@ const createPlug = (fabric, pos = '0 0 0', rot = '0 0 0') => {
 }
 
 const simplePlugSocketTest = (assert, options = {}) => {
+  const scene = document.querySelector('a-scene') || createScene() 
   const pos1  = options.pos1 || "0 0 0"
   const pos2  = options.pos2 || "0 0 0"
+  const parent1  = options.parent1 || document.querySelector('a-scene')
   const rot1  = options.rot1 || "0 0 0"
   const rot2  = options.rot2 || "0 0 0"
+  const parent2  = options.parent2 || document.querySelector('a-scene')
   const finalPos1  = options.finalPos1 || "0 0 0"
   const finalPos2  = options.finalPos2 || "0 0 0"
   const finalRot1  = options.finalRot1 || "0 0 0"
@@ -151,12 +161,11 @@ const simplePlugSocketTest = (assert, options = {}) => {
   const snapDistance = (options.snapDistance !== undefined) ? options.snapDistance : 0.2
   const snapRotation = (options.snapRotation !== undefined) ? options.snapRotation : 30
   const snapExpected = (options.snapExpected !== undefined) ? options.snapExpected : true
-
-  const scene = createScene()
+  
   scene.setAttribute('socket', {snapDistance: snapDistance, snapRotation: snapRotation, debug: true})
-  const fabricTop = createFabric(pos1, rot1)
+  const fabricTop = createFabric(pos1, rot1, parent1)
   const socket = createSocket(fabricTop, sockPos, sockRot)
-  const fabricBottom = createFabric(pos2, rot2)
+  const fabricBottom = createFabric(pos2, rot2, parent2)
   const plug = createPlug(fabricBottom, plugPos, plugRot)
   const done = assert.async();
       
@@ -450,7 +459,54 @@ QUnit.module('basic tests', function() {
     simplePlugSocketTest(assert, options)
   });
 
-  QUnit.test('2 plug connects to nearby sockets', function(assert) {
+  QUnit.test('plug connects to nearby socket (90 degree wrapper container)', function(assert) {
+
+    const scene = createScene()
+    const container = document.createElement('a-entity')
+    container.setAttribute('rotation', '0 0 90')
+    scene.appendChild(container)
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      parent1: container,
+      pos2: '0 0 0',
+      parent2: container,
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalPos2: '0 0.1 0'
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
+  QUnit.test('plug connects to nearby socket (different parents)', function(assert) {
+
+    const scene = createScene()
+
+    const container1 = document.createElement('a-entity')
+    container1.setAttribute('position', '0 10 0')
+    scene.appendChild(container1)
+
+    const container2 = document.createElement('a-entity')
+    container2.setAttribute('position', '0 -10 0')
+    scene.appendChild(container2)
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      parent1: container1,
+      pos2: '0 20 0',
+      parent2: container2,
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalPos2: '0 20.1 0'
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
+  QUnit.test('2-plug fabric connects to nearby sockets', function(assert) {
 
     const options = {
       snapDistance: 0.2,
@@ -464,6 +520,5 @@ QUnit.module('basic tests', function() {
      }
     multiPlugSocketTest(assert, options)
   });
-
 
 });
