@@ -123,6 +123,7 @@ const createSocket = (fabric, pos = '0 0 0', rot = '0 0 0') => {
   el.setAttribute('position', pos)
   el.setAttribute('rotation', rot)
   fabric.appendChild(el)
+  return el
 }
 
 const createPlug = (fabric, pos = '0 0 0', rot = '0 0 0') => {
@@ -131,6 +132,7 @@ const createPlug = (fabric, pos = '0 0 0', rot = '0 0 0') => {
   el.setAttribute('position', pos)
   el.setAttribute('rotation', rot)
   fabric.appendChild(el)
+  return el
 }
 
 const simplePlugSocketTest = (assert, options = {}) => {
@@ -153,9 +155,9 @@ const simplePlugSocketTest = (assert, options = {}) => {
   const scene = createScene()
   scene.setAttribute('socket', {snapDistance: snapDistance, snapRotation: snapRotation, debug: true})
   fabricTop = createFabric(pos1, rot1)
-  createSocket(fabricTop, sockPos, sockRot)
+  const socket = createSocket(fabricTop, sockPos, sockRot)
   fabricBottom = createFabric(pos2, rot2)
-  createPlug(fabricBottom, plugPos, plugRot)
+  const plug = createPlug(fabricBottom, plugPos, plugRot)
   const done = assert.async();
       
   // Plug (bottom) moves to connect to socket.
@@ -170,6 +172,13 @@ const simplePlugSocketTest = (assert, options = {}) => {
       const rotBottom = fabricBottom.object3D.rotation
       assert.rotationsEqual(rotTop, finalRot1);
       assert.rotationsEqual(rotBottom, finalRot2);
+
+      // plug and socket positions should match exactly.
+      plugWorldPosition = new THREE.Vector3()
+      plug.object3D.getWorldPosition(plugWorldPosition)
+      socketWorldPosition = new THREE.Vector3()
+      socket.object3D.getWorldPosition(socketWorldPosition)
+      assert.vectorsEqual(plugWorldPosition, socketWorldPosition);
       done()
     })
   }
@@ -308,6 +317,59 @@ QUnit.module('add', function() {
       plugPos: '0 0.5 0',
       finalPos1: '0 1.1 0',
       finalPos2: '0 0.1 0',
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
+  QUnit.test('socket rotated 10 degrees Y axis.  Plug connects & aligns', function(assert) {
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      rot1: '0 10 0',
+      pos2: '0 0 0',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalRot1: '0 10 0',
+      finalPos2: '0 0.1 0',
+      finalRot2: '0 10 0',
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
+  QUnit.test('socket rotated 10 degrees Z axis.  Plug connects & aligns', function(assert) {
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      rot1: '0 0 10',
+      pos2: '0 0 0',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalRot1: '0 0 10',
+      // hardcoded based on observed values.  We also check the plug & socket positions match
+      finalPos2: '0.1736481776669 0.1151922469877 0',
+      finalRot2: '0 0 10',
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
+  QUnit.test('socket rotated 10 degrees X axis.  Plug connects & aligns', function(assert) {
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      rot1: '10 0 0',
+      pos2: '0 0 0',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalRot1: '10 0 0',
+      // hardcoded based on observed values.  We also check the plug & socket positions match
+      finalPos2: '0 0.1151922469877 -0.1736481776669',
+      finalRot2: '10 0 0',
      }
     simplePlugSocketTest(assert, options)
   });
