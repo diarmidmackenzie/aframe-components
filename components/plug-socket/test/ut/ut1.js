@@ -147,10 +147,11 @@ const simplePlugSocketTest = (assert, options = {}) => {
   const sockPos  = options.sockPos || "0 0 0"
   const sockRot  = options.sockRot || "0 0 0"
   const snapDistance = (options.snapDistance !== undefined) ? options.snapDistance : 0.2
+  const snapRotation = (options.snapRotation !== undefined) ? options.snapRotation : 30
   const snapExpected = (options.snapExpected !== undefined) ? options.snapExpected : true
 
   const scene = createScene()
-  scene.setAttribute('socket', {snapDistance: snapDistance})
+  scene.setAttribute('socket', {snapDistance: snapDistance, snapRotation: snapRotation, debug: true})
   fabricTop = createFabric(pos1, rot1)
   createSocket(fabricTop, sockPos, sockRot)
   fabricBottom = createFabric(pos2, rot2)
@@ -247,5 +248,54 @@ QUnit.module('add', function() {
      }
     simplePlugSocketTest(assert, options)
   });
+
+  QUnit.test('plug rotated 10 degrees Y axis connects & aligns', function(assert) {
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      pos2: '0 0 0',
+      rot2: '0 10 0',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalPos2: '0 0.1 0',
+      finalRot2: '0 0 0',
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
+  QUnit.test('socket rotated 10 degrees Y axis: plug connects & aligns', function(assert) {
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      rot1: '0 10 0',
+      pos2: '0 0 0',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalRot1: '0 10 0',
+      finalPos2: '0 0.1 0',
+      finalRot2: '0 10 0'
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
+  QUnit.test('plug rotated 10 degrees Z axis connects & aligns', function(assert) {
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      pos2: '0 0 0',
+      rot2: '0 0 10',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalPos2: '0 0.1 0',
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
 
 });

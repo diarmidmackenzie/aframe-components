@@ -567,21 +567,27 @@ AFRAME.registerComponent('socket-fabric', {
       const quaternion = fabricAdjustmentTransform.quaternion
       quaternion.copy(socketAdjustmentTransform.quaternion)
 
-      const socketPosition = request.el.object3D.position
+      const worldSpaceSocketPosition = new THREE.Vector3()
+      worldSpaceSocketPosition.copy(request.el.object3D.position)
+      request.el.object3D.parent.localToWorld(worldSpaceSocketPosition)
+      const worldSpaceFabricPosition = new THREE.Vector3()
+      worldSpaceFabricPosition.copy(this.el.object3D.position)
+      this.el.object3D.parent.localToWorld(worldSpaceFabricPosition)
+
+      const socketOffset = new THREE.Vector3()
+      socketOffset.subVectors(worldSpaceSocketPosition, worldSpaceFabricPosition)
+
       const position = fabricAdjustmentTransform.position
       // translation required for socket to reach socket
       position.copy(socketAdjustmentTransform.position)
 
-      /* expermental - but wrong? const q = new THREE.Quaternion()
-      q.copy(fabricAdjustmentTransform.quaternion)
-      q.invert()*/
       // minus socket->fabric translation post-quaternion
-      this.adjustmentVector.copy(socketPosition)
+      this.adjustmentVector.copy(socketOffset)
       this.adjustmentVector.applyQuaternion(fabricAdjustmentTransform.quaternion)
       position.sub(this.adjustmentVector)
 
-      // minus socket->fabric translation pre-quaternion
-      position.add(socketPosition)
+      // plus socket->fabric translation pre-quaternion
+      position.add(socketOffset)
 
       console.log("World Space Fabric adjustment transform: position: ", fabricAdjustmentTransform.position)
       console.log("World Space Fabric adjustment transform: quaternion: ", fabricAdjustmentTransform.quaternion)
