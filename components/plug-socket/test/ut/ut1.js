@@ -1,3 +1,105 @@
+QUnit.assert.approxEqual = function (actual, expected, options = {}, message) {
+
+  const dps = options.dps || 10
+  const result = (Math.abs(expected - actual) < (Math.pow(10, -dps)));
+  this.pushResult({
+    result: result,
+    actual: actual,
+    expected: `approximately equal to ${expected} (within ${dps} dps)`,
+    message: message
+  });
+};
+
+QUnit.assert.vectorsEqual = function (actual, expected, options = {}, message) {
+
+  const dps = options.dps || 10
+  const tolerance = (Math.pow(10, -dps))
+
+  let expectedArray, actualArray
+  if (expected.x !== undefined) {
+    expectedArray = [expected.x, expected.y, expected.z]
+  }
+  else {
+    expectedArray = expected.split(' ')
+  }
+
+  if (actual.x !== undefined) {
+    actualArray = [actual.x, actual.y, actual.z]
+  }
+  else {
+    actualArray = actual.split(' ')
+  }
+
+  let result = true
+
+  if (expectedArray.length !== actualArray.length) {
+    result = false
+  }
+  else {
+    for (let ii = 0; ii < actualArray.length; ii++) {
+      const diff = Math.abs(actualArray[ii] - expectedArray[ii])
+      if (diff > tolerance) {
+        result = false
+        break
+      }
+    }
+  }
+    
+  //const result = (Math.abs(expected - actual) < (Math.pow(10, -dps)));
+  this.pushResult({
+    result: result,
+    actual: actual,
+    expected: `approximately equal to ${expected} (within ${dps} dps)`,
+    message: message
+  });
+};
+
+QUnit.assert.rotationsEqual = function (actual, expected, options = {}, message) {
+
+  const dps = options.dps || 10
+  const tolerance = (Math.pow(10, -dps))
+
+  const r2d = THREE.MathUtils.radToDeg
+  let expectedArray, actualArray
+  if (expected.x !== undefined) {
+    expectedArray = [r2d(expected.x), r2d(expected.y), r2d(expected.z)]
+  }
+  else {
+    expectedArray = expected.split(' ')
+  }
+
+  if (actual.x !== undefined) {
+    actualArray = [r2d(actual.x), r2d(actual.y), r2d(actual.z)]
+  }
+  else {
+    actualArray = actual.split(' ')
+  }
+
+  let result = true
+
+  if (expectedArray.length !== actualArray.length) {
+    result = false
+  }
+  else {
+    for (let ii = 0; ii < actualArray.length; ii++) {
+      const diff = Math.abs(actualArray[ii] - expectedArray[ii])
+      if (diff > tolerance) {
+        result = false
+        break
+      }
+    }
+  }
+    
+  //const result = (Math.abs(expected - actual) < (Math.pow(10, -dps)));
+  this.pushResult({
+    result: result,
+    actual: actual,
+    expected: `approximately equal to ${expected} (within ${dps} dps)`,
+    message: message
+  });
+};
+
+
 const createScene = () => {
   const scene = document.createElement('a-scene')
   document.body.appendChild(scene)
@@ -31,39 +133,119 @@ const createPlug = (fabric, pos = '0 0 0', rot = '0 0 0') => {
   fabric.appendChild(el)
 }
 
-QUnit.module('add', function() {
-  QUnit.test('plug connects to nearby socket', function(assert) {
+const simplePlugSocketTest = (assert, options = {}) => {
+  const pos1  = options.pos1 || "0 0 0"
+  const pos2  = options.pos2 || "0 0 0"
+  const rot1  = options.rot1 || "0 0 0"
+  const rot2  = options.rot2 || "0 0 0"
+  const finalPos1  = options.finalPos1 || "0 0 0"
+  const finalPos2  = options.finalPos2 || "0 0 0"
+  const finalRot1  = options.finalRot1 || "0 0 0"
+  const finalRot2  = options.finalRot2 || "0 0 0"
+  const plugPos  = options.plugPos || "0 0 0"
+  const plugRot  = options.plugRot || "0 0 0"
+  const sockPos  = options.sockPos || "0 0 0"
+  const sockRot  = options.sockRot || "0 0 0"
+  const snapDistance = (options.snapDistance !== undefined) ? options.snapDistance : 0.2
+  const snapExpected = (options.snapExpected !== undefined) ? options.snapExpected : true
 
-    const scene = createScene()
-    scene.setAttribute('socket', 'snapDistance: 0.2')
-    fabricTop = createFabric('0 1.1 0')
-    createSocket(fabricTop, '0 -0.5 0')
-    fabricBottom = createFabric('0 0 0')
-    createPlug(fabricBottom, '0 0.5 0')
-    const done = assert.async();
-        
-    // Plug (bottom) moves to connect to socket.
+  const scene = createScene()
+  scene.setAttribute('socket', {snapDistance: snapDistance})
+  fabricTop = createFabric(pos1, rot1)
+  createSocket(fabricTop, sockPos, sockRot)
+  fabricBottom = createFabric(pos2, rot2)
+  createPlug(fabricBottom, plugPos, plugRot)
+  const done = assert.async();
+      
+  // Plug (bottom) moves to connect to socket.
 
+  if (snapExpected) {
     fabricBottom.addEventListener('binding-success', () => {
       const posTop = fabricTop.object3D.position
       const posBottom = fabricBottom.object3D.position
-      assert.equal(posTop.x, 0);
-      assert.equal(posTop.y, 1.1);
-      assert.equal(posTop.z, 0);
-      assert.equal(posBottom.x, 0);
-      assert.equal(posBottom.y, 0.1);
-      assert.equal(posBottom.z, 0);
-
+      assert.vectorsEqual(posTop, finalPos1);
+      assert.vectorsEqual(posBottom, finalPos2);
+      const rotTop = fabricTop.object3D.rotation
+      const rotBottom = fabricBottom.object3D.rotation
+      assert.rotationsEqual(rotTop, finalRot1);
+      assert.rotationsEqual(rotBottom, finalRot2);
       done()
     })
+  }
+  else {
+    fabricBottom.addEventListener('binding-success', (evt) => {
+      assert.false('unexpected binding')
+      done()
+    })
+    scene.tick()
+    assert.timeout(1000);
+    assert.expect(0)
+    done()
+  }
+}
+
+QUnit.module('add', function() {
+
+  QUnit.test('plug connects to nearby socket', function(assert) {
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      pos2: '0 0 0',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalPos2: '0 0.1 0'
+     }
+    simplePlugSocketTest(assert, options)
   });
 
-  QUnit.test('create box 2', function(assert) {
-    const scene = createScene()
-    const box = document.createElement('a-box')
-    scene.appendChild(box)
-    
-    assert.equal(box.object3D.position.x, 0);
+  QUnit.test('plug can be rotated by 90 degrees Y axis', function(assert) {
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      rot1: '0 90 0',
+      pos2: '0 0 0',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalRot1: '0 90 0',
+      finalPos2: '0 0.1 0'
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
+  QUnit.test('Plug does not connect if more than snapDistance apart', function(assert) {
+
+    const options = {
+      snapDistance: 0.05,
+      snapExpected: false,
+      pos1: '0 1.1 0',
+      pos2: '0 0 0',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalPos2: '0 0 0'
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
+  QUnit.test('plug rotated 45 degrees Y axis does not connect', function(assert) {
+
+    const options = {
+      snapDistance: 0.2,
+      snapExpected: false,
+      pos1: '0 1.1 0',
+      rot1: '0 45 0',
+      pos2: '0 0 0',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalRot1: '0 45 0',
+      finalPos2: '0 0 0'
+     }
+    simplePlugSocketTest(assert, options)
   });
 
 });

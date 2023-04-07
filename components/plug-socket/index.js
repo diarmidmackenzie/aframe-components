@@ -38,15 +38,10 @@ AFRAME.registerSystem('socket', {
 
   update() {
 
+    this.snapRotation = THREE.MathUtils.degToRad(this.data.snapRotation)
+
     // build an array of quaternions representing angles to test for socket/plug matches,
     // based on the supplied config.
-    // old code, can probably delete...
-    /* this.anglesToTest = []
-    for (angle = 0; angle < 360; angle += this.data.rotationIncrement) {
-      const quaternion = new THREE.Quaternion()
-      quaternion.setFromAxisAngle(this.upVector, THREE.MathUtils.degToRad(angle))
-      this.anglesToTest.push(quaternion)
-    }*/
     this.angleIncrementQuaternion = new THREE.Quaternion()
     this.angleIncrementQuaternion.setFromAxisAngle(this.upVector, THREE.MathUtils.degToRad(this.data.rotationIncrement))
   },
@@ -256,7 +251,7 @@ AFRAME.registerSystem('socket', {
         this.testPlug.quaternion.multiply(this.angleIncrementQuaternion)
       }
 
-      if (bestAngle < this.data.snapRotation) {
+      if (bestAngle < this.snapRotation) {
         // angle small enough to qualify
 
         const distanceSq = this.testPlug.position.lengthSq()
