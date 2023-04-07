@@ -556,7 +556,7 @@ AFRAME.registerComponent('socket-fabric', {
     const socketOffset = new THREE.Vector3()
     const adjustmentVector = new THREE.Vector3()
 
-    return(function () {
+    return (() => {
 
       // adjustmentTransform is the transform that would move one plug or socket to the correct position in world space.
       // we need to compute fabric Adjustment Transform, which would move the entire fabric to the correct position.
