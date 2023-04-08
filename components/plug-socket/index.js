@@ -47,7 +47,9 @@ AFRAME.registerSystem('socket', {
   },
 
   addFreePlug(plug) {
-    this.freePlugObjects.push(plug)
+    if (!this.freePlugObjects.includes(plug)) {
+      this.freePlugObjects.push(plug)
+    }
   },
 
   removeFreePlug(plug) {
@@ -59,7 +61,9 @@ AFRAME.registerSystem('socket', {
   },
 
   addFreeSocket(socket) {
-    this.freeSocketObjects.push(socket)
+    if (!this.freeSocketObjects.includes(socket)) {
+      this.freeSocketObjects.push(socket)
+    }
   },
 
   removeFreeSocket(socket) {
@@ -262,8 +266,8 @@ AFRAME.registerSystem('socket', {
 
           adjustmentTransform.position.subVectors(socket.position, plug.position)
           adjustmentTransform.quaternion.copy(this.bestQuaternion)
-          console.log("adjustmentTransform position: ", adjustmentTransform.position)
-          console.log("adjustmentTransform quaternion: ", adjustmentTransform.quaternion)
+          //console.log("adjustmentTransform position: ", adjustmentTransform.position)
+          //console.log("adjustmentTransform quaternion: ", adjustmentTransform.quaternion)
         }
       }
     })
