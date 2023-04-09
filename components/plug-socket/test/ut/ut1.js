@@ -1,11 +1,23 @@
 QUnit.assert.approxEqual = function (actual, expected, options = {}, message) {
 
   const dps = options.dps || 10
-  const result = (Math.abs(expected - actual) < (Math.pow(10, -dps)));
+  const result = (Math.abs(expected - actual) < (Math.pow(10, -dps)))
   this.pushResult({
     result: result,
     actual: actual,
     expected: `approximately equal to ${expected} (within ${dps} dps)`,
+    message: message
+  });
+};
+
+QUnit.assert.isSquareAngle = function (actual, options = {}, message) {
+  const dps = options.dps || 10
+  const remainder = actual - ((Math.PI / 2) * Math.floor(actual / (Math.PI / 2)))
+  const result = (Math.abs(remainder) < (Math.pow(10, -dps)))
+  this.pushResult({
+    result: result,
+    actual: actual,
+    expected: `to be a multiple of PI / 2 radians`,
     message: message
   });
 };
@@ -188,6 +200,16 @@ const simplePlugSocketTest = (assert, options = {}) => {
       const socketWorldPosition = new THREE.Vector3()
       socket.object3D.getWorldPosition(socketWorldPosition)
       assert.vectorsEqual(plugWorldPosition, socketWorldPosition);
+
+      // plug and socket quaternions should differ by some multiple of ninety degrees
+      const plugWorldQuaternion = new THREE.Quaternion()
+      plug.object3D.updateWorldMatrix()
+      plugWorldQuaternion.setFromRotationMatrix(plug.object3D.matrixWorld)
+      const socketWorldQuaternion = new THREE.Quaternion()
+      socket.object3D.updateWorldMatrix()
+      socketWorldQuaternion.setFromRotationMatrix(socket.object3D.matrixWorld)
+      const angle = plugWorldQuaternion.angleTo(socketWorldQuaternion)
+      assert.isSquareAngle(angle)
       done()
     })
   }
@@ -455,6 +477,26 @@ QUnit.module('basic tests', function() {
       // hardcoded based on observed values.  We also check the plug & socket positions match
       finalPos2: '0 0.1151922469877 -0.1736481776669',
       finalRot2: '10 0 0',
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
+  QUnit.test('socket rotated 10 degrees X axis.  90 degree rotation on plug', function(assert) {
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      rot1: '10 0 0',
+      pos2: '0 0 0',
+      rot2: '0 90 0',
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalRot1: '10 0 0',
+      // hardcoded based on observed values.  We also check the plug & socket positions match
+      // and that angle between them is a multiple of 90 degrees.
+      finalPos2: '0 0.11519224698779196 -0.17364817766693033',
+      finalRot2: '0 90 10',
      }
     simplePlugSocketTest(assert, options)
   });

@@ -34,6 +34,7 @@ AFRAME.registerSystem('socket', {
     this.bestQuaternion = new THREE.Quaternion()
 
     this.testPlug = new THREE.Object3D()
+    
   },
 
   update() {
@@ -224,9 +225,12 @@ AFRAME.registerSystem('socket', {
     let bestDistanceSq = Infinity
     const sockets = this.findNearbySockets(plug)
 
-    if (sockets.length < 1) return
+    if (sockets.length < 1) return null
 
     sockets.forEach((socket) => {
+
+      // don't consider sockets in the same fabric as the plug.
+      if (socket.el.components.socket.fabric === plug.el.components.socket.fabric) return null
 
       // set testPlug position to match position of socket,
       // but as a child of the plug.
@@ -252,7 +256,7 @@ AFRAME.registerSystem('socket', {
           this.bestQuaternion.copy(this.testPlug.quaternion)
         }
 
-        this.testPlug.quaternion.multiply(this.angleIncrementQuaternion)
+        this.testPlug.quaternion.premultiply(this.angleIncrementQuaternion)
       }
 
       if (bestAngle < this.snapRotation) {
@@ -287,6 +291,7 @@ AFRAME.registerComponent('socket', {
     this.adjustmentTransform = new THREE.Object3D()
     this.fabricAdjustmentTransform = new THREE.Object3D()
     
+    this.fabric = this.findFabric()
     this.peer = null
     this.isSocket = (this.data.type === 'socket')
 
@@ -310,6 +315,17 @@ AFRAME.registerComponent('socket', {
     }
 
     this.debugDistanceVector = new THREE.Vector3()
+  },
+
+  findFabric() {
+    
+    function findFabricAbove(el, sceneEl) {
+      if (!el.parentEl === sceneEl) return null
+      if (el.parentEl?.getAttribute('socket-fabric') !== null) return el.parentEl
+      return findFabricAbove(el.parentEl, sceneEl)
+    }
+
+    return findFabricAbove(this.el, this.el.sceneEl)
   },
 
   updateDebugVisual() {
@@ -523,11 +539,13 @@ AFRAME.registerComponent('socket-fabric', {
     // !! Need to figure out correct mechanism to use here.
     this.breakBonds = this.breakBonds.bind(this)
     this.el.addEventListener('mouseGrab', this.breakBonds)
+    this.bondBroken = false
 
     this.requests = []
     this.prevRequestsLength = 0
 
     this.transform = new THREE.Object3D()
+    this.identityTransform = new THREE.Object3D()
     this.eventData = {worldTransform: this.transform}
   },
 
@@ -716,11 +734,19 @@ AFRAME.registerComponent('socket-fabric', {
       // Details to be worked out...
     }
     else {
+
+      let alreadyInPosition = false
+      if (!this.bondsBroken && this.compareTransforms(this.identityTransform, object)) {
+        // requested transform is the identity (no movement)
+        alreadyInPosition = true
+      }
+
       // signal events, to allow snap to be controlled externally.
       const transform = this.transform
       transform.position.copy(this.el.object3D.position)
       transform.quaternion.copy(this.el.object3D.quaternion)
       transform.scale.copy(this.el.object3D.scale)
+
       this.el.object3D.parent.add(transform)
       this.el.sceneEl.object3D.attach(transform)
 
@@ -732,22 +758,31 @@ AFRAME.registerComponent('socket-fabric', {
 
       this.el.emit('snapStart', this.eventData)
 
-      this.el.addEventListener('snapped-to-position', () => {
-        this.requests.forEach((request) => {
-          this.requestCompleted(request)
-        })
-      })
+      if (alreadyInPosition) {
+        this.allRequestsCompleted()
+      }
+      else {
+        this.el.addEventListener('snapped-to-position', this.allRequestsCompleted.bind(this))
+      }
     }
   },
 
+  allRequestsCompleted() {
+    this.requests.forEach((request) => {
+      this.requestCompleted(request)
+    })
+  },
+  
   requestCompleted(request) {
 
     request.el.emit('binding-success')
 
     this.disposeOfRequest(request, false)
+    this.bondsBroken = false
   },
 
   breakBonds() {
+    this.bondsBroken = true
 
     const sockets = this.el.querySelectorAll('[socket]')
 

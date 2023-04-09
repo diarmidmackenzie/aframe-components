@@ -8,24 +8,27 @@
   <body>
     <div class="text-overlay">
         <p>Simple plug-socket test - bricks should snap together.  Both have non-zero rotations.</p>
+        <p>Specific combination of rotations that seems to expose a problem...</p>
     </div>
       <a-scene background="color:#88f"
-               socket="snapDistance: 0.2; debug: true">
+               socket="snapDistance: 0.5; debug: true">
         <a-entity position = "0 1 -4"
                   animation="property: rotation; from: 0 0 0; to: 0 360 0; loop: true; easing: linear; dur: 10000">
-          <a-box position = "0 1.1 0"
-                 rotation="0 25 0"
-                socket-fabric
-                color="red">
+          <a-box id="red-box"
+                 position = "0 1.1 0"
+                 rotation="10 0 0"
+                 socket-fabric
+                 color="red">
             <a-entity socket position = "0 -0.5 0">
             </a-entity>
             <a-entity plug position = "0 0.5 0">
             </a-entity>
           </a-box>
-          <a-box position = "0 0 0"
-                 rotation="0 0 0"
-                socket-fabric
-                color="blue">
+          <a-box id="blue-box"
+                 position = "0 0 0"
+                 rotation="0 90 0"
+                 socket-fabric
+                 color="blue">
             <a-entity socket position = "0 -0.5 0">
             </a-entity>
             <a-entity plug position = "0 0.5 0">

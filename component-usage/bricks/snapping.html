@@ -86,7 +86,7 @@
         view code
     </a>
       <a-scene background="color:#88f"
-               socket="snapDistance: 4"
+               socket="snapDistance: 4; snapRotation: 50"
                stats>
         <a-entity camera look-controls wasd-controls="acceleration:1000" position="0 1.6 0"></a-entity>
         <a-entity id="cursor"
@@ -96,7 +96,7 @@
         </a-entity>
         <a-entity position = "0 -30 -100" brick-wall>
             <a-brick id="base" width="20" 
-                     movement="static" depth="8" height="1" color="#4B9F4A" position="0 0 0">
+                     movement="static" depth="8" height="1" color="#4B9F4A" position="0 3.2 0">
             </a-brick>
         </a-entity>
       </a-scene>
