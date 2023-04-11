@@ -249,7 +249,7 @@ AFRAME.registerSystem('socket', {
           this.bestQuaternion.copy(this.testPlug.quaternion)
         }
 
-        this.testPlug.quaternion.premultiply(this.angleIncrementQuaternion)
+        this.testPlug.quaternion.multiply(this.angleIncrementQuaternion)
       }
 
       if (bestAngle < this.snapRotation) {
@@ -266,7 +266,7 @@ AFRAME.registerSystem('socket', {
 
           adjustmentTransform.position.subVectors(socket.position, plug.position)
           adjustmentTransform.quaternion.copy(this.bestQuaternion)
-                             .premultiply(plug.quaternion)
+                              .premultiply(plug.quaternion)
                              .multiply(plugInverseQuaternion)
 
           //console.log("adjustmentTransform position: ", adjustmentTransform.position)
