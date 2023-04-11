@@ -218,10 +218,11 @@ const simplePlugSocketTest = (assert, options = {}) => {
       assert.false('unexpected binding')
       done()
     })
-    scene.tick()
-    assert.timeout(1000);
-    assert.expect(0)
-    done()
+    scene.addEventListener('loaded', () => {
+      scene.tick()
+      assert.expect(0)
+      done()
+    })
   }
 }
 

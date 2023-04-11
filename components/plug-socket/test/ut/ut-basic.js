@@ -260,4 +260,24 @@ QUnit.module('basic tests', function() {
     multiPlugSocketTest(assert, options)
   });
 
+  QUnit.test('plugs and sockets on the same fabric dont interact', function(assert) {
+
+    const scene = document.querySelector('a-scene') || createScene() 
+    scene.setAttribute('socket', {snapDistance: 0.2, debug: true})
+    const fabric = createFabric()
+    const plug = createPlug(fabric, '0 0.5 0')
+    const socket = createSocket(fabric, '0 0.6 0')
+    const done = assert.async();
+
+    fabric.addEventListener('binding-request', (evt) => {
+      assert.false('unexpected binding request')
+      done()
+    })
+    scene.addEventListener('loaded', () => {
+      scene.tick()
+      assert.expect(0)
+      done()
+    })
+  });
+
 });
