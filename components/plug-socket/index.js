@@ -762,7 +762,7 @@ AFRAME.registerComponent('socket-fabric', {
         this.allRequestsCompleted()
       }
       else {
-        this.el.addEventListener('snapped-to-position', this.allRequestsCompleted.bind(this))
+        this.el.addEventListener('snappedTo', this.allRequestsCompleted.bind(this))
       }
     }
   },

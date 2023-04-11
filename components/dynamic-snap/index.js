@@ -208,7 +208,7 @@ AFRAME.registerComponent("dynamic-snap", {
 
         this.hideProjectedObject()
 
-        this.el.emit('snapped-to-position')
+        this.el.emit('snappedTo')
       }
 
       this.diverged = false
