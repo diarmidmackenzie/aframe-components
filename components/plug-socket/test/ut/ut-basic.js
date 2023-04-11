@@ -219,6 +219,30 @@ QUnit.module('basic tests', function() {
     simplePlugSocketTest(assert, options)
   });
 
+  QUnit.test('plug connects to nearby socket (90 degree wrapper container + rotations)', function(assert) {
+
+    const scene = createScene()
+    const container = document.createElement('a-entity')
+    container.setAttribute('rotation', '90 0 0')
+    scene.appendChild(container)
+
+    const options = {
+      snapDistance: 0.2,
+      pos1: '0 1.1 0',
+      rot1: '0 10 0',
+      parent1: container,
+      pos2: '0 0 0',
+      parent2: container,
+      sockPos: '0 -0.5 0',
+      plugPos: '0 0.5 0',
+      finalPos1: '0 1.1 0',
+      finalRot1: '0 10 0',
+      finalPos2: '0 0.1 0',
+      finalRot2: '0 10 0',
+     }
+    simplePlugSocketTest(assert, options)
+  });
+
   QUnit.test('plug connects to nearby socket (different parents)', function(assert) {
 
     const scene = createScene()

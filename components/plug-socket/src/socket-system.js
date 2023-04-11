@@ -24,6 +24,7 @@ AFRAME.registerSystem('socket', {
     this.upVector = new THREE.Vector3(0, 1, 0)
     this.identityQuaternion = new THREE.Quaternion()
     this.bestQuaternion = new THREE.Quaternion()
+    this.tempQuaternion = new THREE.Quaternion()
 
     this.testPlug = new THREE.Object3D()
     
@@ -260,8 +261,14 @@ AFRAME.registerSystem('socket', {
           bestDistanceSq = distanceSq
           bestSocket = socket
 
+          plugInverseQuaternion = this.tempQuaternion
+          plugInverseQuaternion.copy(plug.quaternion).invert()
+
           adjustmentTransform.position.subVectors(socket.position, plug.position)
           adjustmentTransform.quaternion.copy(this.bestQuaternion)
+                             .premultiply(plug.quaternion)
+                             .multiply(plugInverseQuaternion)
+
           //console.log("adjustmentTransform position: ", adjustmentTransform.position)
           //console.log("adjustmentTransform quaternion: ", adjustmentTransform.quaternion)
         }
