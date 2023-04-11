@@ -97,7 +97,7 @@ Each such entity can then have any number of plug and socket entities configured
 
 The socket system keeps track of all the plugs and sockets in the scene, including which of them are bound to another plug / socket, and which of them are free.
 
-For each free plug, the socket system continuously monitors whether it comes into range & alignment with a free socket.  Plugs seek to connect to sockets that are close by, and in reasonably close alignment.  To join together, plugs and sockets must align their y-axes, but there is potential for rotation about this y-axis (currently this can only be discrete number of fixed positions - see [`rotationIncrement` property below](#socket-system) for more details).
+For each free plug, the socket system continuously monitors whether it comes into range & alignment with a free socket.  Plugs seek to connect to sockets that are close by, and in reasonably close alignment (plugs always ignore sockets on the same fabric as them).  To join together, plugs and sockets must align their y-axes, but there is potential for rotation about this y-axis (currently this can only be discrete number of fixed positions - see [`rotationIncrement` property below](#socket-system) for more details).
 
 When a free plug and socket are in close range & close alignment, requests are made to the socket fabric to re-align with this position, so that the plug & socket can align exactly.  This re-alignment can either be:
 
