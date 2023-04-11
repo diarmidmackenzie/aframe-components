@@ -15,7 +15,11 @@
               if (evt.key === " ") {
 
                 this.snap += 0.1
-                this.el.setAttribute('socket', {snapDistance: this.snap, debug: true})
+
+                // system data needs to be explicitly preserved...
+                const data = this.el.getAttribute('socket')
+                data.snapDistance = this.snap
+                this.el.setAttribute('socket', data)
 
                 snapText = document.getElementById('snap-output')
                 snapText.innerHTML = this.snap.toFixed(1)
@@ -29,10 +33,11 @@
   <body>
     <div class="text-overlay">
         <p>8-stud plug-socket test - bricks at various offsets and angles</p>
-        <p>Snap distance: <span id="snap-output">0</span>.  Hit space to increase it (behaviour will degenerate above 0.9)</p>
+        <p>Snap distance: <span id="snap-output">0</span>.  Hit space to increase it (behaviour will degenerate above 1.9)</p>
     </div>
+      <!-- high snap rotation ensures that all combinations match eventually-->
       <a-scene background="color:#88f"
-               socket="snapDistance: 0; debug: true"
+               socket="snapDistance: 0; snapRotation: 60;debug: true"
                increase-snap-distance-on-space-keypress
                stats>
         <a-assets>
