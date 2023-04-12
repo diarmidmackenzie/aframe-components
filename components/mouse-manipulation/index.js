@@ -1,6 +1,6 @@
-require('aframe-object-parent')
-require('aframe-cursor-tracker')
-require('aframe-label')
+if (!AFRAME.components['object-parent']) require('aframe-object-parent')
+if (!AFRAME.components['cursor-tracker']) require('aframe-cursor-tracker')
+if (!AFRAME.components['label']) require('aframe-label')
 
 // Add this to the same entity as the cursor component.
 AFRAME.registerComponent('mouse-manipulation', {

@@ -1,9 +1,8 @@
-require('aframe-mouse-manipulation')
-require('aframe-screen-display')
-require('aframe-label')
-require('aframe-raycaster-thresholds')
-require('aframe-connecting-line')
-
+if (!AFRAME.components['mouse-manipulation']) require('aframe-mouse-manipulation')
+if (!AFRAME.components['screen-display']) require('aframe-screen-display')
+if (!AFRAME.components['label']) require('aframe-label')
+if (!AFRAME.components['raycaster-thresholds']) require('aframe-raycaster-thresholds')
+if (!AFRAME.components['connecting-line']) require('aframe-connecting-line')
 
 AFRAME.registerSystem('desktop-vr-controller', {
 
