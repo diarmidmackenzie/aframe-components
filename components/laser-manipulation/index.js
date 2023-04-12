@@ -1,5 +1,5 @@
-require('aframe-object-parent')
-require('aframe-thumbstick-states')
+if (!AFRAME.components['object-parent']) require('aframe-object-parent')
+if (!AFRAME.components['thumbstick-states']) require('aframe-thumbstick-states')
 
 AFRAME.registerComponent('laser-manipulation', {
 
@@ -82,11 +82,11 @@ AFRAME.registerComponent('laser-manipulation', {
   
       console.assert(!this.grabbedEl)
   
-      const intersections = this.getIntersections(evt.target);
+      const intersections = this.getIntersections(evt.target)
   
       if (intersections.length === 0)  return;
   
-      const element = intersections[0]
+      const element = this.getRaycastTarget(intersections[0])
   
       const intersectionData = this.el.components.raycaster.getIntersection(element)
   
@@ -125,11 +125,10 @@ AFRAME.registerComponent('laser-manipulation', {
       if (!this.grabbedEl) return
   
       this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.originalParentEl.id}`)
-      this.grabbedEl = null
-
       if (this.data.grabEvents) {
         this.grabbedEl.emit(this.data.releaseEvent)
       }
+      this.grabbedEl = null
     },
   
     getIntersections(controllerEl) {
@@ -143,7 +142,15 @@ AFRAME.registerComponent('laser-manipulation', {
       const scalar = Math.pow(this.moveSpeed, timeDelta/1000);
       this.contactPoint.object3D.position.multiplyScalar(scalar)
     },
-  
+
+    getRaycastTarget(el) {
+      if (el.components['raycast-target']) {
+          return el.components['raycast-target'].target
+      }
+      else {
+          return el
+      }
+    },
     
     tick: function(time, timeDelta) {
       
