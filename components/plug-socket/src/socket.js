@@ -24,6 +24,7 @@ AFRAME.registerComponent('socket', {
     this.worldSpaceObject = new THREE.Object3D
     this.worldSpaceObject.el = this.el
     this.updateWorldSpaceObject()
+    this.el.sceneEl.object3D.add(this.worldSpaceObject)
     
     this.addToSystem()
 
@@ -88,14 +89,16 @@ AFRAME.registerComponent('socket', {
 
   updateWorldSpaceObject() {
 
+    // don't just use Object3D.attach for performance reasons.
+    // however we can improve performance further by making this update in onBeforeRender()
+    // when world matrices are computed anyway...
+    // Also consider replacing worldSpaceObject with just a Matrix4 ( to avoid cost of decompose)
     const wso = this.worldSpaceObject
-    wso.matrix.identity()
+    this.el.object3D.updateWorldMatrix( true, false );
+    wso.matrix.copy(this.el.object3D.matrixWorld)
     wso.matrix.decompose(wso.position,
                          wso.quaternion,
                          wso.scale)
-    this.el.object3D.add(wso)
-    this.el.sceneEl.object3D.attach(wso)
-
   },
 
   addToSystem() {
