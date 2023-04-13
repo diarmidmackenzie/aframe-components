@@ -89,7 +89,7 @@ AFRAME.registerComponent("dynamic-snap", {
       }
 
       if (renderString === 'wireframe') {
-        el.setAttribute('polygon-wireframe', {color: this.data.wireframeColor, onTop: true})
+        el.setAttribute('polygon-wireframe', {color: this.data.wireframeColor, hiddenOpacity: 0.2})
       }
       else {
         el.removeAttribute('polygon-wireframe')
