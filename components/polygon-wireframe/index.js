@@ -2,11 +2,12 @@ AFRAME.registerComponent("polygon-wireframe", {
 
     schema: {
         color: { type: 'color', default: 'grey' },
+        opacity: { type: 'number', default: 1 },
+        hiddenOpacity: { type: 'number', default: 0 },
         dashed: { type: 'boolean', default: false },
         dashSize: { type: 'number', default: 3 },
         gapSize: { type: 'number', default: 1 },
         dashScale: { type: 'number', default: 30 },
-        onTop: {type: 'boolean', default: false}
     },
 
     init() {
@@ -20,41 +21,80 @@ AFRAME.registerComponent("polygon-wireframe", {
 
     update() {
 
-        const oldMaterial = this.material
-        const oldLine = this.line
+      const oldMaterial = this.material
+      const oldLine = this.line
+      const oldHiddenMaterial = this.hiddenMaterial
+      const oldHiddenLine = this.hiddenLine
 
-        if (!this.data.dashed) {
-            this.material = new THREE.LineBasicMaterial( { color: this.data.color } )
-        }
-        else {
-            this.material = new THREE.LineDashedMaterial( { color: this.data.color,
-                                                            dashSize: this.data.dashSize,
-                                                            gapSize: this.data.gapSize,
-                                                            scale: this.data.dashScale } )
-        }
+      const data = this.data
 
-        if (this.data.onTop) {
-          const material = this.material
-          material.depthWrite = false
-          material.depthTest = false
-          material.toneMapped = false
-          material.transparent = true
-        }
-        
-        this.line = new THREE.LineSegments( this.edges, this.material );
-        this.line.computeLineDistances();
+      this.material = this.createLineMaterial(data.color, data.opacity)
 
-        this.el.object3D.add( this.line );
+      if (data.hiddenOpacity !== 0 && 
+          data.hiddenOpacity !== data.opacity) {
+        // separate material needed for hidden parts
+        this.hiddenMaterial = this.createLineMaterial(data.color, data.hiddenOpacity)
 
-        this.el.getObject3D('mesh').visible = false;
+        if (data.hiddenOpacity > data.opacity) {
+          console.warn("Opacity of hidden parts cannot be higher than the opacity of non-hidden parts")
+          console.warn("Wireframe will be rendered with opacity ", data.hiddenOpacity, " as set on hiddenOpacity property.")
+        }
+      }
+      else {
+        this.hiddenMaterial = null
+      }
 
-        // dispose of old material & line
-        if (oldLine) {
-          oldLine.removeFromParent()
+      if (data.hiddenOpacity !== 0) {
+        const material = this.hiddenMaterial || this.material
+        material.depthWrite = false
+        material.depthTest = false
+        material.toneMapped = false
+      }
+      
+      this.line = new THREE.LineSegments( this.edges, this.material );
+      this.line.computeLineDistances();
+      this.el.object3D.add( this.line );
+
+      if (this.hiddenMaterial) {
+        this.hiddenLine = new THREE.LineSegments( this.edges, this.hiddenMaterial );
+        this.hiddenLine.computeLineDistances();
+        this.el.object3D.add( this.hiddenLine );
+      }
+
+      this.el.getObject3D('mesh').visible = false;
+
+      // dispose of any old materials & lines
+      function removeLineAndMaterial(line, material) {
+        if (line) {
+          line.removeFromParent()
         }
-        if (oldMaterial) {
-          oldMaterial.dispose()
+        if (material) {
+          material.dispose()
         }
+      }
+      removeLineAndMaterial(oldLine, oldMaterial)
+      removeLineAndMaterial(oldHiddenLine, oldHiddenMaterial)
+    },
+
+    createLineMaterial(color, opacity) {
+
+      const data = this.data
+      let material
+      if (!data.dashed) {
+          material = new THREE.LineBasicMaterial( { color: color } )
+      }
+      else {
+          material = new THREE.LineDashedMaterial( { color: color,
+                                                     dashSize: data.dashSize,
+                                                     gapSize: data.gapSize,
+                                                     scale: data.dashScale } )
+      }
+      material.opacity = opacity
+      if (opacity !== 1) {
+        material.transparent = true
+      }
+
+      return material
     },
 
     remove() {
