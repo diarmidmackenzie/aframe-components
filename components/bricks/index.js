@@ -9,12 +9,16 @@ function recenterGeometry(geometry) {
 }
 
 // https://www.researchgate.net/figure/Basic-dimensions-of-LEGOR-toy-bricks-20_fig3_330754387
+// http://www.bartneck.de/2019/04/21/lego-brick-dimensions-and-measurements/
 const MATERIAL_WIDTH = 1.2
 const UNIT_WIDTH = 8.0
 const PLATE_HEIGHT = 3.2
 const STUD_HEIGHT = 1.8
 const STUD_RADIUS = 2.4
-
+const PIN_RADIUS = 1.6
+const CYLINDER_RADIUS_INNER = 2.4
+const CYLINDER_RADIUS_OUTER = 3.2505
+const CYLINDER_SEGMENTS = 8
 AFRAME.registerGeometry('brick', {
   schema: {
     width: {default: 4},
@@ -37,25 +41,25 @@ AFRAME.registerGeometry('brick', {
     const studOffset = (blockHeight + STUD_HEIGHT) / 2
 
     // front & back
-    geometry = new THREE.BoxGeometry(blockWidth, blockHeight, MATERIAL_WIDTH);
+    geometry = new THREE.BoxGeometry(blockWidth, blockHeight, MATERIAL_WIDTH)
     geometry.translate(0, 0, -sideOffset)
     geometries.push(geometry)
 
-    geometry = new THREE.BoxGeometry(blockWidth, blockHeight, MATERIAL_WIDTH);
+    geometry = new THREE.BoxGeometry(blockWidth, blockHeight, MATERIAL_WIDTH)
     geometry.translate(0, 0, sideOffset)
     geometries.push(geometry)
 
     // left & right
-    geometry = new THREE.BoxGeometry(MATERIAL_WIDTH, blockHeight, blockDepth);
+    geometry = new THREE.BoxGeometry(MATERIAL_WIDTH, blockHeight, blockDepth)
     geometry.translate(endOffset, 0, 0)
     geometries.push(geometry)
 
-    geometry = new THREE.BoxGeometry(MATERIAL_WIDTH, blockHeight, blockDepth);
+    geometry = new THREE.BoxGeometry(MATERIAL_WIDTH, blockHeight, blockDepth)
     geometry.translate(-endOffset, 0, 0)
     geometries.push(geometry)
 
     // top
-    geometry = new THREE.BoxGeometry(blockWidth, MATERIAL_WIDTH, blockDepth);
+    geometry = new THREE.BoxGeometry(blockWidth, MATERIAL_WIDTH, blockDepth)
     geometry.translate(0, topOffset, 0)
     geometries.push(geometry)
 
@@ -64,9 +68,62 @@ AFRAME.registerGeometry('brick', {
     let zStart = (UNIT_WIDTH - blockDepth) / 2
     for (let ii = 0; ii < data.width; ii++) {
       for (let jj = 0; jj < data.depth; jj++) {
-        geometry = new THREE.CylinderGeometry(STUD_RADIUS, STUD_RADIUS, STUD_HEIGHT);
+        geometry = new THREE.CylinderGeometry(STUD_RADIUS, STUD_RADIUS, STUD_HEIGHT, CYLINDER_SEGMENTS)
         geometry.translate(xStart + ii * UNIT_WIDTH, studOffset, zStart + jj * UNIT_WIDTH)
         geometries.push(geometry)
+      }
+    }
+
+    // base pins (1 x n and n x 1 only)
+    if (data.width === 1 && data.depth > 1) {
+      for (let ii = 0; ii < data.depth - 1; ii++) {
+        geometry = new THREE.CylinderGeometry(PIN_RADIUS, PIN_RADIUS, blockHeight, CYLINDER_SEGMENTS)
+        geometry.translate(0, 0, (zStart + ii + 0.5) * UNIT_WIDTH)
+        geometries.push(geometry)
+      }
+    }
+    if (data.depth === 1 && data.width > 1) {
+      for (let ii = 0; ii < data.width - 1; ii++) {
+        geometry = new THREE.CylinderGeometry(PIN_RADIUS, PIN_RADIUS, blockHeight, CYLINDER_SEGMENTS)
+        geometry.translate(xStart + (ii + 0.5) * UNIT_WIDTH, 0, 0)
+        geometries.push(geometry)
+      }
+    }
+
+    // base cylinders (m x n where m, n > 1)
+    if (data.depth > 1 && data.width > 1) {
+      for (let ii = 0; ii < data.width - 1; ii++) {
+        for (let jj = 0; jj < data.depth - 1; jj++) {
+
+          const xpos = xStart + (ii + 0.5) * UNIT_WIDTH
+          const zpos = zStart + (jj + 0.5) * UNIT_WIDTH
+          geometry = new THREE.CylinderGeometry(CYLINDER_RADIUS_OUTER,
+                                                CYLINDER_RADIUS_OUTER,
+                                                blockHeight,
+                                                CYLINDER_SEGMENTS,
+                                                1,
+                                                true)
+          geometry.translate(xpos, 0, zpos)
+          geometries.push(geometry)
+
+          geometry = new THREE.CylinderGeometry(CYLINDER_RADIUS_INNER,
+                                                CYLINDER_RADIUS_INNER,
+                                                blockHeight, 
+                                                CYLINDER_SEGMENTS, 
+                                                1, 
+                                                true)
+          geometry.translate(xpos, 0, zpos)
+          geometry.scale(-1, 1, 1)
+          geometries.push(geometry)
+
+          geometry = new THREE.RingGeometry(CYLINDER_RADIUS_INNER,
+                                            CYLINDER_RADIUS_OUTER,
+                                            CYLINDER_SEGMENTS,
+                                            1)
+          geometry.rotateX(Math.PI / 2)
+          geometry.translate(xpos, -blockHeight/2, zpos)
+          geometries.push(geometry)
+        }
       }
     }
 

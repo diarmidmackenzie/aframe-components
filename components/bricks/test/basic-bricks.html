@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../index.js"></script>
+      <script>
+        AFRAME.registerComponent('brick-rotation', {
+          init() {
+            this.el.setAttribute("animation", "property: rotation; from: 0 0 0; to: 360 1080 0; dur: 20000; easing: linear; loop: true")
+          }
+        })
+      </script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Basic selection of lego bricks</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/brick/test/basic-bricks.html">
+        view code
+    </a>
+      <a-scene background="color:#88f">
+        <a-entity position = "0 1.5 -1" scale="0.01 0.01 0.01">
+          <a-brick brick-rotation width="1" depth="1" height="1" position="-100 50 0"></a-brick>
+          <a-brick brick-rotation width="2" depth="1" height="1" position="-50 50 0"></a-brick>
+          <a-brick brick-rotation width="4" depth="1" height="1"  position="0 50 0"></a-brick>
+          <a-brick brick-rotation width="2" depth="2" height="1" position="50 50 0"></a-brick>
+          <a-brick brick-rotation width="4" depth="2" height="1"  position="100 50 0"></a-brick>
+          <a-brick brick-rotation width="1" depth="1" position="-100 0 0"></a-brick>
+          <a-brick brick-rotation width="2" depth="1" position="-50 0 0"></a-brick>
+          <a-brick brick-rotation width="4" depth="1" position="0 0 0"></a-brick>
+          <a-brick brick-rotation width="2" depth="2" position="50 0 0"></a-brick>
+          <a-brick brick-rotation width="4" depth="2" position="100 0 0"></a-brick>
+          <a-brick brick-rotation width="3" depth="1" position="-100 -50 0"></a-brick>
+          <a-brick brick-rotation width="3" depth="2" position="-50 -50 0"></a-brick>
+          <a-brick brick-rotation width="6" depth="1" position="0 -50 0"></a-brick>
+          <a-brick brick-rotation width="1" depth="1" height="9" position="50 -50 0"></a-brick>
+          <a-brick brick-rotation width="2" depth="1" height="9" position="100 -50 0"></a-brick>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>
