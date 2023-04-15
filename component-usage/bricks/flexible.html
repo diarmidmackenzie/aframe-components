@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../../components/mouse-manipulation/dist/mouse-manipulation.min.js"></script>
+      <script src="../../components/polygon-wireframe/index.js"></script>
+      <script src="../../components/raycast-target/index.js"></script>
+      <script src="../../components/bricks/index.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/dataarts/dat.gui@0.7.9/build/dat.gui.min.js"></script>
+      <link rel="stylesheet" href="../../styles.css">
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const gui = new dat.GUI();
+          gui.domElement.classList.add('gui')
+          const brick = document.getElementById('brick')
+          brick.wireframe = false
+          const wireframeController = gui.add(brick, 'wireframe')
+          wireframeController.onChange(() => {
+            if (brick.wireframe) {
+              brick.setAttribute("polygon-wireframe", "color: yellow")
+            }
+            else {
+              brick.removeAttribute("polygon-wireframe")
+            }
+          })
+          brick.addEventListener("loaded", () => {
+            const brickData = brick.components.brick.data
+            const triggerUpdate = () => {
+              brick.setAttribute("brick", brickData)
+            }
+            integerProperties = ['width', 'height', 'depth']
+            integerProperties.forEach((prop) => {
+              const controller = gui.add(brickData, prop, 1, 20, 1)
+              controller.onChange(triggerUpdate)
+            })
+          })
+          
+        })
+      </script>
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Default building brick - use mouse to move it around</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/single.html">
+        view code
+    </a>
+      <a-scene background="color:#88f" stats
+               physx="autoLoad: true; delay: 1000; useDefaultScene: false; stats: panel">
+        <a-entity id="cursor"
+               cursor="rayOrigin: mouse"
+               raycaster="objects: [raycast-target]"
+               mouse-manipulation>
+        <a-entity position = "0 1.3 -1" scale="0.01 0.01 0.01" rotation="0 30 0">
+          <a-brick id="brick"></a-brick>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>
+
+
+

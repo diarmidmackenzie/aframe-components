@@ -11,12 +11,27 @@ AFRAME.registerComponent("polygon-wireframe", {
     },
 
     init() {
+
+      this.updateGeometry = this.updateGeometry.bind(this)
+      this.el.addEventListener('object3dset', this.updateGeometry)
+      if (this.el.getObject3D('mesh')) {
+        this.updateGeometry()
+      }
+    },
+
+    updateGeometry() {
+
       const baseGeometry = this.el.getObject3D('mesh').geometry
       if (!baseGeometry) {
-          console.warn("polygon-wireframe: no base geometry found")
-      };
+        return
+      }
 
-      this.edges = new THREE.EdgesGeometry( baseGeometry );
+      if (this.edges) {
+        this.edges.dispose()
+      }
+
+      this.edges = new THREE.EdgesGeometry(baseGeometry);
+      this.update()
     },
 
     update() {
@@ -72,8 +87,17 @@ AFRAME.registerComponent("polygon-wireframe", {
           material.dispose()
         }
       }
-      removeLineAndMaterial(oldLine, oldMaterial)
-      removeLineAndMaterial(oldHiddenLine, oldHiddenMaterial)
+      this.removeLineAndMaterial(oldLine, oldMaterial)
+      this.removeLineAndMaterial(oldHiddenLine, oldHiddenMaterial)
+    },
+
+    removeLineAndMaterial(line, material) {
+      if (line) {
+        line.removeFromParent()
+      }
+      if (material) {
+        material.dispose()
+      }
     },
 
     createLineMaterial(color, opacity) {
@@ -98,8 +122,13 @@ AFRAME.registerComponent("polygon-wireframe", {
     },
 
     remove() {
+
+      this.el.removeEventListener('object3dset', this.updateGeometry)
       this.el.getObject3D('mesh').visible = true;
-      this.material.dispose()
-      this.line.removeFromParent()
+      if (this.edges) {
+        this.edges.dispose()
+      }
+
+      this.removeLineAndMaterial(this.line, this.material)
     }
 })

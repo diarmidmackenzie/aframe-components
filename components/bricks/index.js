@@ -78,7 +78,7 @@ AFRAME.registerGeometry('brick', {
     if (data.width === 1 && data.depth > 1) {
       for (let ii = 0; ii < data.depth - 1; ii++) {
         geometry = new THREE.CylinderGeometry(PIN_RADIUS, PIN_RADIUS, blockHeight, CYLINDER_SEGMENTS)
-        geometry.translate(0, 0, (zStart + ii + 0.5) * UNIT_WIDTH)
+        geometry.translate(0, 0, zStart + (ii + 0.5) * UNIT_WIDTH)
         geometries.push(geometry)
       }
     }
