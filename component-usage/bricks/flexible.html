@@ -33,8 +33,22 @@
               const controller = gui.add(brickData, prop, 1, 18, 1)
               controller.onChange(triggerUpdate)
             })
+
+            // dat.gui works with RGB data in range 0 - 255.
+            // tempColor is used to help translate between this and 
+            // formats usable as A-Frame attributes.
+            const tempColor = new THREE.Color(brickData.color)
+            brick.colorRGB = {r: 0, g: 0, b: 0}
+            tempColor.getRGB(brick.colorRGB)
+            const colorController = gui.addColor(brick, "colorRGB")
+            colorController.onChange(() => {
+               const c = brick.colorRGB
+               tempColor.setRGB(c.r / 255, c.g / 255, c.b / 255)
+               const colorString = tempColor.getStyle()
+               brick.setAttribute("brick", "color", colorString)
+               triggerUpdate()
+            })
           })
-          
         })
       </script>
   </head>
