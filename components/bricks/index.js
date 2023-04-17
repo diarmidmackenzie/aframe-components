@@ -194,12 +194,16 @@ AFRAME.registerComponent('brick', {
     this.visual = document.createElement('a-entity')
     // !! Hack to get integration with dynamic-snap working...
     // without this is struggles to find the mesh.
+    // NOTE THAT TO NOT BREAK PHYSICS, mesh.el must point back to the
+    // original el (visual), not the parent el (this.el), as that's where
+    // the `physx-no-collision` attribute is set.
     // !! TO DO BETTER... !!
     this.visual.addEventListener('loaded', () => {
-      // UNFORTUNATELY, THIS BREAKS PHYSX INTEGRATION
-      // CAUSES PHYSX TO PROCESS THE ENTIRE GEOMETRY!!!
-      //this.el.setObject3D('mesh', this.visual.getObject3D('mesh'))
-      //this.el.emit('model-loaded')
+      const object = this.visual.getObject3D('mesh')
+      const objectEl = object.el
+      this.el.setObject3D('mesh', object)
+      object.el = objectEl
+      this.el.emit('model-loaded')
     })
 
     this.visual.setAttribute('geometry', {primitive: 'brick', 
