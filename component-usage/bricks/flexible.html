@@ -33,6 +33,9 @@
               const controller = gui.add(brickData, prop, 1, 18, 1)
               controller.onChange(triggerUpdate)
             })
+            
+            const cylController = gui.add(brickData, 'cylinderSegments', 4, 32, 1)
+            cylController.onChange(triggerUpdate)
 
             // dat.gui works with RGB data in range 0 - 255.
             // tempColor is used to help translate between this and 

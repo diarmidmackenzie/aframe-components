@@ -18,12 +18,13 @@ const STUD_RADIUS = 2.4
 const PIN_RADIUS = 1.6
 const CYLINDER_RADIUS_INNER = 2.4
 const CYLINDER_RADIUS_OUTER = 3.2505
-const CYLINDER_SEGMENTS = 8
+
 AFRAME.registerGeometry('brick', {
   schema: {
     width: {default: 4},
     depth: {default: 2},
-    height: {default: 3}
+    height: {default: 3},
+    cylinderSegments: {default: 8},
   },
 
   init: function (data) {
@@ -34,6 +35,7 @@ AFRAME.registerGeometry('brick', {
     const blockWidth = data.width * UNIT_WIDTH
     const blockDepth = data.depth * UNIT_WIDTH
     const blockHeight = data.height * PLATE_HEIGHT
+    const cylinderSegments = data.cylinderSegments
 
     const sideOffset = (blockDepth - MATERIAL_WIDTH) / 2
     const endOffset = (blockWidth - MATERIAL_WIDTH) / 2
@@ -68,7 +70,7 @@ AFRAME.registerGeometry('brick', {
     let zStart = (UNIT_WIDTH - blockDepth) / 2
     for (let ii = 0; ii < data.width; ii++) {
       for (let jj = 0; jj < data.depth; jj++) {
-        geometry = new THREE.CylinderGeometry(STUD_RADIUS, STUD_RADIUS, STUD_HEIGHT, CYLINDER_SEGMENTS)
+        geometry = new THREE.CylinderGeometry(STUD_RADIUS, STUD_RADIUS, STUD_HEIGHT, cylinderSegments)
         geometry.translate(xStart + ii * UNIT_WIDTH, studOffset, zStart + jj * UNIT_WIDTH)
         geometries.push(geometry)
       }
@@ -77,14 +79,14 @@ AFRAME.registerGeometry('brick', {
     // base pins (1 x n and n x 1 only)
     if (data.width === 1 && data.depth > 1) {
       for (let ii = 0; ii < data.depth - 1; ii++) {
-        geometry = new THREE.CylinderGeometry(PIN_RADIUS, PIN_RADIUS, blockHeight, CYLINDER_SEGMENTS)
+        geometry = new THREE.CylinderGeometry(PIN_RADIUS, PIN_RADIUS, blockHeight, cylinderSegments)
         geometry.translate(0, 0, zStart + (ii + 0.5) * UNIT_WIDTH)
         geometries.push(geometry)
       }
     }
     if (data.depth === 1 && data.width > 1) {
       for (let ii = 0; ii < data.width - 1; ii++) {
-        geometry = new THREE.CylinderGeometry(PIN_RADIUS, PIN_RADIUS, blockHeight, CYLINDER_SEGMENTS)
+        geometry = new THREE.CylinderGeometry(PIN_RADIUS, PIN_RADIUS, blockHeight, cylinderSegments)
         geometry.translate(xStart + (ii + 0.5) * UNIT_WIDTH, 0, 0)
         geometries.push(geometry)
       }
@@ -100,7 +102,7 @@ AFRAME.registerGeometry('brick', {
           geometry = new THREE.CylinderGeometry(CYLINDER_RADIUS_OUTER,
                                                 CYLINDER_RADIUS_OUTER,
                                                 blockHeight,
-                                                CYLINDER_SEGMENTS,
+                                                cylinderSegments,
                                                 1,
                                                 true)
           geometry.translate(xpos, 0, zpos)
@@ -109,7 +111,7 @@ AFRAME.registerGeometry('brick', {
           geometry = new THREE.CylinderGeometry(CYLINDER_RADIUS_INNER,
                                                 CYLINDER_RADIUS_INNER,
                                                 blockHeight, 
-                                                CYLINDER_SEGMENTS, 
+                                                cylinderSegments, 
                                                 1, 
                                                 true)
           geometry.translate(xpos, 0, zpos)
@@ -118,7 +120,7 @@ AFRAME.registerGeometry('brick', {
 
           geometry = new THREE.RingGeometry(CYLINDER_RADIUS_INNER,
                                             CYLINDER_RADIUS_OUTER,
-                                            CYLINDER_SEGMENTS,
+                                            cylinderSegments,
                                             1)
           geometry.rotateX(Math.PI / 2)
           geometry.translate(xpos, -blockHeight/2, zpos)
@@ -151,6 +153,7 @@ AFRAME.registerPrimitive('a-brick', {
     depth: 'brick.depth',
     height: 'brick.height',
     width: 'brick.width',
+    cylinderSegments: 'brick.cylinderSegments',
     movement: 'brick.movement',
     color: 'brick.color',
     plugs: 'brick.plugs'
@@ -163,6 +166,7 @@ AFRAME.registerComponent('brick', {
     width: {default: 4},
     depth: {default: 2},
     height: {default: 3},
+    cylinderSegments: {default: 8},
     movement: {default: 'dynamic'},
     color: {default: 'red'},
     plugs: {default: true}
@@ -198,7 +202,8 @@ AFRAME.registerComponent('brick', {
     this.visual.setAttribute('geometry', {primitive: 'brick', 
                                           width: this.data.width,
                                           height: this.data.height,
-                                          depth: this.data.depth})
+                                          depth: this.data.depth,
+                                          cylinderSegments: this.data.cylinderSegments})
     this.visual.setAttribute("physx-no-collision", "")
     this.visual.setAttribute("material", {color: this.data.color})
     this.el.appendChild(this.visual)
