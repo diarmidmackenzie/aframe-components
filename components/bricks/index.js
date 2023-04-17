@@ -10,14 +10,15 @@ function recenterGeometry(geometry) {
 
 // https://www.researchgate.net/figure/Basic-dimensions-of-LEGOR-toy-bricks-20_fig3_330754387
 // http://www.bartneck.de/2019/04/21/lego-brick-dimensions-and-measurements/
-const MATERIAL_WIDTH = 1.2
-const UNIT_WIDTH = 8.0
-const PLATE_HEIGHT = 3.2
-const STUD_HEIGHT = 1.8
-const STUD_RADIUS = 2.4
-const PIN_RADIUS = 1.6
-const CYLINDER_RADIUS_INNER = 2.4
-const CYLINDER_RADIUS_OUTER = 3.2505
+const MM = 0.001
+const MATERIAL_WIDTH = 1.2 * MM
+const UNIT_WIDTH = 8.0 * MM
+const PLATE_HEIGHT = 3.2 * MM
+const STUD_HEIGHT = 1.8 * MM
+const STUD_RADIUS = 2.4 * MM
+const PIN_RADIUS = 1.6 * MM
+const CYLINDER_RADIUS_INNER = 2.4 * MM
+const CYLINDER_RADIUS_OUTER = 3.2505 * MM
 
 AFRAME.registerGeometry('brick', {
   schema: {
@@ -195,8 +196,10 @@ AFRAME.registerComponent('brick', {
     // without this is struggles to find the mesh.
     // !! TO DO BETTER... !!
     this.visual.addEventListener('loaded', () => {
-      this.el.setObject3D('mesh', this.visual.getObject3D('mesh'))
-      this.el.emit('model-loaded')
+      // UNFORTUNATELY, THIS BREAKS PHYSX INTEGRATION
+      // CAUSES PHYSX TO PROCESS THE ENTIRE GEOMETRY!!!
+      //this.el.setObject3D('mesh', this.visual.getObject3D('mesh'))
+      //this.el.emit('model-loaded')
     })
 
     this.visual.setAttribute('geometry', {primitive: 'brick', 
