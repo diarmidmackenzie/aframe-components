@@ -73,7 +73,7 @@ To use physics in the scene, you should also include PhysX:
 
 [snapping](https://diarmidmackenzie.github.io/aframe-components/component-usage/bricks/snapping.html) - moveable, snappable bricks.  This example uses the [`dynamic-snap` component ](https://diarmidmackenzie.github.io/aframe-components/components/dynamic-snap) and the [`plug-socket` system](https://diarmidmackenzie.github.io/aframe-components/components/plug-socket ) to support snapping bricks together, under control of either [mouse](https://diarmidmackenzie.github.io/aframe-components/components/mouse-manipulation) or [laser](https://diarmidmackenzie.github.io/aframe-components/components/laser-manipulation) controls.  No physics / gravity / collision detection yet (so unbound blocks levitate where they are left, and bricks can overlap each other), and a few minor bugs with positioning that still need ironing out.
 
-
+See also: [tests](https://diarmidmackenzie.github.io/aframe-components/components/bricks/test/)
 
 ## Code
 

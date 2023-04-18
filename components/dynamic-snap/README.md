@@ -108,9 +108,9 @@ if (!AFRAME.components['dynamic-snap']) require('aframe-dynamic-snap')
 
 ## Examples
 
-Examples to follow...
+[This example](https://diarmidmackenzie.github.io/aframe-components/component-usage/dynamic-snap.html) shows all the different combinations of rendering effects, used with a simple snap-to-grid.
 
-See also: [tests]((https://diarmidmackenzie.github.io/aframe-components/components/dynamic-snap/test/)
+See also: [tests](https://diarmidmackenzie.github.io/aframe-components/components/dynamic-snap/test/)
 
 
 ## Code
