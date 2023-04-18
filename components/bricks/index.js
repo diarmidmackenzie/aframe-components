@@ -192,17 +192,15 @@ AFRAME.registerComponent('brick', {
     }
 
     this.visual = document.createElement('a-entity')
-    // !! Hack to get integration with dynamic-snap working...
+    // !! Needed to get integration with dynamic-snap working...
     // without this is struggles to find the mesh.
-    // NOTE THAT TO NOT BREAK PHYSICS, mesh.el must point back to the
-    // original el (visual), not the parent el (this.el), as that's where
-    // the `physx-no-collision` attribute is set.
-    // !! TO DO BETTER... !!
     this.visual.addEventListener('loaded', () => {
-      const object = this.visual.getObject3D('mesh')
-      const objectEl = object.el
-      this.el.setObject3D('mesh', object)
-      object.el = objectEl
+      // Prefer to explicitly specify the mesh than `dynamic-snap` traversing to search for it.
+      // I believe this is more extensible to multi-mesh hierarchies (e.g. GLTFs, and groups of bricks)
+      // But *don't* `use setObject3D`, as it will update the `el` reference on the Object3Ds, leading to
+      // problems with physics (and elsewhere?) failing to read attributes such as `physx-hidden-collision`
+      // from the correct el.
+      this.el.object3DMap['mesh'] = this.visual
       this.el.emit('model-loaded')
     })
 
