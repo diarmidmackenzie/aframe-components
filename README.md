@@ -45,12 +45,22 @@ I intend to keep all these components up-to-date & working with new versions of 
 
 
 
+### Positioning
+
+| **Component**                                                | Description                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [dynamic-snap](https://diarmidmackenzie.github.io/aframe-components/components/dynamic-snap/) | A component to dynamically snap to positions.                |
+| [object-parent](https://diarmidmackenzie.github.io/aframe-components/components/object-parent) | Change the parent of an object in the THREE.js scene graph   |
+| [plug-socket](https://diarmidmackenzie.github.io/aframe-components/components/plug-socket/) | A set of components to support connecting together A-Frame entities based on a configurable set of plugs and sockets. |
+| [screen-position](https://diarmidmackenzie.github.io/aframe-components/components/screen-position) | Report the 2D screen position of an A-Frame entity           |
+
+
+
 ### Other
 
 | **Component**                                                | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [object-parent](https://diarmidmackenzie.github.io/aframe-components/components/object-parent) | Change the parent of an object in the THREE.js scene graph   |
-| [screen-position](https://diarmidmackenzie.github.io/aframe-components/components/screen-position) | Report the 2D screen position of an A-Frame entity           |
+| [bricks](https://diarmidmackenzie.github.io/aframe-components/components/bricks) | Building brick entities in A-Frame, pre-integrated with PhysX physics. |
 | [stats-panel](https://diarmidmackenzie.github.io/aframe-components/components/stats-panel) | Display custom statistics in a style that matches core A-Frame stats |
 
 
