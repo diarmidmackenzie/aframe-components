@@ -154,7 +154,7 @@ AFRAME.registerPrimitive('a-brick', {
     depth: 'brick.depth',
     height: 'brick.height',
     width: 'brick.width',
-    cylinderSegments: 'brick.cylinderSegments',
+    'cylinder-segments': 'brick.cylinderSegments',
     movement: 'brick.movement',
     color: 'brick.color',
     plugs: 'brick.plugs'
