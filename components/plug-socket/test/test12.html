@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="https://unpkg.com/aframe-template-component@3.2.1/dist/aframe-template-component.min.js"></script>
+      <script src="../dist/plug-socket.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>8-stud plug-socket test - bricks at various offsets and angles</p>
+        <p>Snap distance: <span id="snap-output">0</span>.  Hit space to increase it (behaviour will degenerate above 0.9)</p>
+    </div>
+      <a-scene background="color:#88f"
+               socket="snapDistance: 0.2; debug: true">
+        <a-entity position = "0 1 -4"
+                  animation="property: rotation; from: 0 0 0; to: 0 360 0; loop: true; easing: linear; dur: 10000">
+          <a-entity rotation="90 0 0">
+            <a-box position = "0 1.1 0"
+                  rotation="0 0 0"
+                  socket-fabric
+                  color="red">
+              <a-entity socket position = "0 -0.5 0">
+              </a-entity>
+              <a-entity plug position = "0 0.5 0">
+              </a-entity>
+            </a-box>
+            <a-box position = "0 0 0"
+                  rotation="0 0 0"
+                  socket-fabric
+                  color="blue">
+              <a-entity socket position = "0 -0.5 0">
+              </a-entity>
+              <a-entity plug position = "0 0.5 0">
+              </a-entity>
+            </a-box>
+          </a-entity>
+       </a-entity>
+      </a-scene>
+  </body>
+</html>

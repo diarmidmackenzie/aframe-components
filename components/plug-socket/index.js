@@ -1,0 +1,5 @@
+if (!AFRAME.components['polygon-wireframe']) require('aframe-polygon-wireframe')
+require('./src/socket-system.js')
+require('./src/socket-fabric.js')
+require('./src/socket.js')
+require('./src/plug.js')

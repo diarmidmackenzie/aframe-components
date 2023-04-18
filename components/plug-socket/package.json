@@ -1,0 +1,30 @@
+{
+  "name": "aframe-plug-socket",
+  "version": "0.0.1",
+  "description": "Plugs & Sockets for A-Frame Entities",
+  "main": "index.js",
+  "scripts": {
+    "dist": "npm run dist:dev && npm run dist:prod",
+    "dist:dev": "webpack --config webpack.config.js",
+    "dist:prod": "webpack --config webpack.prod.config.js",
+    "test": "qunit"
+  },
+  "keywords": [
+    "A-Frame",
+    "aframe",
+    "plug",
+    "socket",
+    "snap",
+    "position"
+  ],
+  "author": "Diarmid Mackenzie",
+  "license": "MIT",
+  "dependencies": {
+    "aframe-polygon-wireframe": "^0.2.1"
+  },
+  "devDependencies": {
+    "qunit": "^2.19.4",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  }
+}

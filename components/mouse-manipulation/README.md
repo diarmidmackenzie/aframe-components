@@ -19,10 +19,13 @@ Controls are as follows:
 
 ## Schema
 
-| Property  | Description                                                  | Default |
-| --------- | ------------------------------------------------------------ | ------- |
-| debug     | Turn on for debugging.  This displays small red and blue cubes to indicate the contact points being used to manipulate the entity, and some additional console logs. | false   |
-| showHints | Controls whether hints are shown to the user indicating the control options | true    |
+| Property     | Description                                                  | Default      |
+| ------------ | ------------------------------------------------------------ | ------------ |
+| debug        | Turn on for debugging.  This displays small red and blue cubes to indicate the contact points being used to manipulate the entity, and some additional console logs. | false        |
+| showHints    | Controls whether hints are shown to the user indicating the control options | true         |
+| grabEvents   | Whether to generate events when an entity is grabbed / released | false        |
+| grabEvent    | If `grabEvents` is true, the name of the event to generate when an entity is grabbed | laserGrab    |
+| releaseEvent | If `grabEvents` is true, the name of the event to generate when an entity is released | laserRelease |
 
 
 

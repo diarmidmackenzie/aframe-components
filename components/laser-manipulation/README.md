@@ -61,10 +61,13 @@ However, any mechanism that sets and clears [states](https://aframe.io/docs/1.3.
 
 Apart from the ability to customize thumbstick controls described above, there are limited configuration options for these controls.  These may be extended in future.
 
-| Property   | Description                                                  | Default |
-| ---------- | ------------------------------------------------------------ | ------- |
-| rotateRate | The rate of rotation of the entity (in degrees / second) when it is being rotated. | 45      |
-| center     | The center of rotation used when rotating the entity.  This can be the center of the entity, or the point of contact of the raycaster with the entity.  One of: center, contact. | center  |
+| Property     | Description                                                  | Default      |
+| ------------ | ------------------------------------------------------------ | ------------ |
+| rotateRate   | The rate of rotation of the entity (in degrees / second) when it is being rotated. | 45           |
+| center       | The center of rotation used when rotating the entity.  This can be the center of the entity, or the point of contact of the raycaster with the entity.  One of: center, contact. | center       |
+| grabEvents   | Whether to generate events when an entity is grabbed / released | false        |
+| grabEvent    | If `grabEvents` is true, the name of the event to generate when an entity is grabbed | mouseGrab    |
+| releaseEvent | If `grabEvents` is true, the name of the event to generate when an entity is released | mouseRelease |
 
 
 

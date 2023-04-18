@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../../mouse-manipulation/dist/mouse-manipulation.js"></script>
+      <script src="../dist/dynamic-snap.js"></script>
+      <script src="./snap-to-grid.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Dynamic snap to grid</p>
+        <p>Red Cone has transparent rendering for snap position, and wireframe rendering for precise position.</p>
+        <p>Blue Torus has transparent rendering for snap position, and object rendering for precise position (default).</p>
+    </div>
+    <a class="code-link"
+      target="_blank"
+      href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/dynamic-snap/test/test1.html">
+      view code
+    </a>
+      <a-scene background="color:#88f"
+               socket="snapDistance: 0.2; debug: true">
+        <a-entity id="cursor"
+                  cursor="rayOrigin: mouse"
+                  raycaster="objects: [raycast-target]; far: Infinity"
+                  mouse-manipulation="grabEvents: true">
+        </a-entity>
+        <a-entity position = "0 1 -4">
+          <a-cone position = "0 1.5 0"
+                snap-to-grid
+                dynamic-snap="renderPrecise: wireframe;
+                              wireframeColor: green;
+                              renderSnap: transparent"
+                raycast-target
+                color="red">
+          </a-cone>
+          <a-torus position = "0 -1 0"
+                snap-to-grid
+                dynamic-snap
+                raycast-target
+                color="blue">
+          </a-torus>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>

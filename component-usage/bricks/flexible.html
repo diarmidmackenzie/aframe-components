@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/superframe@fix-orbit-controls/components/orbit-controls/dist/aframe-orbit-controls.min.js"></script>
+      <script src="../../components/polygon-wireframe/index.js"></script>
+      <script src="../../components/raycast-target/index.js"></script>
+      <script src="../../components/bricks/index.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/dataarts/dat.gui@0.7.9/build/dat.gui.min.js"></script>
+      <link rel="stylesheet" href="../../styles.css">
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const gui = new dat.GUI();
+          gui.domElement.classList.add('gui')
+          const brick = document.getElementById('brick')
+          brick.wireframe = false
+          const wireframeController = gui.add(brick, 'wireframe')
+          wireframeController.onChange(() => {
+            if (brick.wireframe) {
+              brick.setAttribute("polygon-wireframe", "color: yellow")
+            }
+            else {
+              brick.removeAttribute("polygon-wireframe")
+            }
+          })
+          brick.addEventListener("loaded", () => {
+            const brickData = brick.components.brick.data
+            const triggerUpdate = () => {
+              brick.setAttribute("brick", brickData)
+            }
+            integerProperties = ['width', 'height', 'depth']
+            integerProperties.forEach((prop) => {
+              const controller = gui.add(brickData, prop, 1, 18, 1)
+              controller.onChange(triggerUpdate)
+            })
+            
+            const cylController = gui.add(brickData, 'cylinderSegments', 4, 32, 1)
+            cylController.onChange(triggerUpdate)
+
+            // dat.gui works with RGB data in range 0 - 255.
+            // tempColor is used to help translate between this and 
+            // formats usable as A-Frame attributes.
+            const tempColor = new THREE.Color(brickData.color)
+            brick.colorRGB = {r: 0, g: 0, b: 0}
+            tempColor.getRGB(brick.colorRGB)
+            const colorController = gui.addColor(brick, "colorRGB")
+            colorController.onChange(() => {
+               const c = brick.colorRGB
+               tempColor.setRGB(c.r / 255, c.g / 255, c.b / 255)
+               const colorString = tempColor.getStyle()
+               brick.setAttribute("brick", "color", colorString)
+               triggerUpdate()
+            })
+          })
+        })
+      </script>
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Customizable building brick - use mouse to change view.</p>
+        <p>Use settings on right to change dimensions and appearance</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/flexible.html">
+        view code
+    </a>
+      <a-scene background="color:#88f" stats
+               physx="autoLoad: true; delay: 1000; useDefaultScene: false; stats: panel">
+        <a-entity camera
+                  look-controls="enabled: false"
+                  orbit-controls="target: 0 0 0;
+                                  minDistance: 0.5;
+                                  maxDistance: 180;
+                                  initialPosition: 0 0.5 0.75; 
+                                  rotateSpeed: 0.5">
+        </a-entity>
+        <a-entity position = "0 0 0" scale="10 10 10">
+          <a-brick id="brick"></a-brick>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>
+
+
+

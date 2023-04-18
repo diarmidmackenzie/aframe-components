@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <!-- issues with desktop vr controller orientation at a-frame 1.4.1--->
+      <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>      
+      <script src="../../components/bricks/index.js"></script>
+      <script src="../../components/mouse-manipulation/dist/mouse-manipulation.js"></script>
+      <script src="../../components/laser-manipulation/dist/laser-manipulation.js"></script>
+      <script src="../../components/raycast-target/index.js"></script>
+      <script src="../../components/dynamic-snap/dist/dynamic-snap.js"></script>
+      <script src="../../components/plug-socket/dist/plug-socket.js"></script>
+      <script src="../../components/desktop-vr-controller/dist/desktop-vr-controller.js"></script>
+      <script src="./colors.js"></script>
+      <script src="./snapping.js"></script>
+      <link rel="stylesheet" href="../../styles.css">
+  </head>
+  <body>
+    <!-- issues
+       1. sometimes snap angles are out by a little bit.
+          - when this happens, clicking the brick usually aligns it correctly.
+          - effect is worse at small scale.
+       2. sometimes snap angles are out by a lot
+          - suspect we somehow lose or fail to process a "snapEnd" event, and snap is left
+            at a fixed offset.  Not yet understood.
+     -->
+    <div class="text-overlay">
+        <p>Demo of moveable, snappable bricks (without physics / collision detection).</p>
+        <p>Control on desktop using mouse, or enter VR to control using 6DoF controllers (or emulated 6DoF controllers on desktop).</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/snapping.html">
+        view code
+    </a>
+      <a-scene background="color:#88f"
+               socket="snapDistance: 0.06; snapRotation: 50"
+               stats>
+        
+        <a-entity id="rig"></a-entity>
+          <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+          <a-entity id="cursor"
+                    cursor="rayOrigin: mouse"
+                    raycaster="objects: [raycast-target]:not(#container-collider); far: Infinity"
+                    mouse-manipulation="grabEvents: true">
+          </a-entity>
+          <a-entity id="rhand"
+            laser-controls="hand: right"
+            raycaster="objects: [raycast-target]:not(#container-collider); far: Infinity; lineColor: red; lineOpacity: 0.5"
+            laser-manipulation="grabEvents: true; rotateRate: 180; grabEvent: mouseGrab; releaseEvent: mouseRelease"
+            thumbstick-states__right="controller:#rhand;
+                                      tBindings:moving-in,moving-out,rotating-y-plus,rotating-y-minus;
+                                      tgBindings:rotating-x-plus,rotating-x-minus,rotating-y-plus,rotating-y-minus"
+            oculus-touch-controls="hand: right"
+            position="0.4 1.4 -0.5"
+            scale-up-down
+            desktop-vr-controller>
+          </a-entity>
+
+          <a-entity id="lhand"
+                    laser-controls="hand: left"
+                    raycaster="objects: #container-collider; far: Infinity; lineColor: green; lineOpacity: 0.5"
+                    laser-manipulation="grabEvents: true"
+                    thumbstick-states__left="controller:#lhand;
+                                              tBindings:moving-in,moving-out,rotating-y-plus,rotating-y-minus;
+                                              tgBindings:rotating-x-plus,rotating-x-minus,rotating-y-plus,rotating-y-minus"
+                    oculus-touch-controls="hand: left"
+                    position="-0.4 1.4 -0.5"
+                    desktop-vr-controller>
+        </a-entity>
+        </a-entity>
+        <a-plane position="0 1.5 -3"
+                 width="2"
+                 height="2"
+                 color="black"
+                 show-in-vr
+                 text="color:white;
+                       xOffset:0.04;
+                       value:Building bricks in VR.\n
+                             Right laser pointer + trigger to grab and move blocks
+                             Right thumbstick to turn blocks, and bring blocks forward/backward
+                             Left laser pointer + trigger to move the container
+                             Press A to switch between small scale and large scale (also resets container position)
+
+                             Known limitations & bugs (all work-in-progress)
+                             - No physics / gravity / collisions.  Unbound blocks levitate where they are left, and bricks can overlap each other.
+                             - Block positions prone to minor errors (worse at small scale)
+                             - Occasional major failures in position snapping logic">
+        </a-plane>
+        <a-entity id="container" position = "0 1 -1" scale="10 10 10" brick-wall>
+            <a-box id="container-collider"
+                   width="0.2" 
+                   depth="0.2" 
+                   height="0.1" 
+                   position = "0 0.05 0" 
+                   polygon-wireframe 
+                   raycast-target="#container"></a-box>
+            <a-brick id="base" width="20" 
+                     depth="8" height="1" color="#4B9F4A" position="0 0.0032 0"
+                     dynamic-snap="renderPrecise:transparent; renderSnap: wireframe">
+            </a-brick>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>

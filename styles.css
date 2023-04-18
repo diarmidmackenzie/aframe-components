@@ -30,3 +30,9 @@
     font-size: 20px;
     font-family: arial
 }
+
+.gui {
+  position: absolute;
+  top: 150px;
+  right: 10px;
+}
