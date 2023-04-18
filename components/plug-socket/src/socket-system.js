@@ -4,7 +4,7 @@ AFRAME.registerSystem('socket', {
     snapDistance: {default: 0.1},
 
     // rotation in degrees by which a plug can snap to this socket.
-    snapRotation: {default: 30},
+    snapRotation: {default: 50},
 
     // degrees between positions at which the socket & plug can be fixed (y-axis only)
     rotationIncrement: { default: 90 },

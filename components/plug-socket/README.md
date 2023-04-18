@@ -119,11 +119,9 @@ The system does not yet implement any logic to maintain relative positions of en
 | Property          | Type    | Description                                                  | Default |
 | ----------------- | ------- | ------------------------------------------------------------ | ------- |
 | snapDistance      | number  | The maximum distance, in world space units, that a plug and socket will snap together | 0.1     |
-| snapRotation      | number  | The maximum angle, in degrees, that a plug and socket may be offset by, relative to a snappable orientation, in order for that plug and socket to snap together. | 30      |
+| snapRotation      | number  | The maximum angle, in degrees, that a plug and socket may be offset by, relative to a snappable orientation, in order for that plug and socket to snap together. | 50      |
 | rotationIncrement | number  | Plugs and sockets must align exactly on their x and z rotations, but there is flexibility in the rotation of the y axis.  This parameter specifies the angle (in degrees) between positions at which a plug and socket can be fixed together.  90 degrees results in 4 possible positions of the plug & socket (like a square plug into a square socket).  60 degrees would result in 6 possible positions (like a hexagonal plug in a hexagonal socket).<br />In theory, 0 degrees would result in completely flexible rotation of the plug in the socket (a cylindrical plug in a cylindrical socket).  However the current implementation searches linearly through possible positions, and so will not perform well for low values of `rotationIncrement` - as a guideline, values below 30 degrees are not recommended. | 90      |
 | debug             | boolean | Enables debug visualization of the positions of plugs & sockets.  Also enables some console logging. | false   |
-
-
 
 
 
