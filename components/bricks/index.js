@@ -200,7 +200,7 @@ AFRAME.registerComponent('brick', {
       // But *don't* `use setObject3D`, as it will update the `el` reference on the Object3Ds, leading to
       // problems with physics (and elsewhere?) failing to read attributes such as `physx-hidden-collision`
       // from the correct el.
-      this.el.object3DMap['mesh'] = this.visual
+      this.el.object3DMap['mesh'] = this.visual.getObject3D('mesh')
       this.el.emit('model-loaded')
     })
 
