@@ -269,3 +269,10 @@ A brief list of some ways in which the plug/socket system might be developed in 
   - Better matching algorithms
   - Perf tuning golden path
 
+
+
+## Acknowledgements
+
+The code used to efficiently identify the set of sockets in close proximity to a given plug is based on code originally developed for [Virtonomy](https://www.virtonomy.io/), re-used here with their kind permission.
+
+
