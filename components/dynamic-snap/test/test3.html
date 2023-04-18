@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../../mouse-manipulation/dist/mouse-manipulation.js"></script>
+      <script src="../../raycast-target/index.js"></script>
+      <script src="../../bricks/index.js"></script>
+      <script src="../dist/dynamic-snap.js"></script>
+      <script src="./snap-to-grid.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Dynamic snap to grid</p>
+        <p>Transparent rendering for precise position, wireframe rendering for snap position</p>
+    </div>
+    <a class="code-link"
+      target="_blank"
+      href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/dynamic-snap/test/test1.html">
+      view code
+    </a>
+      <a-scene background="color:#88f"
+               socket="snapDistance: 0.2; debug: true">
+        <a-entity id="cursor"
+                  cursor="rayOrigin: mouse"
+                  raycaster="objects: [raycast-target]; far: Infinity"
+                  mouse-manipulation="grabEvents: true">
+        </a-entity>
+        <a-entity position = "0 1 -4">
+          <a-brick position = "0 1.5 0"
+                scale="50 50 50"
+                dynamic-snap="renderPrecise: transparent; renderSnap: wireframe"
+                snap-to-grid
+                color="red">
+          </a-brick>
+          <a-brick position = "0 -1 0"
+                scale="50 50 50"
+                dynamic-snap="renderPrecise: transparent; renderSnap: wireframe"
+                snap-to-grid
+                color="blue">
+          </a-brick>
+        </a-entity>
+      </a-scene>
+  </body>
+</html>
