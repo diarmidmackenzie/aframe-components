@@ -58,7 +58,7 @@ this.el.setAttribute('object-parent', 'parent:#newparent')
 
 Dedicated small-scale example to follow.
 
-For now, see [mouse-manipulation.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/mouse-manipulation/index.js) and [laser-manipulation.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/laser-manipulation/index.js), which both use this component.
+For now, see [mouse-manipulation.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/mouse-manipulation/) and [laser-manipulation.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/laser-manipulation/), which both use this component.
 
 ## Code
 
