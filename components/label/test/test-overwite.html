@@ -1,0 +1,109 @@
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+    <script src="../index.js"></script>
+    <link rel="stylesheet" href="../../../styles.css">
+    <script>
+      AFRAME.registerComponent('toggle-on-key', {
+        init() {
+          window.addEventListener('keyup', (e) => {
+            if (e.key === " ") {
+              this.el.object3D.visible = !this.el.object3D.visible
+            }
+          })
+        }
+      })
+    </script>
+  </head>
+  <body>
+    <div class="text-overlay">
+      <p>Test Overwrite.  Hit space to toggle hider box.</p>
+    </div>
+    <a-scene background="color:#88f">
+        
+        <a-entity id="container"
+                  position="0 1 -4">
+            <a-text id="caption"
+                position="0 1.5 0"
+                value="Labels hidden behind cyan box.\n  Different styles of label with & without overwrite"
+                align="center">
+            </a-text>
+
+            <a-box id="hider-box" position = "0 0 1" width="9" height="2" color="cyan" toggle-on-key>
+            </a-box>
+
+            <a-plane id="label1"
+                position="-3 0 0"
+                width="0.1"
+                height="0.1"
+                color="black"
+                text="wrapCount: 3;
+                      align: center;
+                      anchor: center;
+                      value: 1"
+                label>
+            </a-plane>
+            
+            <a-text
+                position="-3 -2.5 0"
+                value="black plane + text;\ndefault\n(hidden)"
+                align="center">
+            </a-text>
+
+            <a-text id="label2"
+                color="white"
+                position="-1 0 0"
+                width="1.2"
+                value="2"
+                label>
+            </a-text>
+
+            <a-text
+                position="-1 -2.5 0"
+                value="text;\ndefault\n(hidden)"
+                align="center">
+            </a-text>
+
+            <a-plane id="label1"
+                position="1 0 0"
+                width="0.1"
+                height="0.1"
+                color="black"
+                text="wrapCount: 3;
+                      align: center;
+                      anchor: center;
+                      value: 3"
+                label="overwrite: true">
+            </a-plane>
+            
+            <a-text
+                position="1 -2.5 0"
+                value="black plane + text;\noverwrite"
+                align="center">
+            </a-text>
+
+            <a-text id="label2"
+                color="white"
+                position="3 0 0"
+                width="1.2"
+                value="4"
+                label="overwrite: true">
+            </a-text>
+
+            <a-text
+                position="3 -2.5 0"
+                value="text;\noverwrite"
+                align="center">
+            </a-text>
+
+        </a-entity>
+    </a-scene>
+</a-scene>
+
+<a class="code-link"
+   target="_blank"
+   href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/polygon-wireframe.html">
+   view code
+</a>
+
+</body>

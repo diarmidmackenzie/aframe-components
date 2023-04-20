@@ -1,6 +1,6 @@
 {
   "name": "aframe-label",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A set of components that can be used to add labels to entities in desktop & VR experiences.",
   "main": "index.js",
   "scripts": {

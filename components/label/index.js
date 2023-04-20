@@ -125,20 +125,28 @@ AFRAME.registerComponent('face-camera', {
         this.cameraDirectionVector = new THREE.Vector3();
         this.parentInverseQuaternion = new THREE.Quaternion();
 
-
         this.object3DSet = this.object3DSet.bind(this)
 
         if (this.data.overwrite) {
-            this.el.addEventListener('object3dset', this.object3DSet)
+
+          const mesh = this.el.getObject3D('mesh')
+          if (mesh) {
+            this.bringMeshToFront(mesh)
+          }
+          this.el.addEventListener('object3dset', this.object3DSet)
         }
+    },
+
+    bringMeshToFront(mesh) {
+      const material = mesh.material
+      material.depthTest = false;
+      material.depthWrite = false;
     },
 
     object3DSet(evt) {
 
         const mesh = evt.target.getObject3D(evt.detail.type)
-        mesh.material.depthTest = false;
-        mesh.material.depthWrite = false;
-        
+        this.bringMeshToFront(mesh)
     },
 
     tick: function() {
