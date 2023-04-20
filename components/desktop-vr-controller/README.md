@@ -54,23 +54,23 @@ There's lots of settings that could be usefully configurable, and hopefully will
 
 ## Installation
 
-This is a high-level component with a lot of dependencies.  In future I'll set up npm to build a single JS file with all these rolled in.  
-
-For now, install as follows:
-
 ```
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/cursor-tracker.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/object-parent.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/mouse-manipulation.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/label.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/raycaster-thresholds.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/connecting-line.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/raycast-target.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/screen-display@latest/src/screen-display.js"></script>            
-<script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@latest/components/desktop-vr-controller.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-desktop-vr-controller@0.1.0/dist/desktop-vr-controller.min.js"></script>
 ```
 
+Or via [npm](https://www.npmjs.com/package/aframe-laser-manipulation)
 
+```
+npm install aframe-desktop-vr-controller
+```
+
+then in your code...
+
+```
+if (!AFRAME.components['desktop-vr-controller']) require('aframe-desktop-vr-controller')
+```
+
+(the `if` test avoids conflicts with other npm packages that may also use `aframe-desktop-vr-controller`)
 
 ## Usage
 
