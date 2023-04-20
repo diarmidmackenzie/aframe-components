@@ -1,6 +1,6 @@
 {
   "name": "aframe-desktop-vr-controller",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simulates a VR controller on the desktop, controllable using mouse & keyboard.",
   "main": "index.js",
   "scripts": {
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "aframe-connecting-line": "^0.1.0",
-    "aframe-label": "^0.1.0",
+    "aframe-label": "^0.1.2",
     "aframe-mouse-manipulation": "^0.1.0",
     "aframe-raycaster-thresholds": "^0.1.0",
     "aframe-screen-display": "^0.1.1"
