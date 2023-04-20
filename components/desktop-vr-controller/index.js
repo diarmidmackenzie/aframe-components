@@ -107,6 +107,12 @@ AFRAME.registerComponent('desktop-vr-controller', {
 
         this.createLockHint();
 
+        // from 1.4.0, A-Frame no longer provides an automatic 45 degree rotation to the controllers
+        // SO we need to do it ourselves to get a natural default position.
+        // See: https://github.com/aframevr/aframe/pull/5141
+        if (AFRAME.version >= "1.4.0") {
+          this.el.object3D.rotateX(Math.PI / 4)
+        }
     },
 
     simulateController() {
