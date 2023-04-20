@@ -141,6 +141,7 @@ AFRAME.registerComponent('face-camera', {
       const material = mesh.material
       material.depthTest = false;
       material.depthWrite = false;
+      material.transparent = true;
     },
 
     object3DSet(evt) {
