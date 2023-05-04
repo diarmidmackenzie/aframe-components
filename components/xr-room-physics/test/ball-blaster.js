@@ -28,8 +28,8 @@ AFRAME.registerComponent('ball-blaster', {
     const handleHTML = `
     <a-cylinder
       color=${this.data.blasterColor}
-      height=0.1
-      radius=0.03
+      height=0.15
+      radius=0.02
       ${this.kinematicBodyHTML}>
     </a-cylinder>
     `
@@ -37,7 +37,7 @@ AFRAME.registerComponent('ball-blaster', {
     const barrelHTML = `
     <a-cylinder
       rotation='90 0 0'
-      position='0 0.05 -0.2'
+      position='0 0.07 -0.2'
       color=${this.data.blasterColor}
       radius=${this.data.radius}
       ${this.kinematicBodyHTML}>
@@ -46,9 +46,11 @@ AFRAME.registerComponent('ball-blaster', {
     this.el.insertAdjacentHTML('beforeend', barrelHTML)
 
     window.addEventListener('keyup', this.shootBall.bind(this))
+    this.el.parentEl.addEventListener('triggerdown', this.shootBall.bind(this))
 
     this.impulseVector = new THREE.Vector3()
     this.zeroVector = new THREE.Vector3(0, 0, 0)
+    this.quat = new THREE.Quaternion()
   },
 
   shootBall() {
@@ -70,18 +72,20 @@ AFRAME.registerComponent('ball-blaster', {
 
     ball.addEventListener('loaded', () => {
 
-    const i = this.impulseVector
-    i.set(0, 0, this.data.velocity * 10)
-    ball.object3D.worldToLocal(i)
+      const i = this.impulseVector
+      i.set(0, 0, -this.data.velocity * 10)
+      const quat = this.quat
+      ball.object3D.getWorldQuaternion(quat)
+      i.applyQuaternion(quat)
 
-    if (this.driver === "ammo") {
-        const impulse = new Ammo.btVector3(i.x, i.y, i.z);
-        ball.body.applyCentralImpulse(impulse);
-        Ammo.destroy(impulse);
-      } else {
-        const body = ball.components['dynamic-body'].body
-        body.applyImpulse(this.impulseVector, this.zeroVector)
-      }
-    })
-  }
+      if (this.driver === "ammo") {
+          const impulse = new Ammo.btVector3(i.x, i.y, i.z);
+          ball.body.applyCentralImpulse(impulse);
+          Ammo.destroy(impulse);
+        } else {
+          const body = ball.components['dynamic-body'].body
+          body.applyImpulse(this.impulseVector, this.zeroVector)
+        }
+      })
+    }
 })
