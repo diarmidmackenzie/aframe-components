@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no,user-scalable=no,maximum-scale=1">
+    <title>Configure Room Planes in Ammo Physics Engine</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/MozillaReality/ammo.js@8bbc0ea/builds/ammo.wasm.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
+    <script>
+      AFRAME.registerComponent('two-planes', {
+        init() {
+          const mesh = new THREE.Group()
+          this.el.setObject3D('mesh', mesh)
+          const planeGeometry = new THREE.PlaneGeometry()
+          const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+          const frontPlane = new THREE.Mesh(planeGeometry, material)
+          const rearPlane = new THREE.Mesh(planeGeometry, material)
+          mesh.add(frontPlane)
+          mesh.add(rearPlane)
+          rearPlane.position.z -= 0.5
+          mesh.position.z += 0.25
+        }
+      })
+    </script>
+    
+    <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+      <p>Generate Ammo Physics Shape from 2 x parallel planes</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/master/xr-room-physics/test/ammo-shape-test.html">
+        view code
+    </a>
+    <a-scene physics="driver: ammo; debug: true;">
+      <!-- Test shape -->
+      <a-entity two-planes
+                position="1 1.5 -3"
+                rotation="0 90 0"
+                ammo-body="type: static"
+                ammo-shape="type: box">
+      </a-entity>
+    </a-scene>
+  </body>
+</html>

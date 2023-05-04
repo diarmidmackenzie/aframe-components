@@ -5,23 +5,22 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no,user-scalable=no,maximum-scale=1">
     <title>Configure Room Planes in Ammo Physics Engine</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/MozillaReality/ammo.js@8bbc0ea/builds/ammo.wasm.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
-    <script src="..\dist\xr-room-physics.js"></script>
+    <script src="../dist/xr-room-physics.js"></script>
     <link rel="stylesheet" href="../../../styles.css">
   </head>
   <body>
     <div class="text-overlay">
-      <p>Configured XR Planes automatically created as static bodies in Ammo Physics.</p>
+      <p>Configured XR Planes automatically created as static bodies in Cannon Physics.</p>
     </div>
         <a class="code-link"
         target="_blank"
-        href="https://github.com/diarmidmackenzie/aframe-components/blob/master/xr-room-physics/test/index.html">
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/master/xr-room-physics/test/cannon-room.html">
         view code
     </a>
     <a-scene 
              webxr="requiredFeatures: plane-detection,local-floor"
-             physics="driver: ammo; debug: true;"
+             physics="debug: true;"
              xr-room-physics>
 
       <!-- Blocks -->
