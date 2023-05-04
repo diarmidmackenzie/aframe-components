@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/gh/MozillaReality/ammo.js@8bbc0ea/builds/ammo.wasm.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
     <script src="..\dist\xr-room-physics.js"></script>
+    <script src="./ball-blaster.js"></script>
     <link rel="stylesheet" href="../../../styles.css">
   </head>
   <body>
@@ -23,6 +24,8 @@
              webxr="requiredFeatures: plane-detection,local-floor"
              physics="driver: ammo; debug: true;"
              xr-room-physics="debug: true">
+
+      <a-entity position='0 1.5 -2' rotation=' 0 90 0' ball-blaster></a-entity>
 
       <!-- Blocks -->
       <!--<a-sphere radius="0.25" position="0 4 -2" color="red"
