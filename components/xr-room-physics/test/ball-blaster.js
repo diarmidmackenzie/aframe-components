@@ -2,7 +2,6 @@
 
   impulseVector = new THREE.Vector3()
   zeroVector = new THREE.Vector3(0, 0, 0)
-  quaternion = new THREE.Quaternion()
 
   AFRAME.registerComponent('ball-blaster', {
 
@@ -39,7 +38,7 @@
         ${this.kinematicBodyHTML}>
       </a-cylinder>
       `
-      this.el.insertAdjacentHTML('beforeend', handleHTML)
+
       const barrelHTML = `
       <a-cylinder
         rotation='90 0 0'
@@ -49,7 +48,7 @@
         ${this.kinematicBodyHTML}>
       </a-cylinder>
       `
-      this.el.insertAdjacentHTML('beforeend', barrelHTML)
+      this.el.insertAdjacentHTML('beforeend', handleHTML + barrelHTML)
   
       window.addEventListener('keyup', this.shootBall.bind(this))
       this.el.parentEl.addEventListener('triggerdown', this.shootBall.bind(this))
@@ -76,9 +75,8 @@
       ball.addEventListener('loaded', () => {
   
         const i = impulseVector
-        i.set(0, 0, -this.data.velocity * 10)
-        ball.object3D.getWorldQuaternion(quaternion)
-        i.applyQuaternion(quaternion)
+        ball.object3D.getWorldDirection(i)
+        i.multiplyScalar(-this.data.velocity * 10)
   
         if (this.driver === "ammo") {
             const impulse = new Ammo.btVector3(i.x, i.y, i.z);
