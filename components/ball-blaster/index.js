@@ -50,9 +50,77 @@
       `
       this.el.insertAdjacentHTML('beforeend', handleHTML + barrelHTML)
   
-      window.addEventListener('keyup', this.shootBall.bind(this))
-      this.el.parentEl.addEventListener('triggerdown', this.shootBall.bind(this))
-  
+      this.keyUp = this.keyUp.bind(this)
+      this.shootBall = this.shootBall.bind(this)
+      this.refreshControllers = this.refreshControllers.bind(this)
+
+
+      this.listenForKeys = true
+      
+
+      this.el.sceneEl.addEventListener('controllerconnected', this.refreshControllers)
+    },
+
+    refreshControllers() {
+      this.parentController = this.el.closest('[tracked-controls]')
+      if (this.parentController) {
+        this.parentController.addEventListener('controllerdisconnected', () => {
+          this.listenForTrigger = false
+          this.listenForKeys = true
+          this.updateListeners()
+        }, {once: true})
+
+        this.listenForTrigger = true
+        this.listenForKeys = false
+        this.updateListeners()
+      }
+      else {
+        this.listenForTrigger = false
+        this.listenForKeys = true
+      }
+      this.updateListeners()
+    },
+
+    play() {
+      this.updateListeners()
+    },
+
+    pause() {
+      this.updateListeners()
+    },
+
+    remove() {
+      this.removeListeners()
+    },
+
+    removeListeners() {
+      window.removeEventListener('keyup', this.keyUp)
+      if (this.parentController) {
+        this.parentController.removeEventListener('triggerdown', this.shootBall)
+      }
+    },
+
+    updateListeners() {
+
+      // start by clearing out previous event listeners...
+      this.removeListeners()
+
+      if (!this.el.isPlaying) return
+
+      if (this.listenForTrigger && this.parentController) {
+        this.parentController.addEventListener('triggerdown', this.shootBall)
+      }
+
+      if (this.listenForKeys) {
+        window.addEventListener('keyup', this.keyUp)
+      }
+    },
+
+    keyUp(evt) {
+
+      if (evt.key === ' ') {
+        this.shootBall()
+      }
     },
   
     shootBall() {
