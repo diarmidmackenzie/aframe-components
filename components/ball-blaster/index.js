@@ -2,6 +2,7 @@
 
   impulseVector = new THREE.Vector3()
   zeroVector = new THREE.Vector3(0, 0, 0)
+  vel = new THREE.Vector3()
 
   AFRAME.registerComponent('ball-blaster', {
 
@@ -168,8 +169,10 @@
           Ammo.destroy(impulse);
         }
         else if (this.driver === "physx") {
-          console.log("physx")
-          //ball.body.applyCentralImpulse(impulse);
+          ball.addEventListener('rigidBodyReady', () => {
+            const body = ball.components['physx-body'].rigidBody
+            body.addImpulseAtLocalPos(i, zeroVector);
+          })
         }
         else {
           const body = ball.components['dynamic-body'].body
@@ -191,25 +194,31 @@
           if (this.driver === "ammo") {
             const velocity = new Ammo.btVector3();
             ball.body.getLinearVelocity(velocity)
-
-            vel = new THREE.Vector3()
             vel.x = velocity.x()
             vel.y = velocity.y()
             vel.z = velocity.z()
-            console.log("Velocity:", vel.length())
+            console.log("Speed:", vel.length())
             Ammo.destroy(velocity);
             ball.velocityLogged = true
           }
           else if (this.driver === "physx") {
 
-            if (ball.components['physx-body'].rigidBody) {
-              console.log("Velocity:", "physx")
-              ball.velocityLogged = true
+            const body = ball.components['physx-body'].rigidBody
+            if (body) {
+              v = body.getLinearVelocity()
+              vel.set(v.x, v.y, v.z)
+              const speed = vel.length()
+              // tick may occur before impulse has been applied.
+              // don't log speed until 
+              if (speed > 0) {
+                console.log("Speed:", speed)
+                ball.velocityLogged = true
+              }
             }
           }
           else {
             // cannon
-            console.log("Velocity:", ball.body.velocity.length())
+            console.log("Speed:", ball.body.velocity.length())
             ball.velocityLogged = true
           }
         }
