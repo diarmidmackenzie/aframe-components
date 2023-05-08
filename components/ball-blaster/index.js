@@ -7,7 +7,7 @@
 
     schema: {
       // velocity of balls in m/s
-      velocity: {default: 5},
+      velocity: {default: 20},
   
       // radius of balls in m
       radius: {default: 0.05},
@@ -15,6 +15,8 @@
       ballColor: {default: 'yellow'},
   
       blasterColor: {default: '#333'},
+
+      debug: {default: false}
     },
   
     init() {
@@ -59,6 +61,15 @@
       
 
       this.el.sceneEl.addEventListener('controllerconnected', this.refreshControllers)
+    },
+
+    update() {
+      if (this.data.debug) {
+        this.tick = this.debugTick
+      }
+      else {
+        this.tick = null
+      }
     },
 
     refreshControllers() {
@@ -144,18 +155,49 @@
   
         const i = impulseVector
         ball.object3D.getWorldDirection(i)
-        i.multiplyScalar(-this.data.velocity * 10)
+        i.multiplyScalar(-this.data.velocity)
   
         if (this.driver === "ammo") {
-            const impulse = new Ammo.btVector3(i.x, i.y, i.z);
-            ball.body.applyCentralImpulse(impulse);
-            Ammo.destroy(impulse);
-          } else {
-            const body = ball.components['dynamic-body'].body
-            body.applyImpulse(i, zeroVector)
+          const impulse = new Ammo.btVector3(i.x, i.y, i.z);
+          ball.body.applyCentralImpulse(impulse);
+          Ammo.destroy(impulse);
+        }
+        else {
+          const body = ball.components['dynamic-body'].body
+
+          // for Cannon, impulse has to be multiplied by 5 to give target velocity.
+          // (API docs weren't clear on units for impulse, determined by testign with debug: true)
+          i.multiplyScalar(5)
+          body.applyImpulse(i, zeroVector)
+        }
+      })
+    },
+
+    debugTick() {
+
+      const balls = document.querySelectorAll('a-sphere')
+      balls.forEach((ball) => {
+        if (!ball.velocityLogged) {
+
+          if (this.driver === "ammo") {
+            const velocity = new Ammo.btVector3();
+            ball.body.getLinearVelocity(velocity)
+
+            vel = new THREE.Vector3()
+            vel.x = velocity.x()
+            vel.y = velocity.y()
+            vel.z = velocity.z()
+            console.log("Velocity:", vel.length())
+            Ammo.destroy(velocity);
           }
-        })
-      }
+          else {
+            console.log("Velocity:", ball.body.velocity.length())
+          }
+        }
+
+        ball.velocityLogged = true
+      })
+    }
   })
 })()
 
