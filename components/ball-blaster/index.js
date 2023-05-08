@@ -21,10 +21,15 @@
   
     init() {
   
-      if (this.el.sceneEl.getAttribute('physics').driver === "ammo") {
+      if (this.el.sceneEl.getAttribute('physics')?.driver === "ammo") {
         this.driver = "ammo"
         this.kinematicBodyHTML = `ammo-body='type: kinematic'; ammo-shape`
         this.ballPhysicsHTML = `ammo-body='type: dynamic'; ammo-shape'`
+      }
+      else if (this.el.sceneEl.getAttribute('physx')) {
+        this.driver = "physx"
+        this.kinematicBodyHTML = `physx-body='type: kinematic'`
+        this.ballPhysicsHTML = `physx-body='type: dynamic'`
       }
       else {
         this.driver = "cannon"
@@ -162,6 +167,10 @@
           ball.body.applyCentralImpulse(impulse);
           Ammo.destroy(impulse);
         }
+        else if (this.driver === "physx") {
+          console.log("physx")
+          //ball.body.applyCentralImpulse(impulse);
+        }
         else {
           const body = ball.components['dynamic-body'].body
 
@@ -189,13 +198,23 @@
             vel.z = velocity.z()
             console.log("Velocity:", vel.length())
             Ammo.destroy(velocity);
+            ball.velocityLogged = true
+          }
+          else if (this.driver === "physx") {
+
+            if (ball.components['physx-body'].rigidBody) {
+              console.log("Velocity:", "physx")
+              ball.velocityLogged = true
+            }
           }
           else {
+            // cannon
             console.log("Velocity:", ball.body.velocity.length())
+            ball.velocityLogged = true
           }
         }
 
-        ball.velocityLogged = true
+        
       })
     }
   })

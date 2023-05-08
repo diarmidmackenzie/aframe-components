@@ -3,16 +3,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no,user-scalable=no,maximum-scale=1">
-    <title>Ball Blaster in Cannon Physics Engine.  Press any key to shoot.</title>
+    <title>Ball Blaster in PhysX Physics Engine.  Press any key to shoot.</title>
     <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/physx@0.1.2/dist/physx.js"></script>
     <script src="../../desktop-vr-controller/dist/desktop-vr-controller.js"></script>
     <script src="../index.js"></script>
     <link rel="stylesheet" href="../../../styles.css">
   </head>
   <body>
     <div class="text-overlay">
-      <p>Ball blaster with Cannon Physics.  Left Blaster is directly in the scene.  Press space to shoot.</p>
+      <p>Ball blaster with PhysX Physics.  Left Blaster is directly in the scene.  Press space to shoot.</p>
       <p>Right blaster is a child of the right hand - only visible when in VR.  Right trigger to shoot.</p>
     </div>
         <a class="code-link"
@@ -20,7 +20,7 @@
         href="https://github.com/diarmidmackenzie/aframe-components/blob/master/components/ball-blaster/test/cannon-blaster.html">
         view code
     </a>
-    <a-scene background="color:#88f" physics="debug: true">
+    <a-scene background="color:#88f" physx="autoLoad: true; delay: 1000">
 
       <a-entity position='-0.5 1.5 -1' rotation='20 -20 0' ball-blaster></a-entity>
 
