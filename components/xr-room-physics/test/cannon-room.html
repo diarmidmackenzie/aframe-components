@@ -7,7 +7,7 @@
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
     <script src="../dist/xr-room-physics.js"></script>
-    <script src="./ball-blaster.js"></script>
+    <script src="../../ball-blaster/index.js"></script>
     <link rel="stylesheet" href="../../../styles.css">
   </head>
   <body>
@@ -24,13 +24,7 @@
              physics
              xr-room-physics>
 
-      <a-entity camera look-controls wasd-controls position="0 1.6 0">
-        <a-entity cursor
-                  raycaster="objects:[force-pushable]"
-                  position="0 0 -0.5"
-                  geometry="primitive: circle; radius: 0.01; segments: 4;"
-                  material="color: #FF4444; shader: flat"></a-entity>
-        </a-entity>
+      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
       <a-entity id="left-hand" hand-controls="hand: left"></a-entity>
       <a-entity id="right-hand" hand-controls="hand: right">
         <a-entity ball-blaster rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>

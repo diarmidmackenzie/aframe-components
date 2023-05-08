@@ -7,8 +7,8 @@
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/MozillaReality/ammo.js@8bbc0ea/builds/ammo.wasm.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
-    <script src="..\dist\xr-room-physics.js"></script>
-    <script src="./ball-blaster.js"></script>
+    <script src="../dist/xr-room-physics.js"></script>
+    <script src="../../ball-blaster/index.js"></script>
     <link rel="stylesheet" href="../../../styles.css">
   </head>
   <body>
@@ -22,16 +22,14 @@
     </a>
     <a-scene 
              webxr="requiredFeatures: plane-detection,local-floor"
-             physics="driver: ammo; debug: true;"
+             physics="driver: ammo"
              xr-room-physics="debug: true">
 
-      <a-entity position='0 1.5 -2' rotation=' 0 90 0' ball-blaster></a-entity>
-
-      <!-- Blocks -->
-      <!--<a-sphere radius="0.25" position="0 4 -2" color="red"
-                ammo-body="type: dynamic; shape: none; mass: 5;"
-                ammo-shape>
-      </a-sphere>-->
+      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+      <a-entity id="left-hand" hand-controls="hand: left"></a-entity>
+      <a-entity id="right-hand" hand-controls="hand: right">
+        <a-entity ball-blaster rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>
+      </a-entity>
     </a-scene>
   </body>
 </html>
