@@ -46,6 +46,14 @@ AFRAME.registerSystem('xr-room-physics', {
     el.object3D.quaternion.copy(plane.quaternion)
 
     // create a mesh consisting of 2 copies of the plane, the rear 'depth' m behind.
+    // Why not a Box?  Because the planeMesh might not be a rectangle - it could be any polygon
+    // Why not an ExtrudeGeometry?  Because the shape of the plane is not readily extractable 
+    // from the plane geometry, we'd need to reconstruct if rom the co-ordinate data
+    // just like RATK does here.
+    // https://github.com/meta-quest/reality-accelerator-toolkit/blob/b1233141301ced3cc797857e2169f5957a913a96/src/Plane.ts#L48
+    // Possible, but tedious.
+    // 2 x meshes gets interpreted correctly by Ammo & Cannon.
+    // unfortunately not by PhysX...
     const mesh = new THREE.Group()
     el.setObject3D('mesh', mesh)
     const frontPlane = plane.planeMesh.clone()
