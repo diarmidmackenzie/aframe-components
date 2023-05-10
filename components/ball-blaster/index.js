@@ -173,6 +173,13 @@
           Ammo.destroy(impulse);
         }
         else if (this.driver === "physx") {
+
+          // Reparent Ball Object3D to scene.  This works around a PhysX engine bug where movement of the gun
+          // seems to influence ball movement after they have been fired.
+          // (notceable when balls are rolling slowly and you shake the gun)
+          const scene = this.el.sceneEl.object3D
+          scene.attach(ball.object3D)
+          
           ball.addEventListener('rigidBodyReady', () => {
             const body = ball.components['physx-body'].rigidBody
             body.addImpulseAtLocalPos(i, zeroVector);
