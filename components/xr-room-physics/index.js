@@ -66,8 +66,10 @@ AFRAME.registerSystem('xr-room-physics', {
     // this.el.setObject3D('plane', plane)
     plane.el = el
 
-    // Hide reverse side of plane mesh creatd by RATK.
-    plane.planeMesh.visible = false
+    // convert plane material into a "hider material", so that it can occlude entities in a scene
+    // e/g/ when a ball rolls under a table.
+    plane.planeMesh.material.colorWrite = false
+    plane.planeMesh.material.side = THREE.DoubleSide
 
     // take position & orientation from the plane
     el.object3D.position.copy(plane.position)
