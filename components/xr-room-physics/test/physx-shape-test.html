@@ -6,7 +6,7 @@
     <title>Test generation of PhysX Physics Shape from 2 x parallel planes</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/physx@117b6be/dist/physx.js"></script>
-    <script src="./two-planes.js"></script>
+    <script src="./test-geometries.js"></script>
     <script src="../../ball-blaster/index.js"></script>
     <script src="../../desktop-vr-controller/dist/desktop-vr-controller.js"></script>
     <script>
@@ -18,8 +18,8 @@
         },
 
         init() {
-          for (let ii = -1; ii < 1; ii += 0.1) {
-            for (let jj = -1; jj < 1; jj += 0.1) {
+          for (let ii = -1.3; ii < 1.3; ii += 0.1) {
+            for (let jj = -1.3; jj < 1.3; jj += 0.1) {
               const ballHTML = `
                 <a-sphere
                   radius = ${this.data.radius}
@@ -38,7 +38,7 @@
   </head>
   <body>
     <div class="text-overlay">
-      <p>Generate PhysX Physics Shape from 2 x parallel planes</p>
+      <p>Generate PhysX Physics Shape from prism (ExtrudeGeometry)s</p>
     </div>
         <a class="code-link"
         target="_blank"
@@ -47,9 +47,9 @@
     </a>
     <a-scene physx="autoLoad: true; delay: 1000">
       <!-- Test shape -->
-      <a-entity two-planes
-                position="1 1.5 -3"
-                rotation="0 90 0"
+      <a-entity prism
+                position="1 0.5 -3"
+                rotation="0 80 0"
                 physx-body="type: static">
       </a-entity>
 

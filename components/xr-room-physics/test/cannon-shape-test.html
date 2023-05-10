@@ -6,12 +6,12 @@
     <title>Test generation of Cannon Physics Shape from 2 x parallel planes</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
-    <script src="./two-planes.js"></script>
+    <script src="./test-geometries.js"></script>
     <link rel="stylesheet" href="../../../styles.css">
   </head>
   <body>
     <div class="text-overlay">
-      <p>Generate Cannon Physics Shape from 2 x parallel planes</p>
+      <p>Generate Cannon Physics Shape from prism (ExtrudeGeometry)</p>
     </div>
         <a class="code-link"
         target="_blank"
@@ -20,9 +20,9 @@
     </a>
     <a-scene physics="debug: true;">
       <!-- Test shape -->
-      <a-entity two-planes
-                position="1 1.5 -3"
-                rotation="0 90 0"
+      <a-entity prism
+                position="2 1.5 -3"
+                rotation="0 0 0"
                 static-body>
       </a-entity>
     </a-scene>

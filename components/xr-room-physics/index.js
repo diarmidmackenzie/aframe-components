@@ -8,13 +8,16 @@ AFRAME.registerSystem('xr-room-physics', {
     debug: {default: false},
 
     // depth (i.e. thickness) to use for walls and surfaces
-    depth: {default: 0.1},
+    depth: {default: 0.5},
   },
 
   init() {
 
-    if (this.el.sceneEl.getAttribute('physics').driver === "ammo") {
+    if (this.el.sceneEl.getAttribute('physics')?.driver === "ammo") {
       this.driver = "ammo"
+    }
+    else if (this.el.sceneEl.getAttribute('physx')) {
+      this.driver = "physx"
     }
     else {
       this.driver = "cannon"
@@ -34,6 +37,28 @@ AFRAME.registerSystem('xr-room-physics', {
     this.adjustmentVector = new THREE.Vector3()
   },
 
+  // Create an ExtrudeGeometry of appropriate depth.
+  // similar to:
+  // https://github.com/meta-quest/reality-accelerator-toolkit/blob/b1233141301ced3cc797857e2169f5957a913a96/src/Plane.ts#L48
+  createPrismGeometryFromPolygon(polygon) {
+
+    const planeShape = new THREE.Shape()
+    polygon.forEach((point, i) => {
+      if (i == 0) {
+        planeShape.moveTo(point.x, point.z);
+      } else {
+        planeShape.lineTo(point.x, point.z);
+      }
+    });
+    const geometry = new THREE.ExtrudeGeometry(planeShape, {depth: this.data.depth, bevelEnabled: false});
+    geometry.rotateX(-Math.PI / 2);
+
+    // center the geometry, as some physics engines assume that geometries are centered.
+    geometry.center();
+
+    return geometry;
+  },
+
   planeAdded(plane) {
 
     const el = document.createElement('a-entity')
@@ -45,42 +70,30 @@ AFRAME.registerSystem('xr-room-physics', {
     el.object3D.position.copy(plane.position)
     el.object3D.quaternion.copy(plane.quaternion)
 
-    // create a mesh consisting of 2 copies of the plane, the rear 'depth' m behind.
-    // Why not a Box?  Because the planeMesh might not be a rectangle - it could be any polygon
-    // Why not an ExtrudeGeometry?  Because the shape of the plane is not readily extractable 
-    // from the plane geometry, we'd need to reconstruct if rom the co-ordinate data
-    // just like RATK does here.
-    // https://github.com/meta-quest/reality-accelerator-toolkit/blob/b1233141301ced3cc797857e2169f5957a913a96/src/Plane.ts#L48
-    // Possible, but tedious.
-    // 2 x meshes gets interpreted correctly by Ammo & Cannon.
-    // unfortunately not by PhysX...
-    const mesh = new THREE.Group()
+    // Best solution that works across physics engines is an ExtrudeGeometry
+    // Box doesn't work, as the plane can be any polygon.
+    // 2 x parallel planes worked in Cannon & Ammo, but not in PhysX, which models the two plans & the gap between them.
+    const prismGeometry = this.createPrismGeometryFromPolygon(plane.xrPlane.polygon);
+    const mesh = new THREE.Mesh(prismGeometry, plane.planeMesh.material)
     el.setObject3D('mesh', mesh)
-    const frontPlane = plane.planeMesh.clone()
-    const rearPlane = plane.planeMesh.clone()
-    mesh.add(frontPlane)
-    mesh.add(rearPlane)
-    rearPlane.position.y += this.data.depth
 
     if (this.data.debug) {
       var randomColor = Math.floor(Math.random()*16777215)
 
       const material = new THREE.MeshBasicMaterial( {color: randomColor, side: THREE.DoubleSide} );
-      frontPlane.material = material
-      rearPlane.material = material
+      mesh.material = material
     }
 
-    if (this.driver === 'ammo') {
+    this.adjustmentVector.set(0, this.data.depth / 2, 0)
+    this.adjustmentVector.applyQuaternion(plane.quaternion)
+    el.object3D.position.add(this.adjustmentVector)
 
-      // Adjustment needed due to bug in Ammo shape generation from 2 parallel planes.
-      // Adjust mesh so planes are centered, and adjust plane element position to compensate.
-      mesh.position.y -= this.data.depth / 2
-      this.adjustmentVector.set(0, this.data.depth / 2, 0)
-      this.adjustmentVector.applyQuaternion(plane.quaternion)
-      el.object3D.position.add(this.adjustmentVector)
-      
+    if (this.driver === 'ammo') {      
       el.setAttribute('ammo-body', 'type: static')
       el.setAttribute('ammo-shape', '')
+    }
+    else if (this.driver === 'physx') {
+      el.setAttribute('physx-body', 'type: static')
     }
     else {
       el.setAttribute('static-body', '')
