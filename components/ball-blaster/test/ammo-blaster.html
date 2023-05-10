@@ -23,7 +23,7 @@
     </a>
     <a-scene background="color:#88f" physics="driver: ammo; debug: true;">
 
-      <a-entity position='-0.5 1.5 -1' rotation='20 -20 0' ball-blaster></a-entity>
+      <a-entity position='-0.5 1.5 -1' rotation='20 -20 0' ball-blaster="velocity: 1"></a-entity>
 
       <a-entity id="right-hand"
                 hand-controls="hand: right" 
@@ -32,6 +32,9 @@
                 desktop-vr-controller>
         <a-entity ball-blaster="debug: true" rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>
       </a-entity>
+
+      <!--floor-->
+      <a-box color="green" position="0 -0.5 0" width="100" depth="100" ammo-body="type: static" ammo-shape></a-box>
     </a-scene>
   </body>
 </html>

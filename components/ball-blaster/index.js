@@ -25,7 +25,10 @@
       if (this.el.sceneEl.getAttribute('physics')?.driver === "ammo") {
         this.driver = "ammo"
         this.kinematicBodyHTML = `ammo-body='type: kinematic'; ammo-shape`
-        this.ballPhysicsHTML = `ammo-body='type: dynamic'; ammo-shape'`
+        // Ammo requires manual fit of shape when working with 'a-sphere'
+        // (?? due to component initialization order).
+        this.ballPhysicsHTML = `ammo-body='type: dynamic';
+                                ammo-shape='type: sphere; fit: manual; sphereRadius: ${this.data.radius}'`
       }
       else if (this.el.sceneEl.getAttribute('physx')) {
         this.driver = "physx"
