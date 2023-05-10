@@ -66,6 +66,9 @@ AFRAME.registerSystem('xr-room-physics', {
     // this.el.setObject3D('plane', plane)
     plane.el = el
 
+    // Hide reverse side of plane mesh creatd by RATK.
+    plane.planeMesh.visible = false
+
     // take position & orientation from the plane
     el.object3D.position.copy(plane.position)
     el.object3D.quaternion.copy(plane.quaternion)
@@ -83,6 +86,9 @@ AFRAME.registerSystem('xr-room-physics', {
       const material = new THREE.MeshBasicMaterial( {color: randomColor, side: THREE.DoubleSide} );
       mesh.material = material
     }
+    else {
+      mesh.visible = false
+    }
 
     this.adjustmentVector.set(0, this.data.depth / 2, 0)
     this.adjustmentVector.applyQuaternion(plane.quaternion)
@@ -94,6 +100,8 @@ AFRAME.registerSystem('xr-room-physics', {
     }
     else if (this.driver === 'physx') {
       el.setAttribute('physx-body', 'type: static')
+      // required for invisible meshes to have physics interactions.
+      el.setAttribute('physx-hidden-collision', '')
     }
     else {
       el.setAttribute('static-body', '')

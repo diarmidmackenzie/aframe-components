@@ -20,10 +20,9 @@
         href="https://github.com/diarmidmackenzie/aframe-components/blob/master/xr-room-physics/test/ammo-room.html">
         view code
     </a>
-    <a-scene 
-             webxr="requiredFeatures: plane-detection,local-floor"
-             physics="driver: ammo; debug: true"
-             xr-room-physics="debug: true">
+    <a-scene webxr="requiredFeatures: plane-detection,local-floor"
+             physics="driver: ammo"
+             xr-room-physics>
 
       <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
       <a-entity id="left-hand" hand-controls="hand: left"></a-entity>
