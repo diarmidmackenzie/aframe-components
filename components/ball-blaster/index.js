@@ -33,7 +33,8 @@
       else if (this.el.sceneEl.getAttribute('physx')) {
         this.driver = "physx"
         this.kinematicBodyHTML = `physx-body='type: kinematic'`
-        this.ballPhysicsHTML = `physx-body='type: dynamic'`
+        // highPrecision enables CCD.  Ammo & Cannon don't support CCD yet.
+        this.ballPhysicsHTML = `physx-body='type: dynamic; highPrecision: true'`
       }
       else {
         this.driver = "cannon"
