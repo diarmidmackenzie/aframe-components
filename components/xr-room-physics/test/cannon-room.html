@@ -21,8 +21,8 @@
     </a>
     <a-scene 
              webxr="requiredFeatures: plane-detection,local-floor"
-             physics
-             xr-room-physics>
+             physics="debug: true"
+             xr-room-physics="debug: true; showPlanes: horizontal; depth: 2; floorHeight: 0.05">
 
       <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
       <a-entity id="left-hand" hand-controls="hand: left"></a-entity>
