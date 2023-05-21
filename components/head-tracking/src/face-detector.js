@@ -1,8 +1,5 @@
 const {FilesetResolver, FaceDetector} = require('@mediapipe/tasks-vision')
 
-require('./src/face-detector.js')
-require('./src/head-tracker.js')
-
 AFRAME.registerComponent('face-detector', {
 
   init() {
@@ -53,4 +50,3 @@ AFRAME.registerComponent('face-detector', {
     window.requestAnimationFrame(this.predictWebcam);
   }
 })
-
