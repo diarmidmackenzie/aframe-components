@@ -1,31 +1,36 @@
-// Webpack uses this to work with directories
 const path = require('path');
 
-// This is the main configuration object.
-// Here, you write different options and tell Webpack what to do
 module.exports = {
-
-  // Path to your entry point. From this file Webpack will begin its work
   entry: './index.js',
-
-  // Path and filename of your result bundle.
-  // Webpack will bundle all JavaScript into this file
   output: {
+    libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
-    publicPath: '',
-    filename: 'head-tracking.js'
+    publicPath: '/dist/',
+    filename:
+      process.env.NODE_ENV === 'production'
+        ? 'head-tracking.min.js'
+        : 'head-tracking.js'
   },
-
-  resolve: {
-    fallback: {
-        "fs": false,
-        "path": false
+  externals: {
+    // Stubs out `import ... from 'three'` so it returns `import ... from window.THREE` effectively using THREE global variable that is defined by AFRAME.
+    three: 'THREE'
+  },
+  devtool: 'source-map',
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  devServer: {
+    port: process.env.PORT || 5000,
+    hot: false,
+    liveReload: true,
+    server: {
+      type: 'https'
     },
+    static: {
+      directory: path.resolve(__dirname)
+    }
   },
-
-  // Default mode for Webpack is production.
-  // Depending on mode Webpack will apply different things
-  // on the final bundle. For now, we don't need production's JavaScript 
-  // minifying and other things, so let's set mode to development
-  mode: 'development'
+  resolve: {
+    alias: {
+      three: 'super-three'
+    }
+  }
 };
