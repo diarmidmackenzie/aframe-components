@@ -3,14 +3,13 @@ AFRAME.registerComponent('head-tracker', {
   schema: {
     // fov (width) of the webcam
     cameraFov: { default: 60},
-    // width (m) of the screen
-    screenWidth: { default: 0.35},
+
     // assumed width (m) of the head
     headWidth: {default: 0.2},
 
     // Per-frame factor used for exponential moving average of face position
     // This is the weight given to old data points, rather than the new data point (0.9 = 90%)
-    stabilizationFactor: {default: 0.9},
+    stabilizationFactor: {default: 0.8},
 
     debug: {default: true}
   },
@@ -62,16 +61,13 @@ AFRAME.registerComponent('head-tracker', {
     const faceCenterY = originY + height / 2
 
     // estimate face distance from camera.
-    console.log('width:', width)
     const occludedAngle = cameraFov * (width / videoWidth) 
-    console.log('occludedAngle:', occludedAngle)
     faceDistance = (headWidth / 2) / Math.tan(THREE.MathUtils.degToRad(occludedAngle / 2))
-    console.log('face distance', faceDistance)
 
     // compute head XYZ from face position & distance.
     // Assume webcamera is at top center of screen
-    const headX = screenWidth * (videoWidth / 2 - faceCenterX) / videoWidth
-    const headY = screenWidth * (videoHeight - faceCenterY) / videoWidth
+    const headX = faceDistance * (videoWidth / 2 - faceCenterX) / videoWidth
+    const headY = faceDistance * (videoHeight - faceCenterY) / videoWidth
     
     this.newHeadPosition.set(headX, headY, faceDistance)
     this.headPosition.lerp(this.newHeadPosition, 1 - stabilizationFactor)
