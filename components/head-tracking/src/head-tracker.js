@@ -68,8 +68,7 @@ AFRAME.registerComponent('head-tracker', {
     const metersPerVideoPixel = fustrumHeightAtFaceDistance / videoHeight
     const headX = metersPerVideoPixel * (videoWidth / 2 - faceCenterX)
 
-    // Treat webcam as if in center of screen
-    // [if at top, this should instead be: const headY = metersPerVideoPixel * (videoHeight - faceCenterY) ]
+    // Report position relative to the webcam (not e.g. the center of the laptop screen)
     const headY = metersPerVideoPixel * (videoHeight / 2 - faceCenterY)
     
     this.newHeadPosition.set(headX, headY, faceDistance)
