@@ -10,6 +10,11 @@ AFRAME.registerComponent('face-detector', {
     this.video.playsInline = true
     document.body.appendChild(this.video)
 
+    this.eventData = {
+      video: this.video,
+      detections: null
+    }
+
     this.predictWebcam = this.predictWebcam.bind(this)
 
     // start face detector (completes asynchronously)
@@ -40,10 +45,10 @@ AFRAME.registerComponent('face-detector', {
     let startTimeMs = performance.now();
     if (this.video.currentTime !== this.lastVideoTime) {
       this.lastVideoTime = this.video.currentTime;
-      const detections = this.faceDetector.detectForVideo(this.video, startTimeMs)
+      this.eventData.detections = this.faceDetector.detectForVideo(this.video, startTimeMs)
         .detections;
-      console.log(detections);
-      this.el.emit('face-detected', detections)
+
+      this.el.emit('face-detected', this.eventData)
     }
   
     // Call this function again to keep predicting when the browser is ready
