@@ -4,9 +4,9 @@
   "description": "Tracking head position using laptop webcam",
   "main": "index.js",
   "scripts": {
-    "dist": "npm run dist:dev && npm run dist:prod",
-    "dist:dev": "webpack --config webpack.config.js",
-    "dist:prod": "webpack --config webpack.prod.config.js",
+    "dist": "npm run dist:min && npm run dist:max",
+    "dist:max": "webpack",
+    "dist:min": "cross-env NODE_ENV=production webpack",
     "start": "cross-env webpack serve",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
