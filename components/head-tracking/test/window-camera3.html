@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../dist/head-tracking.js"></script>
+      <script src="./window-camera.js"></script>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@main/styles.css">
+      <script src="./rgbe-loader.js">
+      </script>
+      <script>
+        AFRAME.registerComponent('env-map', {
+          init() {
+
+            const scene = this.el.sceneEl.object3D
+            new RGBELoader()
+              .setPath( 'https://threejs.org/examples/textures/equirectangular/' )
+              .load( 'royal_esplanade_1k.hdr', function ( texture ) {
+
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+
+                scene.background = texture;
+                scene.environment = texture;
+              })
+          }
+        })
+      </script>
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Desktop screen simulating window into 3D world using head tracking</p>
+    </div>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/head-tracking/test/window-camera3.html">
+        view code
+    </a>
+      <a-scene face-detector head-tracker="stabilizationFactor: 0.75" window-camera env-map>
+        <a-asset-item id="helmet"
+          src="https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf"
+          response-type="arraybuffer" crossorigin="anonymous">
+        </a-asset-item>
+        <a-camera look-controls="enabled: false" wasd-controls="enabled:false" ></a-camera>
+        <a-entity position="0 1.57 -0.2" scale="0.1 0.1 0.1" rotation="0 30 0">
+          <a-entity gltf-model="#helmet"></a-entity>    
+        </a-entity>
+      </a-scene>
+  </body>
+</html>

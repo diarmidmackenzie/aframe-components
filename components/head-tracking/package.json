@@ -1,0 +1,24 @@
+{
+  "name": "head-tracking",
+  "version": "0.0.1",
+  "description": "Tracking head position using laptop webcam",
+  "main": "index.js",
+  "scripts": {
+    "dist": "npm run dist:dev && npm run dist:prod",
+    "dist:dev": "webpack --config webpack.config.js",
+    "dist:prod": "webpack --config webpack.prod.config.js",
+    "start": "cross-env webpack serve",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Diarmid Mackenzie",
+  "license": "MIT",
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.15.0"
+  }
+}
