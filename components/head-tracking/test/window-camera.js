@@ -15,7 +15,7 @@ AFRAME.registerComponent('window-camera', {
     // this will be (0.2 / tan(25)) = 0.43m
     cameraOffset: { default: 0.43 },
 
-    debug: {default: true}
+    debug: {default: false}
   },
 
   init() {
@@ -45,9 +45,10 @@ AFRAME.registerComponent('window-camera', {
     const camera = this.el.sceneEl.camera
     const pov = this.pov
     pov.addVectors(this.data.webCamPosition, this.povRelativeToWebCam)
+    //pov.y = pov.y / 2
 
     // virtual screen is what we'll use as a "Full Screen" with setViewOffset
-    const virtualScreenHeight = screenHeight * 3 //(+ 2 * (Math.max(Math.abs(pov.y), Math.abs(pov.x))))
+    const virtualScreenHeight = screenHeight * 1 //(+ 2 * (Math.max(Math.abs(pov.y), Math.abs(pov.x))))
     const virtualScreenFactor = virtualScreenHeight / screenHeight
     const fov = THREE.MathUtils.radToDeg(Math.atan(virtualScreenHeight / pov.z)) * 2
     //const fov = THREE.MathUtils.radToDeg(Math.atan(screenHeight / pov.z)) * 2
@@ -66,6 +67,7 @@ AFRAME.registerComponent('window-camera', {
     if (this.data.debug) {
       debugText = `
         <p>pov: ${pov.x.toFixed(2)} ${pov.y.toFixed(2)} ${pov.z.toFixed(2)}</p>
+        <p>fov: ${fov.toFixed(2)}</p>
         <p>height: ${height.toFixed(0)}</p>
         <p>width: ${width.toFixed(0)}</p>
         <p>virtualScreenFactor: ${virtualScreenFactor.toFixed(2)}</p>

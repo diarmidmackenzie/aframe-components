@@ -14,13 +14,13 @@
     </div>
         <a class="code-link"
         target="_blank"
-        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/head-tracking/test/window-camera.html">
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/head-tracking/test/window-camera2.html">
         view code
     </a>
       <a-scene  environment="preset: forest"face-detector head-tracker="stabilizationFactor: 0.75" window-camera>
+        <a-camera look-controls="enabled: false" wasd-controls="enabled:false" ></a-camera>
         <a-entity position="0 1.6 -0.2" scale="0.05 0.05 0.05">
-          <a-torus-knot></a-torus-knot>
-          <!--<a-plane position="0 -0.05 0" rotation="-90 0 0" width="0.5" height="0.5" color="#aa4" material="side: double"></a-plane>-->
+          <a-torus-knot></a-torus-knot>          
         </a-entity>
       </a-scene>
   </body>
