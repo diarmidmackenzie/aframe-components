@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+      <script src="../dist/head-tracking.js"></script>
+      <script src="./window-camera.js"></script>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-components@main/styles.css">
+      <script src="https://unpkg.com/aframe-environment-component@1.3.2/dist/aframe-environment-component.min.js"></script>
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Desktop screen simulating window into 3D world using head tracking</p>
+    </div>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/head-tracking/test/window-camera.html">
+        view code
+    </a>
+      <a-scene  environment="preset: forest"face-detector head-tracker="stabilizationFactor: 0.75" window-camera>
+        <a-entity position="0 1.6 -0.2" scale="0.05 0.05 0.05">
+          <a-torus-knot></a-torus-knot>
+          <!--<a-plane position="0 -0.05 0" rotation="-90 0 0" width="0.5" height="0.5" color="#aa4" material="side: double"></a-plane>-->
+        </a-entity>
+      </a-scene>
+  </body>
+</html>
