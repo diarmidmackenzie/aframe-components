@@ -11,7 +11,7 @@ AFRAME.registerComponent('head-tracker', {
     // This is the weight given to old data points, rather than the new data point (0.9 = 90%)
     stabilizationFactor: {default: 0.8},
 
-    debug: {default: true}
+    debug: {default: false}
   },
 
   events: {
@@ -48,8 +48,6 @@ AFRAME.registerComponent('head-tracker', {
   },
   
   faceDetected(e) {
-
-    console.log(e.detail)
 
     if (e.detail.detections.length < 1) return
 
