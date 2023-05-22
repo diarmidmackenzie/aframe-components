@@ -64,8 +64,8 @@ AFRAME.registerComponent('head-tracker', {
 
     // compute head XYZ from face position & distance.
     
-    const fustrumHeightAtFaceDistance = 2 * faceDistance * Math.tan(THREE.MathUtils.degToRad(cameraFov / 2))
-    const metersPerVideoPixel = fustrumHeightAtFaceDistance / videoHeight
+    const fustrumWidthAtFaceDistance = 2 * faceDistance * Math.tan(THREE.MathUtils.degToRad(cameraFov / 2))
+    const metersPerVideoPixel = fustrumWidthAtFaceDistance / videoWidth
     const headX = metersPerVideoPixel * (videoWidth / 2 - faceCenterX)
 
     // Report position relative to the webcam (not e.g. the center of the laptop screen)
