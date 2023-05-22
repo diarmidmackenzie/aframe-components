@@ -9,7 +9,7 @@ AFRAME.registerComponent('head-tracker', {
 
     // Per-frame factor used for exponential moving average of face position
     // This is the weight given to old data points, rather than the new data point (0.9 = 90%)
-    stabilizationFactor: {default: 0.8},
+    stabilizationFactor: {default: 0.9},
 
     debug: {default: false}
   },
@@ -20,13 +20,13 @@ AFRAME.registerComponent('head-tracker', {
 
   init() {
 
-    this.headPosition = new THREE.Vector3(0, 0, 1)
+    this.headPosition = new THREE.Vector3(0, 0, 0.75)
     this.newHeadPosition = new THREE.Vector3()
   },
 
   update() {
 
-    if (this.data.debug) {
+    if (this.data.debug && !this.debugBox) {
       this.debugBox = document.createElement('a-plane')
       this.debugBox.setAttribute('height', this.data.headWidth)
       this.debugBox.setAttribute('width', this.data.headWidth)
@@ -51,7 +51,7 @@ AFRAME.registerComponent('head-tracker', {
 
     if (e.detail.detections.length < 1) return
 
-    const {screenWidth, headWidth, cameraFov, stabilizationFactor} = this.data
+    const {headWidth, cameraFov, stabilizationFactor} = this.data
     const {originX, originY, width, height} = e.detail.detections[0].boundingBox
     const {videoHeight, videoWidth} = e.detail.video
 
@@ -63,9 +63,14 @@ AFRAME.registerComponent('head-tracker', {
     faceDistance = (headWidth / 2) / Math.tan(THREE.MathUtils.degToRad(occludedAngle / 2))
 
     // compute head XYZ from face position & distance.
-    // Assume webcamera is at top center of screen
-    const headX = faceDistance * (videoWidth / 2 - faceCenterX) / videoWidth
-    const headY = faceDistance * (videoHeight - faceCenterY) / videoWidth
+    
+    const fustrumHeightAtFaceDistance = 2 * faceDistance * Math.tan(THREE.MathUtils.degToRad(cameraFov / 2))
+    const metersPerVideoPixel = fustrumHeightAtFaceDistance / videoHeight
+    const headX = metersPerVideoPixel * (videoWidth / 2 - faceCenterX)
+
+    // Treat webcam as if in center of screen
+    // [if at top, this should instead be: const headY = metersPerVideoPixel * (videoHeight - faceCenterY) ]
+    const headY = metersPerVideoPixel * (videoHeight / 2 - faceCenterY)
     
     this.newHeadPosition.set(headX, headY, faceDistance)
     this.headPosition.lerp(this.newHeadPosition, 1 - stabilizationFactor)
