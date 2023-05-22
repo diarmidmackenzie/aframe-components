@@ -10,10 +10,10 @@ AFRAME.registerComponent('window-camera', {
     // ghead tracking position is reported relative to the webcam.
     webCamPosition: {default: {x: 0, y: 0.1, z: 0}},
 
-    // scene camera offset, relative to the scene.
-    // with an FOV of 50, screen height of 0.2m, 
+    // the offset of the screen, relative to the camera.
+    // With an FOV of 50, screen height of 0.2m, 
     // this will be (0.2 / tan(25)) = 0.43m
-    cameraOffset: { default: 0.43 },
+    screenOffset: { default: 0.43 },
 
     debug: {default: false}
   },
@@ -48,13 +48,15 @@ AFRAME.registerComponent('window-camera', {
     //pov.y = pov.y / 2
 
     // virtual screen is what we'll use as a "Full Screen" with setViewOffset
+    // For now things seem to work better without using a larger virtualScreen.  This might not actually be necessary
+    // More analysis needed to determine whether this is actually necessary
     const virtualScreenHeight = screenHeight * 1 //(+ 2 * (Math.max(Math.abs(pov.y), Math.abs(pov.x))))
     const virtualScreenFactor = virtualScreenHeight / screenHeight
-    const fov = THREE.MathUtils.radToDeg(Math.atan(virtualScreenHeight / pov.z)) * 2
-    //const fov = THREE.MathUtils.radToDeg(Math.atan(screenHeight / pov.z)) * 2
     
     // fov is determined by distance from screen + virtual Screen height.
     // This is the fov for the virtual Screen, which may be larger than the fov for the part of the screen we'll actually render.
+    const fov = THREE.MathUtils.radToDeg(Math.atan(virtualScreenHeight / pov.z)) * 2
+
     const height = window.screen.height
     const width = window.screen.width
     const fullWidth = virtualScreenFactor * width
@@ -87,7 +89,7 @@ AFRAME.registerComponent('window-camera', {
                          yOffset,
                          width,
                          height)
-    camera.position.set(pov.x, pov.y, pov.z - this.data.cameraOffset)
+    camera.position.set(pov.x, pov.y, pov.z - this.data.screenOffset)
     camera.updateProjectionMatrix()
   }
 })
