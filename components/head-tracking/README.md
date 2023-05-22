@@ -54,13 +54,13 @@ This component is highly experiemental, and this schema is likely to change in f
 
 ## Examples
 
-See a basic demo of  `head-tracker` [here](https://github.com/diarmidmackenzie/aframe-components/components/head-tracking/test/)
+See a basic demo of  `head-tracker` [here](https://diarmidmackenzie.github.io/aframe-components/components/head-tracking/test/)
 
 Examples of `window-camera` as follows:
 
-- [blocks](https://github.com/diarmidmackenzie/aframe-components/components/head-tracking/test/window-camera.html)
-- [torus knot + environment](https://github.com/diarmidmackenzie/aframe-components/components/head-tracking/test/window-camera2.html)
-- [GLTF model with env map](https://github.com/diarmidmackenzie/aframe-components/components/head-tracking/test/window-camera3.html)
+- [blocks](https://diarmidmackenzie.github.io/aframe-components/components/head-tracking/test/window-camera.html)
+- [torus knot + environment](https://diarmidmackenzie.github.io/aframe-components/components/head-tracking/test/window-camera2.html)
+- [GLTF model with env map](https://diarmidmackenzie.github.io/aframe-components/components/head-tracking/test/window-camera3.html)
 
 
 
