@@ -22,14 +22,17 @@ AFRAME.registerComponent('head-tracker', {
 
     this.headPosition = new THREE.Vector3(0, 0, 0.75)
     this.newHeadPosition = new THREE.Vector3()
+
+    this.lPupil = new THREE.Vector2()
+    this.rPupil = new THREE.Vector2()
   },
 
   update() {
 
     if (this.data.debug && !this.debugBox) {
       this.debugBox = document.createElement('a-plane')
-      this.debugBox.setAttribute('height', this.data.headWidth)
-      this.debugBox.setAttribute('width', this.data.headWidth)
+      this.debugBox.setAttribute('height', 0.2)
+      this.debugBox.setAttribute('width', 0.2)
       this.debugBox.setAttribute('color', 'red')
       this.debugBox.setAttribute('opacity', 0.5)
       this.updateDebugBox()
@@ -52,13 +55,22 @@ AFRAME.registerComponent('head-tracker', {
     if (e.detail.detections.length < 1) return
 
     const {ipd, cameraFov, stabilizationFactor} = this.data
-    const {originX, originY, width, height} = e.detail.detections[0].boundingBox
     const {videoHeight, videoWidth} = e.detail.video
 
+    const lPupilKeypoint = e.detail.detections[0].keypoints[0]
+    const rPupilKeypoint = e.detail.detections[0].keypoints[1]
+    const lPupil = this.lPupil
+    const rPupil = this.rPupil
 
+    const getPixelPosition = (keypoint, outputVector) => {
 
-    const lPupil = e.detail.detections[0].keypoints[0]
-    const rPupil = e.detail.detections[0].keypoints[1]
+      outputVector.x = videoWidth * keypoint.x //  originX + (width * keypoint.x)
+      outputVector.y = videoHeight * keypoint.y //originY + (height * keypoint.y)
+    }
+
+    getPixelPosition(lPupilKeypoint, lPupil)
+    getPixelPosition(rPupilKeypoint, rPupil)
+
     const xDiff = lPupil.x - rPupil.x
     const yDiff = lPupil.y - rPupil.y
     const observedIpd = Math.sqrt(xDiff * xDiff + yDiff * yDiff)
