@@ -55,14 +55,16 @@ AFRAME.registerComponent('head-tracker', {
     const {originX, originY, width, height} = e.detail.detections[0].boundingBox
     const {videoHeight, videoWidth} = e.detail.video
 
-    const faceCenterX = originX + width / 2
-    const faceCenterY = originY + height / 2
+
 
     const lPupil = e.detail.detections[0].keypoints[0]
     const rPupil = e.detail.detections[0].keypoints[1]
     const xDiff = lPupil.x - rPupil.x
     const yDiff = lPupil.y - rPupil.y
     const observedIpd = Math.sqrt(xDiff * xDiff + yDiff * yDiff)
+
+    const eyesMidpointX = (lPupil.x + rPupil.x) / 2
+    const eyesMidpointY = (lPupil.y + rPupil.y) / 2
 
     // estimate face distance from camera, based on inter-pupil distance
     const ipdAngle = cameraFov * (observedIpd / videoWidth)
@@ -71,10 +73,10 @@ AFRAME.registerComponent('head-tracker', {
     // compute head XYZ from face position & distance.
     const fustrumWidthAtFaceDistance = 2 * faceDistance * Math.tan(THREE.MathUtils.degToRad(cameraFov / 2))
     const metersPerVideoPixel = fustrumWidthAtFaceDistance / videoWidth
-    const headX = metersPerVideoPixel * (videoWidth / 2 - faceCenterX)
+    const headX = metersPerVideoPixel * (videoWidth / 2 - eyesMidpointX)
 
     // Report position relative to the webcam (not e.g. the center of the laptop screen)
-    const headY = metersPerVideoPixel * (videoHeight / 2 - faceCenterY)
+    const headY = metersPerVideoPixel * (videoHeight / 2 - eyesMidpointY)
     
     this.newHeadPosition.set(headX, headY, faceDistance)
     this.headPosition.lerp(this.newHeadPosition, 1 - stabilizationFactor)
