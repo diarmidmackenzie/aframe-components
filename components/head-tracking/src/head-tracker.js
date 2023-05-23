@@ -4,8 +4,8 @@ AFRAME.registerComponent('head-tracker', {
     // fov (width) of the webcam
     cameraFov: { default: 60},
 
-    // assumed width (m) of the head
-    headWidth: {default: 0.2},
+    // assumed inter-pupil distance (m)
+    ipd: {default: 0.07},
 
     // Per-frame factor used for exponential moving average of face position
     // This is the weight given to old data points, rather than the new data point (0.9 = 90%)
@@ -51,19 +51,24 @@ AFRAME.registerComponent('head-tracker', {
 
     if (e.detail.detections.length < 1) return
 
-    const {headWidth, cameraFov, stabilizationFactor} = this.data
+    const {ipd, cameraFov, stabilizationFactor} = this.data
     const {originX, originY, width, height} = e.detail.detections[0].boundingBox
     const {videoHeight, videoWidth} = e.detail.video
 
     const faceCenterX = originX + width / 2
     const faceCenterY = originY + height / 2
 
-    // estimate face distance from camera.
-    const occludedAngle = cameraFov * (width / videoWidth) 
-    faceDistance = (headWidth / 2) / Math.tan(THREE.MathUtils.degToRad(occludedAngle / 2))
+    const lPupil = e.detail.detections[0].keypoints[0]
+    const rPupil = e.detail.detections[0].keypoints[1]
+    const xDiff = lPupil.x - rPupil.x
+    const yDiff = lPupil.y - rPupil.y
+    const observedIpd = Math.sqrt(xDiff * xDiff + yDiff * yDiff)
+
+    // estimate face distance from camera, based on inter-pupil distance
+    const ipdAngle = cameraFov * (observedIpd / videoWidth)
+    faceDistance = (ipd / 2) / Math.tan(THREE.MathUtils.degToRad(ipdAngle / 2))
 
     // compute head XYZ from face position & distance.
-    
     const fustrumWidthAtFaceDistance = 2 * faceDistance * Math.tan(THREE.MathUtils.degToRad(cameraFov / 2))
     const metersPerVideoPixel = fustrumWidthAtFaceDistance / videoWidth
     const headX = metersPerVideoPixel * (videoWidth / 2 - faceCenterX)
