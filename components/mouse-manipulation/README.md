@@ -17,6 +17,39 @@ Controls are as follows:
 
 
 
+## Installation
+
+Via CDN 
+
+```
+<script src="https://cdn.jsdelivr.net/npm/aframe-mouse-manipulation@0.2.1/dist/mouse-manipulation.min.js"></script>
+```
+
+Or via [npm](https://www.npmjs.com/package/aframe-laser-manipulation)
+
+```
+npm install aframe-mouse-manipulation
+```
+
+
+
+## Usage
+
+```
+<!-- cursor configuration. -->
+<a-entity cursor="rayOrigin: mouse"
+        raycaster="objects: .draggable"
+        mouse-manipulation>
+</a-entity>
+
+<!-- object to be manipulated-->
+<a-box position="0 0-2" color="red"
+       class="draggable">
+</a-box>
+```
+
+
+
 ## Schema
 
 | Property     | Description                                                  | Default      |
@@ -26,22 +59,6 @@ Controls are as follows:
 | grabEvents   | Whether to generate events when an entity is grabbed / released | false        |
 | grabEvent    | If `grabEvents` is true, the name of the event to generate when an entity is grabbed | laserGrab    |
 | releaseEvent | If `grabEvents` is true, the name of the event to generate when an entity is released | laserRelease |
-
-
-
-## Installation
-
-Via CDN 
-
-```
-<script src="https://cdn.jsdelivr.net/npm/aframe-mouse-manipulation@0.1.0/dist/mouse-manipulation.min.js"></script>
-```
-
-Or via [npm](https://www.npmjs.com/package/aframe-laser-manipulation)
-
-```
-npm install aframe-mouse-manipulation
-```
 
 
 

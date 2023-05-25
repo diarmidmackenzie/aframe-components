@@ -21,8 +21,10 @@ AFRAME.registerComponent('mouse-manipulation', {
     },
     
     init() {
-        // cursor must have an ID so that we can refence it when attaching an object-parent
-        console.assert(this.el.id)
+        // cursor must have an ID so that we can reference it when attaching an object-parent
+        if (!this.el.id) {
+          this.el.id = "cursor-" + THREE.MathUtils.generateUUID()
+        }
     
         // This is a rate per second.  We scale distance by this factor per second.
         // Take a root of this to get a scaling factor.

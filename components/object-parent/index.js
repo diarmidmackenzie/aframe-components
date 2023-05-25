@@ -42,7 +42,7 @@ AFRAME.registerComponent('object-parent', {
         }
     }
 
-    console.log(`Reparenting ${object.el.id} from ${objectEl(oldParent).id} to ${objectEl(newParent).id}`);
+    //console.log(`Reparenting ${object.el.id} from ${objectEl(oldParent).id} to ${objectEl(newParent).id}`);
     
     newParent.attach(object);
   },
