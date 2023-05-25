@@ -1,5 +1,11 @@
 // Import the library
-import { RealityAccelerator } from 'ratk';
+import { RealityAccelerator } from 'ratk'
+
+const targetPoint = new THREE.Vector3()
+const adjustedPoint = new THREE.Vector3()
+const raycaster = new THREE.Raycaster()
+const rayOrigin = new THREE.Vector3(0, 0, 0)
+const rayResults = []
 
 AFRAME.registerSystem('xr-room-physics', {
 
@@ -17,42 +23,6 @@ AFRAME.registerSystem('xr-room-physics', {
 
     depth: {default: 0.5},
 
-    // There is a further risk of leakage when CCD is unsupported / not enabled
-    // at the corners between the wall plans & the floor planes - see point marked "X".
-    // ----|
-    // wall|
-    //     | 
-    //     | 
-    //-----X-----------
-    //     | floor
-
-    // Also (viewed top down) this case...
-    // ----|
-    // wall|
-    //     | 
-    //     | 
-    //-----X-----------
-    //     | wall
-    //     |
-    // 
-    // We could solve this by enlarging planes, but there are some planes (e.g. a table surface) that
-    // we would not want to enlarge.
-    // 
-    // We should also consider non-convex rooms. So e.g.
-    //     |-----------|
-    //     |   wall    |
-    // ----|           |--------
-    // So we can't just extend walls horizontally...
-    // 
-    //
-    // Current solution is to define a floor height & ceiling height, and assume that any horizontal 
-    // planes above/below these levels should be scaled up horizontally, to reduce the risk of "leakage"
-    // at the joints between the walls and floor / ceiling.  !! DOESN'T WORK FOR WALL-WALL JOINTS...
-    //
-    // These don't need to match the exact floor & ceiling heights - they just need to ensure that
-    // furniture items such as tables don't get scaled up inappropriately.
-    floorHeight: {default: 0 },
-    ceilingHeight: {default: 2 }
   },
 
   init() {
@@ -70,7 +40,8 @@ AFRAME.registerSystem('xr-room-physics', {
     const scene = this.el.sceneEl.object3D
     const renderer = this.el.sceneEl.renderer
     const ratk = new RealityAccelerator(renderer.xr);
-    
+    this.planes = []
+
     ratk.onPlaneAdded = this.planeAdded.bind(this)
     ratk.onPlaneDeleted = this.planeDeleted.bind(this)
     scene.add(ratk.root);
@@ -84,14 +55,22 @@ AFRAME.registerSystem('xr-room-physics', {
   // Create an ExtrudeGeometry of appropriate depth.
   // similar to:
   // https://github.com/meta-quest/reality-accelerator-toolkit/blob/b1233141301ced3cc797857e2169f5957a913a96/src/Plane.ts#L48
-  createPrismGeometryFromPolygon(polygon) {
+  createPrismGeometryFromPolygon(polygon, sideAdjustments) {
 
     const planeShape = new THREE.Shape()
     polygon.forEach((point, i) => {
+
+      adjustedPoint.set(point.x, 0, point.z)
+
+      if (sideAdjustments && sideAdjustments[i]) {
+        const targetLength = adjustedPoint.length() + sideAdjustments[i]
+        adjustedPoint.normalize().multiplyScalar(targetLength)
+      }
+      
       if (i == 0) {
-        planeShape.moveTo(point.x, point.z);
+        planeShape.moveTo(adjustedPoint.x, adjustedPoint.z);
       } else {
-        planeShape.lineTo(point.x, point.z);
+        planeShape.lineTo(adjustedPoint.x, adjustedPoint.z);
       }
     });
     const geometry = new THREE.ExtrudeGeometry(planeShape, {depth: this.data.depth, bevelEnabled: false});
@@ -104,6 +83,8 @@ AFRAME.registerSystem('xr-room-physics', {
   },
 
   planeAdded(plane) {
+
+    this.planes.push(plane)
 
     const el = document.createElement('a-entity')
     // Can't do this - not an Object3D error
@@ -123,53 +104,19 @@ AFRAME.registerSystem('xr-room-physics', {
     el.object3D.quaternion.copy(plane.quaternion)
 
     // Best solution that works across physics engines is an ExtrudeGeometry
-    // Box doesn't work, as the plane can be any polygon.
+    // Box doesn't work, as the plane can be any polygon
+    // (in theory, at least; in practice on Meta Quest in 2023 they are always rectangles)
     // 2 x parallel planes worked in Cannon & Ammo, but not in PhysX, which models the two plans & the gap between them.
     const prismGeometry = this.createPrismGeometryFromPolygon(plane.xrPlane.polygon);
     const mesh = new THREE.Mesh(prismGeometry, plane.planeMesh.material)
     el.setObject3D('mesh', mesh)
-
-    // Concept:
-    // for each axis of the plane, extend by delta (0.1m?)
-    // raycast from camera to this delta.
-    // count intersections (front sides & back sides)
-    // if front intersections > back intersections, we can extend the plane in that direction...
-    // Repeat multiple times to verify this for various deltas...
-    // expand to maximum delta that we could safely extend to...
-
-/* Some code c/o ChatGPT that helps with this
-    const raycaster = new THREE.Raycaster();
-    const origin = new THREE.Vector3(0, 0, 0);
-    const direction = new THREE.Vector3(0, 0, -1).normalize();
-
-    raycaster.set(origin, direction);
-
-    const intersections = raycaster.intersectObject(mesh);
-    if (intersections.length > 0) {
-      const intersection = intersections[0];
-      const dot = raycaster.ray.direction.dot(intersection.face.normal);
-      if (dot < 0) {
-        // hit the back face of the geometry
-      } else {
-        // hit the front face of the geometry
-      }
-    }
-*/
-
-    if (plane.xrPlane.orientation === "horizontal" &&
-        (el.object3D.position.y <= this.data.floorHeight ||
-         el.object3D.position.y >= this.data.ceilingHeight)) {
-      // scale up floor & ceiling planes horizontally to reduce leakage at joints with walls,
-      // where Continuous Collision Detection (CCD) is not implemented.
-      //mesh.scale.set(2, 1, 2)
-    }
 
     if (this.data.debug && 
         (this.data.showPlanes === "all" || 
          this.data.showPlanes === plane.xrPlane.orientation)) {
 
       var randomColor = Math.floor(Math.random()*16777215)
-      const material = new THREE.MeshBasicMaterial( {color: randomColor, side: THREE.DoubleSide} );
+      const material = new THREE.MeshBasicMaterial( {color: randomColor, side: THREE.DoubleSide, opacity: 0.5} );
       mesh.material = material
 
     }
@@ -180,6 +127,19 @@ AFRAME.registerSystem('xr-room-physics', {
     this.adjustmentVector.set(0, this.data.depth / 2, 0)
     this.adjustmentVector.applyQuaternion(plane.quaternion)
     el.object3D.position.add(this.adjustmentVector)
+
+    this.setPhysicsBody(el)
+    
+    this.el.sceneEl.appendChild(el)
+
+    // extend plans to protect against leakage when physics engine does not support CCD.
+    // NOTE: very inefficient to do this every time a plane is added / removed
+    // but hard to do better with current ratk interface, as we don't know how many planes are
+    // going to be added, and don't get told when the last plane is added.
+    //this.implementLeakProtection()
+  },
+
+  setPhysicsBody(el) {
 
     if (this.driver === 'ammo') {      
       el.setAttribute('ammo-body', 'type: static')
@@ -193,15 +153,159 @@ AFRAME.registerSystem('xr-room-physics', {
     else {
       el.setAttribute('static-body', '')
     }
-    
-    this.el.sceneEl.appendChild(el)
+  },
+
+  removePhysicsBody(el) {
+
+    if (this.driver === 'ammo') {      
+      el.removeAttribute('ammo-body')
+      el.removeAttribute('ammo-shape')
+    }
+    else if (this.driver === 'physx') {
+      el.removeAttribute('physx-body')
+      el.removeAttribute('physx-hidden-collision')
+    }
+    else {
+      el.removeAttribute('static-body')
+    }
+  },
+
+  updatePlaneGeometry(plane) {
+
+    const mesh =  plane.el.getObject3D('mesh')
+    const oldGeometry = mesh.geometry
+
+    mesh.geometry = this.createPrismGeometryFromPolygon(plane.xrPlane.polygon, plane.sideAdjustments);
+
+    oldGeometry.dispose()
+
+    // reset physics to reflect new geometry
+    this.removePhysicsBody(plane.el)
+    this.setPhysicsBody(plane.el)
+  },
+
+  // We need to avoid leakage when CCD is unsupported / not enabled.
+    // We have issues at the corners between the wall plans & the floor planes - see point marked "X".
+    // ----|
+    // wall|
+    //     | 
+    //     | 
+    //-----X-----------
+    //     | floor
+    //
+    // And also between walls as in this case (viewed top down) ...
+    // ----|
+    // wall|
+    //     | 
+    //     | 
+    //-----X-----------
+    //     | wall
+    //     |
+    // 
+    // We could solve this by enlarging planes, but there are some planes (e.g. a table surface) that
+    // we would not want to enlarge.
+    // 
+    // We should also consider non-convex rooms. So e.g.
+    //     |-----------|
+    //     |   wall    |
+    // ----|           |--------
+    // So we can't just extend walls horizontally...
+    //
+    // Solution is as follows:
+    // - in each direction that the plane extends in...
+    //   - pick a point some delta (e.g. 0.1m) beyond the plane.
+    //   - raycast from the camera to this point
+    //   - count the number of intersections (front sides & back sides)
+    //   - if front intersections > back intersections, we can extend the plane in that direction
+    //     (that point is "outside the space bounded by the planes")
+    //   - if front intersection <= back intersections, we cannot extend the plane in that direction.
+    //   - Repeat multiple times to verify this for various deltas...
+    //   - expand to maximum delta that we could safely extend to... (up to the configured depth)
+    // 
+    // This process can only be completed when the geometry for all planes in place.
+
+  implementLeakProtection() {
+
+    this.planes.forEach(plane => this.adjustPlaneForLeaks(plane))
+
+  },
+
+  adjustPlaneForLeaks(plane) {
+
+    plane.sideAdjustments = []
+    const points = plane.xrPlane.polygon
+
+    for (let ii = 0; ii < points.length - 1; ii++) {
+      const sideAdjustment = this.getSideAdjustment(plane, points[ii], points[ii + 1])
+      plane.sideAdjustments.push(sideAdjustment)
+    }
+
+    this.updatePlaneGeometry(plane)
+  },
+
+  getSideAdjustment(plane, v1, v2) {
+
+    const delta = 0.1
+    let validatedAdjustment = 0
+    let testAdjustment = 0
+    let adjust = true
+
+    for (testAdjustment = 0.1; testAdjustment <= this.data.depth; testAdjustment += delta) {
+      adjust = this.testAdjustment(plane, v1, v2, testAdjustment)
+
+      if (adjust) {
+        validatedAdjustment = testAdjustment
+      }
+      else {
+        break
+      }
+    }
+
+    return validatedAdjustment
+  },
+
+  testAdjustment(plane, v1, v2, adjustment) {
+
+    targetPoint.set((v1.x + v2.x) / 2, 0, (v1.z + v2.z) / 2)
+    const targetLength = targetPoint.length() + adjustment
+    targetPoint.normalize().multiplyScalar(targetLength)
+
+    plane.localToWorld(targetPoint)
+
+    raycaster.set(rayOrigin, targetPoint);
+
+    const planeObjects = this.planes.map(p => p.el.getObject3D('mesh'))
+    rayResults.length = 0
+    raycaster.intersectObjects(planeObjects, false, rayResults);
+
+    let faceCounts = 0
+    rayResults.forEach(intersection => {
+      const dot = raycaster.ray.direction.dot(intersection.face.normal);
+
+      if (dot < 0) {
+        // back face of geometry
+        faceCounts -= 1
+      }
+      else {
+        // front face of geometry
+        faceCounts += 1
+      }
+    })
+
+    // positive face counts = extension is "outside the room" and we can extend
+    return (faceCounts > 0)
+
   },
 
   planeDeleted(plane) {
 
+    const index = this.planes.findIndex(p => p === plane)
+    this.planes.splice(index)
+
     const el = plane.el
     el.parentNode.removeChild(el)
 
+    //this.implementLeakProtection()
   },
 
   tick() {
