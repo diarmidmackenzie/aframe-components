@@ -4,7 +4,7 @@ import { RealityAccelerator } from 'ratk'
 const targetPoint = new THREE.Vector3()
 const adjustedPoint = new THREE.Vector3()
 const raycaster = new THREE.Raycaster()
-const rayOrigin = new THREE.Vector3(0, 0, 0)
+const rayOrigin = new THREE.Vector3(0, 1.5, 0)
 const rayResults = []
 
 AFRAME.registerSystem('xr-room-physics', {
@@ -116,7 +116,10 @@ AFRAME.registerSystem('xr-room-physics', {
          this.data.showPlanes === plane.xrPlane.orientation)) {
 
       var randomColor = Math.floor(Math.random()*16777215)
-      const material = new THREE.MeshBasicMaterial( {color: randomColor, side: THREE.DoubleSide, opacity: 0.5} );
+      const material = new THREE.MeshBasicMaterial( {color: randomColor,
+                                                     side: THREE.DoubleSide,
+                                                     transparent: true,
+                                                     opacity: 0.5} );
       mesh.material = material
 
     }
@@ -136,7 +139,7 @@ AFRAME.registerSystem('xr-room-physics', {
     // NOTE: very inefficient to do this every time a plane is added / removed
     // but hard to do better with current ratk interface, as we don't know how many planes are
     // going to be added, and don't get told when the last plane is added.
-    //this.implementLeakProtection()
+    this.implementLeakProtection()
   },
 
   setPhysicsBody(el) {
@@ -232,6 +235,9 @@ AFRAME.registerSystem('xr-room-physics', {
 
   adjustPlaneForLeaks(plane) {
 
+    // for debugging, just adjust horizontal planes...
+    if (plane.xrPlane.orientation !== "horizontal") return;
+
     plane.sideAdjustments = []
     const points = plane.xrPlane.polygon
 
@@ -267,28 +273,51 @@ AFRAME.registerSystem('xr-room-physics', {
   testAdjustment(plane, v1, v2, adjustment) {
 
     targetPoint.set((v1.x + v2.x) / 2, 0, (v1.z + v2.z) / 2)
+    console.log("edge point", targetPoint.x, targetPoint.y, targetPoint.z)
+
     const targetLength = targetPoint.length() + adjustment
     targetPoint.normalize().multiplyScalar(targetLength)
+    console.log("adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
 
     plane.localToWorld(targetPoint)
+    console.log("world space adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
+
+    targetPoint.sub(rayOrigin)
+    console.log("adjusted point relative to ray origin", targetPoint.x, targetPoint.y, targetPoint.z)
 
     raycaster.set(rayOrigin, targetPoint);
+
+    const distance = targetPoint.length()
 
     const planeObjects = this.planes.map(p => p.el.getObject3D('mesh'))
     rayResults.length = 0
     raycaster.intersectObjects(planeObjects, false, rayResults);
 
+    console.log("target point", targetPoint.x, targetPoint.y, targetPoint.z)
+    console.log("target point length", targetPoint.length())
+    console.log("target point distance", distance)
+    console.log("plane Objects", planeObjects)
+
     let faceCounts = 0
     rayResults.forEach(intersection => {
-      const dot = raycaster.ray.direction.dot(intersection.face.normal);
 
-      if (dot < 0) {
-        // back face of geometry
-        faceCounts -= 1
-      }
-      else {
-        // front face of geometry
-        faceCounts += 1
+      // we only care about intersections closer than the target point.
+      console.log("Target point distance", distance)
+      console.log("Intersection point", intersection.point.x, intersection.point.y, intersection.point.z)
+      console.log("Intersection distance", intersection.distance)
+      if (intersection.distance < distance) {
+
+        console.log("WITHIN DISTANCE!!!")
+        const dot = raycaster.ray.direction.dot(intersection.face.normal);
+
+        if (dot < 0) {
+          // back face of geometry
+          faceCounts -= 1
+        }
+        else {
+          // front face of geometry
+          faceCounts += 1
+        }
       }
     })
 
@@ -305,7 +334,7 @@ AFRAME.registerSystem('xr-room-physics', {
     const el = plane.el
     el.parentNode.removeChild(el)
 
-    //this.implementLeakProtection()
+    this.implementLeakProtection()
   },
 
   tick() {
