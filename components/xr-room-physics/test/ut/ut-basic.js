@@ -44,6 +44,8 @@ QUnit.assert.vectorsEqual = function (actual, expected, options = {}, message) {
 
 const createScene = () => {
   const scene = document.createElement('a-scene')
+  scene.style.position = "absolute"
+  scene.style.zIndex = -1
   document.body.appendChild(scene)
 
   return scene
