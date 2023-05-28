@@ -7,7 +7,7 @@ const raycaster = new THREE.Raycaster()
 const rayOrigin = new THREE.Vector3(0, 1.5, 0)
 const rayResults = []
 
-AFRAME.registerSystem('xr-room-physics', {
+AFRAME.registerComponent('xr-room-physics', {
 
   schema: {
     // when enabled, planes are rendered with random colors to aid in debugging.
@@ -134,6 +134,9 @@ AFRAME.registerSystem('xr-room-physics', {
     this.setPhysicsBody(el)
     
     this.el.sceneEl.appendChild(el)
+
+    // World Matrix must be updated for raycasting checks against this to work.
+    el.object3D.updateWorldMatrix(true, true)
 
     // extend plans to protect against leakage when physics engine does not support CCD.
     // NOTE: very inefficient to do this every time a plane is added / removed
