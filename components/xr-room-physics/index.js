@@ -164,8 +164,8 @@ AFRAME.registerComponent('xr-room-physics', {
   removePhysicsBody(el) {
 
     if (this.driver === 'ammo') {      
-      el.removeAttribute('ammo-body')
       el.removeAttribute('ammo-shape')
+      el.removeAttribute('ammo-body')
     }
     else if (this.driver === 'physx') {
       el.removeAttribute('physx-body')
@@ -186,8 +186,13 @@ AFRAME.registerComponent('xr-room-physics', {
     oldGeometry.dispose()
 
     // reset physics to reflect new geometry
-    this.removePhysicsBody(plane.el)
-    this.setPhysicsBody(plane.el)
+    // important not to reset until the component has been initialized due to an A-Frame bug:
+    // https://github.com/aframevr/aframe/issues/4973
+    // using setTimeout() provides an adequate workaround.
+    setTimeout(() => {
+      this.removePhysicsBody(plane.el)
+      this.setPhysicsBody(plane.el)
+    })
   },
 
   // We need to avoid leakage when CCD is unsupported / not enabled.
@@ -237,9 +242,6 @@ AFRAME.registerComponent('xr-room-physics', {
   },
 
   adjustPlaneForLeaks(plane) {
-
-    // for debugging, just adjust horizontal planes...
-    if (plane.xrPlane.orientation !== "horizontal") return;
 
     plane.sideAdjustments = []
     const points = plane.xrPlane.polygon
