@@ -73,13 +73,15 @@ QUnit.module('basic tests', function() {
                        {x: 0, y: 1, z: 1},
                        {x: -1, y: 1, z: 0},
                        {x: 0, y: 0, z: 0},
-                       {x: 0, y: 2, z: 0}]
+                       {x: 0, y: 2, z: 0}
+                      ]
     const ORIENTATIONS = ["vertical", 
                           "vertical", 
                           "vertical", 
                           "vertical", 
                           "horizontal",
                           "horizontal"]
+    const YROTATIONS= [0, Math.PI/2, Math.PI, 3 * Math.PI / 2, 0, 0]
 
     const PLANES = new Set(POSITIONS.map((p, index) => ({ lastChangedTime: 1,
                                                           polygon: SQUARE,
@@ -92,6 +94,8 @@ QUnit.module('basic tests', function() {
         const p = POSITIONS[planeSpace]
         const q = ORIENTATIONS[planeSpace] === "horizontal" ? new THREE.Quaternion() :
                                                               new THREE.Quaternion().setFromAxisAngle({x: 1, y: 0, z: 0}, Math.PI / 2)
+        const qy = new THREE.Quaternion().setFromAxisAngle({x: 0, y: 1, z: 0}, YROTATIONS[planeSpace])
+        q.multiply(qy)
         const matrix = new THREE.Matrix4().compose(p, q, {x: 1, y: 1, z: 1})
         return {transform: {matrix: matrix.elements}}
       }
@@ -106,7 +110,7 @@ QUnit.module('basic tests', function() {
     }
     renderer.xr = xr
 
-    scene.setAttribute('physics', 'driver')
+    scene.setAttribute('physics', '')
     scene.setAttribute('xr-room-physics', 'debug: true')
     // turn on XR presenting isPresenting
     xr.isPresenting = true
@@ -114,12 +118,20 @@ QUnit.module('basic tests', function() {
     setTimeout(() => {
       const bodies = document.querySelectorAll('[static-body]')
       assert.equal(bodies.length, 6)
-      assert.vectorsEqual(bodies[0].object3D.position, '0 1 -1')
-      assert.vectorsEqual(bodies[1].object3D.position, '1 1 0')
-      assert.vectorsEqual(bodies[2].object3D.position, '0 1 1')
-      assert.vectorsEqual(bodies[3].object3D.position, '-1 1 0')
-      assert.vectorsEqual(bodies[4].object3D.position, '0 0 0')
-      assert.vectorsEqual(bodies[5].object3D.position, '0 2 0')
+      assert.vectorsEqual(bodies[0].object3D.position, '0 1 -1.25')
+      assert.vectorsEqual(bodies[1].object3D.position, '1.25 1 0')
+      assert.vectorsEqual(bodies[2].object3D.position, '0 1 1.25')
+      assert.vectorsEqual(bodies[3].object3D.position, '-1.25 1 0')
+      assert.vectorsEqual(bodies[4].object3D.position, '0 -0.25 0')
+      assert.vectorsEqual(bodies[5].object3D.position, '0 2.25 0')
+      
+      const planes = document.querySelector('a-scene').components['xr-room-physics'].planes
+
+      const p0 = planes[4].sideAdjustments
+      assert.equal(p0[0], 0.5)
+      assert.equal(p0[1], 0.5)
+      assert.equal(p0[2], 0.5)
+      assert.equal(p0[3], 0.5)
       done()
     }, 1000)
   });

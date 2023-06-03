@@ -243,13 +243,20 @@ AFRAME.registerComponent('xr-room-physics', {
 
   adjustPlaneForLeaks(plane) {
 
+    // for debugging, just adjust horizontal planes...
+    if (plane.xrPlane.orientation !== "horizontal") return;
+
     plane.sideAdjustments = []
     const points = plane.xrPlane.polygon
 
     for (let ii = 0; ii < points.length - 1; ii++) {
+      console.log("===== Assessing side adjustment", ii, "=============")
       const sideAdjustment = this.getSideAdjustment(plane, points[ii], points[ii + 1])
+      console.log("side adjustment", ii, "size:", sideAdjustment)
       plane.sideAdjustments.push(sideAdjustment)
     }
+
+    console.log("side adjustments", plane.sideAdjustments)
 
     this.updatePlaneGeometry(plane)
   },
@@ -278,17 +285,17 @@ AFRAME.registerComponent('xr-room-physics', {
   testAdjustment(plane, v1, v2, adjustment) {
 
     targetPoint.set((v1.x + v2.x) / 2, 0, (v1.z + v2.z) / 2)
-    console.log("edge point", targetPoint.x, targetPoint.y, targetPoint.z)
+    //console.log("edge point", targetPoint.x, targetPoint.y, targetPoint.z)
 
     const targetLength = targetPoint.length() + adjustment
     targetPoint.normalize().multiplyScalar(targetLength)
-    console.log("adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
+    //console.log("adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
 
     plane.localToWorld(targetPoint)
-    console.log("world space adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
+    //console.log("world space adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
 
     targetPoint.sub(rayOrigin)
-    console.log("adjusted point relative to ray origin", targetPoint.x, targetPoint.y, targetPoint.z)
+    //console.log("adjusted point relative to ray origin", targetPoint.x, targetPoint.y, targetPoint.z)
 
     raycaster.set(rayOrigin, targetPoint);
 
@@ -301,7 +308,7 @@ AFRAME.registerComponent('xr-room-physics', {
     console.log("target point", targetPoint.x, targetPoint.y, targetPoint.z)
     console.log("target point length", targetPoint.length())
     console.log("target point distance", distance)
-    console.log("plane Objects", planeObjects)
+    //console.log("plane Objects", planeObjects)
 
     let faceCounts = 0
     rayResults.forEach(intersection => {
@@ -312,15 +319,16 @@ AFRAME.registerComponent('xr-room-physics', {
       console.log("Intersection distance", intersection.distance)
       if (intersection.distance < distance) {
 
-        console.log("WITHIN DISTANCE!!!")
         const dot = raycaster.ray.direction.dot(intersection.face.normal);
 
         if (dot < 0) {
           // back face of geometry
+          console.log("back face")
           faceCounts -= 1
         }
         else {
           // front face of geometry
+          console.log("front face")
           faceCounts += 1
         }
       }
