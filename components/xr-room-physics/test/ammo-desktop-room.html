@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
     <script src="../dist/xr-room-physics.js"></script>
     <script src="../../ball-blaster/index.js"></script>
+    <script src="./desktop-xr-plane.js"></script>
     <link rel="stylesheet" href="../../../styles.css">
   </head>
   <body>
@@ -21,6 +22,7 @@
         view code
     </a>
     <a-scene webxr="requiredFeatures: plane-detection,local-floor"
+             background="color:#888"
              physics="driver: ammo"
              xr-room-physics="debug: true">
 
@@ -29,6 +31,10 @@
       <a-entity id="right-hand" hand-controls="hand: right">
         <a-entity ball-blaster rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>
       </a-entity>
+
+      <a-plane width="2" height="2" position="0 1 -1" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
     </a-scene>
   </body>
 </html>
