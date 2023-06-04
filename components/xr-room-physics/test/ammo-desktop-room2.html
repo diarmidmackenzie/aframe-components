@@ -14,7 +14,7 @@
   </head>
   <body>
     <div class="text-overlay">
-      <p>Test with two desktop-emulated planes.</p>
+      <p>Test with two desktop-emulated planes: walls</p>
     </div>
         <a class="code-link"
         target="_blank"
@@ -27,10 +27,6 @@
              xr-room-physics="debug: true">
 
       <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
-      <a-entity id="left-hand" hand-controls="hand: left"></a-entity>
-      <a-entity id="right-hand" hand-controls="hand: right">
-        <a-entity ball-blaster rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>
-      </a-entity>
 
       <a-plane width="2" height="2" position="0 1 -1" color="white" wireframe="true"
                desktop-xr-plane>

@@ -10,7 +10,6 @@ const adjustedPoint = new THREE.Vector3()
 const raycaster = new THREE.Raycaster()
 const rayOrigin = new THREE.Vector3(0, 1.5, 0)
 const rayResults = []
-const rotateXQuaternion = new THREE.Quaternion().setFromAxisAngle({x: 1, y: 0, z: 0}, Math.PI / 2)
 
 AFRAME.registerComponent('xr-room-physics', {
 
@@ -197,10 +196,11 @@ AFRAME.registerComponent('xr-room-physics', {
     // geometry may have been lop-sided by extensions.  Correct for this.
     plane.el.object3D.position.copy(plane.position)
     plane.sideAdjustments.forEach((adj) => {
+      //console.log("Adjustment: ", adj)
       adjustmentVector.copy(adj)
-      adjustmentVector.applyQuaternion(rotateXQuaternion)
-      adjustmentVector.applyQuaternion(plane.quaternion)
+      adjustmentVector.applyQuaternion(plane.el.object3D.quaternion)
       plane.el.object3D.position.addScaledVector(adjustmentVector, 0.5)
+      //console.log("Applied adjustment: ", adjustmentVector)
     })
 
     // and set plane volume back behind plane in (local) y-axis

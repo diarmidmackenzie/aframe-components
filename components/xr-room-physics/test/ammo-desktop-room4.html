@@ -14,7 +14,7 @@
   </head>
   <body>
     <div class="text-overlay">
-      <p>Test with a single desktop-emulated plane.</p>
+      <p>Test with multiple desktop-emulated planes to form a basic room.</p>
     </div>
         <a class="code-link"
         target="_blank"
@@ -23,12 +23,34 @@
     </a>
     <a-scene webxr="requiredFeatures: plane-detection,local-floor"
              background="color:#888"
-             physics="driver: ammo"
+             physics="driver: ammo; debug: true"
              xr-room-physics="debug: true">
 
       <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
 
-      <a-plane width="2" height="2" position="0 1 -1" color="white" wireframe="true"
+      <a-plane width="4" height="2" position="0 1 -2" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="4" height="2" position="2 1 0" rotation="0 -90 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="4" height="2" position="0 1 2" rotation="0 180 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="4" height="2" position="-2 1 0" rotation="0 90 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+
+      <!-- ceiling and floor-->
+      <a-plane width="4" height="4" position="0 0 0" rotation="-90 0 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="4" height="4" position="0 2 0" rotation="90 0 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+
+      <!-- desk-->
+      <a-plane width="1" height="1" position="0 0.5 0" rotation="-90 0 0" color="white" wireframe="true"
                desktop-xr-plane>
       </a-plane>
     </a-scene>
