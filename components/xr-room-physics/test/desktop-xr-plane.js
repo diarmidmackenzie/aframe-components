@@ -67,7 +67,7 @@ AFRAME.registerSystem('desktop-xr-plane', {
     const isHorizontal = (plane) => {
 
       const up = new THREE.Vector3(0, 1, 0)
-      const normal = new THREE.Vector3(0, 1, 0)
+      const normal = new THREE.Vector3(0, 0, 1)
       normal.applyQuaternion(plane.object3D.quaternion) 
 
       alignment = normal.dot(up)
@@ -89,6 +89,11 @@ AFRAME.registerSystem('desktop-xr-plane', {
 AFRAME.registerComponent('desktop-xr-plane', {
 
   init() {
+
+    if (!this.el.id) {
+      this.el.id = THREE.MathUtils.generateUUID()
+    }
+
     this.system.registerPlane(this.el.id, this.el)
   }
 

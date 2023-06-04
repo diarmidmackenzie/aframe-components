@@ -2,6 +2,10 @@
 import { RealityAccelerator } from 'ratk'
 
 const targetPoint = new THREE.Vector3()
+const sideVector = new THREE.Vector3()
+const adjustmentVector = new THREE.Vector3()
+const yAxis = new THREE.Vector3(0, 1, 0)
+const targetDirection = new THREE.Vector3()
 const adjustedPoint = new THREE.Vector3()
 const raycaster = new THREE.Raycaster()
 const rayOrigin = new THREE.Vector3(0, 1.5, 0)
@@ -55,6 +59,8 @@ AFRAME.registerComponent('xr-room-physics', {
   // Create an ExtrudeGeometry of appropriate depth.
   // similar to:
   // https://github.com/meta-quest/reality-accelerator-toolkit/blob/b1233141301ced3cc797857e2169f5957a913a96/src/Plane.ts#L48
+  // sideAdjustments is an array of vectors indicating adjustments to make to each side.
+  // this is an array of Vector3s, with y = 0, a and z indicating the adjustments to be made in x and z axes.
   createPrismGeometryFromPolygon(polygon, sideAdjustments) {
 
     const planeShape = new THREE.Shape()
@@ -62,9 +68,12 @@ AFRAME.registerComponent('xr-room-physics', {
 
       adjustedPoint.set(point.x, 0, point.z)
 
-      if (sideAdjustments && sideAdjustments[i]) {
-        const targetLength = adjustedPoint.length() + sideAdjustments[i]
-        adjustedPoint.normalize().multiplyScalar(targetLength)
+      if (sideAdjustments) {
+        const length = sideAdjustments.length
+        const cwSideIndex = (i + length) % length
+        const ccwSideIndex = (i + length - 1)  % length
+        adjustedPoint.add(sideAdjustments[cwSideIndex])
+        adjustedPoint.add(sideAdjustments[ccwSideIndex])
       }
       
       if (i == 0) {
@@ -165,7 +174,8 @@ AFRAME.registerComponent('xr-room-physics', {
 
     if (this.driver === 'ammo') {      
       el.removeAttribute('ammo-shape')
-      el.removeAttribute('ammo-body')
+      //el.removeAttribute('ammo-body') - hits bug when Ammo not yet initialzied.
+      // maybe removing shape is enough to get physics shape updated.
     }
     else if (this.driver === 'physx') {
       el.removeAttribute('physx-body')
@@ -237,23 +247,26 @@ AFRAME.registerComponent('xr-room-physics', {
 
   implementLeakProtection() {
 
+    console.log("=== Running leak protection with ", this.planes.length, " planes. ===" )
+
+    // valid shortcut - helps with debugging simple cases.
+    if (this.planes.length <= 1) return 
+
     this.planes.forEach(plane => this.adjustPlaneForLeaks(plane))
 
   },
 
   adjustPlaneForLeaks(plane) {
 
-    // for debugging, just adjust horizontal planes...
-    if (plane.xrPlane.orientation !== "horizontal") return;
-
     plane.sideAdjustments = []
     const points = plane.xrPlane.polygon
 
     for (let ii = 0; ii < points.length - 1; ii++) {
       console.log("===== Assessing side adjustment", ii, "=============")
-      const sideAdjustment = this.getSideAdjustment(plane, points[ii], points[ii + 1])
-      console.log("side adjustment", ii, "size:", sideAdjustment)
-      plane.sideAdjustments.push(sideAdjustment)
+      const sideAdjustmentVector = new THREE.Vector3() 
+      this.getSideAdjustment(plane, points[ii], points[ii + 1], sideAdjustmentVector)
+      console.log("side adjustment", ii, "size:", sideAdjustmentVector)
+      plane.sideAdjustments.push(sideAdjustmentVector)
     }
 
     console.log("side adjustments", plane.sideAdjustments)
@@ -261,43 +274,48 @@ AFRAME.registerComponent('xr-room-physics', {
     this.updatePlaneGeometry(plane)
   },
 
-  getSideAdjustment(plane, v1, v2) {
+  getSideAdjustment(plane, v1, v2, vector) {
 
     const delta = 0.1
-    let validatedAdjustment = 0
+    let testAdjustmentVector = new THREE.Vector3()
     let testAdjustment = 0
     let adjust = true
 
     for (testAdjustment = 0.1; testAdjustment <= this.data.depth; testAdjustment += delta) {
-      adjust = this.testAdjustment(plane, v1, v2, testAdjustment)
+      adjust = this.testAdjustment(plane, v1, v2, testAdjustment, testAdjustmentVector)
 
       if (adjust) {
-        validatedAdjustment = testAdjustment
+        vector.copy(testAdjustmentVector)
       }
       else {
         break
       }
     }
 
-    return validatedAdjustment
+    return vector
   },
 
-  testAdjustment(plane, v1, v2, adjustment) {
+  testAdjustment(plane, v1, v2, adjustment, adjustmentVector) {
 
     targetPoint.set((v1.x + v2.x) / 2, 0, (v1.z + v2.z) / 2)
     //console.log("edge point", targetPoint.x, targetPoint.y, targetPoint.z)
 
-    const targetLength = targetPoint.length() + adjustment
-    targetPoint.normalize().multiplyScalar(targetLength)
+    sideVector.set(v2.x - v1.x, 0, v2.z - v1.z)
+    adjustmentVector.crossVectors(yAxis, sideVector)
+    adjustmentVector.normalize().multiplyScalar(adjustment)
+
+    
+    targetPoint.add(adjustmentVector)
     //console.log("adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
 
     plane.localToWorld(targetPoint)
     //console.log("world space adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
 
     targetPoint.sub(rayOrigin)
+    targetDirection.copy(targetPoint).normalize()
     //console.log("adjusted point relative to ray origin", targetPoint.x, targetPoint.y, targetPoint.z)
 
-    raycaster.set(rayOrigin, targetPoint);
+    raycaster.set(rayOrigin, targetDirection);
 
     const distance = targetPoint.length()
 
