@@ -10,6 +10,7 @@ const adjustedPoint = new THREE.Vector3()
 const raycaster = new THREE.Raycaster()
 const rayOrigin = new THREE.Vector3(0, 1.5, 0)
 const rayResults = []
+const rotateXQuaternion = new THREE.Quaternion().setFromAxisAngle({x: 1, y: 0, z: 0}, Math.PI / 2)
 
 AFRAME.registerComponent('xr-room-physics', {
 
@@ -52,8 +53,6 @@ AFRAME.registerComponent('xr-room-physics', {
 
     this.ratk = ratk
 
-    // needed to work around Ammo.js shape generation bug.
-    this.adjustmentVector = new THREE.Vector3()
   },
 
   // Create an ExtrudeGeometry of appropriate depth.
@@ -75,6 +74,8 @@ AFRAME.registerComponent('xr-room-physics', {
         adjustedPoint.add(sideAdjustments[cwSideIndex])
         adjustedPoint.add(sideAdjustments[ccwSideIndex])
       }
+
+      console.log("Adjusted point: x: ", adjustedPoint.x, "z:", adjustedPoint.z)
       
       if (i == 0) {
         planeShape.moveTo(adjustedPoint.x, adjustedPoint.z);
@@ -136,9 +137,9 @@ AFRAME.registerComponent('xr-room-physics', {
       mesh.visible = false
     }
 
-    this.adjustmentVector.set(0, this.data.depth / 2, 0)
-    this.adjustmentVector.applyQuaternion(plane.quaternion)
-    el.object3D.position.add(this.adjustmentVector)
+    adjustmentVector.set(0, this.data.depth / 2, 0)
+    adjustmentVector.applyQuaternion(plane.quaternion)
+    el.object3D.position.add(adjustmentVector)
 
     this.setPhysicsBody(el)
     
@@ -192,6 +193,20 @@ AFRAME.registerComponent('xr-room-physics', {
     const oldGeometry = mesh.geometry
 
     mesh.geometry = this.createPrismGeometryFromPolygon(plane.xrPlane.polygon, plane.sideAdjustments);
+
+    // geometry may have been lop-sided by extensions.  Correct for this.
+    plane.el.object3D.position.copy(plane.position)
+    plane.sideAdjustments.forEach((adj) => {
+      adjustmentVector.copy(adj)
+      adjustmentVector.applyQuaternion(rotateXQuaternion)
+      adjustmentVector.applyQuaternion(plane.quaternion)
+      plane.el.object3D.position.addScaledVector(adjustmentVector, 0.5)
+    })
+
+    // and set plane volume back behind plane in (local) y-axis
+    adjustmentVector.set(0, this.data.depth / 2, 0)
+    adjustmentVector.applyQuaternion(plane.quaternion)
+    plane.el.object3D.position.add(adjustmentVector)
 
     oldGeometry.dispose()
 
@@ -265,7 +280,7 @@ AFRAME.registerComponent('xr-room-physics', {
       console.log("===== Assessing side adjustment", ii, "=============")
       const sideAdjustmentVector = new THREE.Vector3() 
       this.getSideAdjustment(plane, points[ii], points[ii + 1], sideAdjustmentVector)
-      console.log("side adjustment", ii, "size:", sideAdjustmentVector)
+      console.log("side adjustment", ii, "for points: ", points[ii], "and", points[ii + 1], "size:", sideAdjustmentVector.length(), "vector: ", sideAdjustmentVector)
       plane.sideAdjustments.push(sideAdjustmentVector)
     }
 
