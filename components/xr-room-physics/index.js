@@ -9,6 +9,7 @@ const targetDirection = new THREE.Vector3()
 const adjustedPoint = new THREE.Vector3()
 const raycaster = new THREE.Raycaster()
 const rayOrigin = new THREE.Vector3(0, 1.5, 0)
+const worldNormal = new THREE.Vector3()
 const rayResults = []
 
 AFRAME.registerComponent('xr-room-physics', {
@@ -317,7 +318,7 @@ AFRAME.registerComponent('xr-room-physics', {
   testAdjustment(plane, v1, v2, adjustment, adjustmentVector) {
 
     targetPoint.set((v1.x + v2.x) / 2, 0, (v1.z + v2.z) / 2)
-    //console.log("edge point", targetPoint.x, targetPoint.y, targetPoint.z)
+    console.log("edge point", targetPoint.x, targetPoint.y, targetPoint.z)
 
     sideVector.set(v2.x - v1.x, 0, v2.z - v1.z)
     adjustmentVector.crossVectors(yAxis, sideVector)
@@ -325,7 +326,7 @@ AFRAME.registerComponent('xr-room-physics', {
 
     
     targetPoint.add(adjustmentVector)
-    //console.log("adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
+    console.log("adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
 
     plane.localToWorld(targetPoint)
     //console.log("world space adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
@@ -350,18 +351,26 @@ AFRAME.registerComponent('xr-room-physics', {
     let faceCounts = 0
     rayResults.forEach(intersection => {
 
-      // we only care about intersections closer than the target point.
+      //console.log("Intersection normal:", JSON.stringify(intersection.face.normal))
+      //console.log("Intersection normal at:", JSON.stringify(intersection.point))
+
+      
       //console.log("Target point distance", distance)
       //console.log("Intersection point", intersection.point.x, intersection.point.y, intersection.point.z)
       //console.log("Intersection distance", intersection.distance)
 
-      // we only pay attention to points up to 1mm from the target point.
+      // we only care about intersections mianingfully closer than the target point.
       const epsilon = 0.001
       if (intersection.distance < distance - epsilon) {
 
-        const dot = raycaster.ray.direction.dot(intersection.face.normal);
+        worldNormal.copy(intersection.face.normal)
+        worldNormal.applyQuaternion(plane.el.object3D.quaternion)
 
-        if (dot < 0) {
+        //console.log("Intersection normal in WorldSpace:", JSON.stringify(worldNormal))
+
+        const dot = raycaster.ray.direction.dot(worldNormal);
+
+        if (dot > 0) {
           // back face of geometry
           //console.log("back face")
           faceCounts -= 1
