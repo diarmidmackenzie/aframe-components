@@ -74,7 +74,7 @@ AFRAME.registerComponent('xr-room-physics', {
         adjustedPoint.add(sideAdjustments[ccwSideIndex])
       }
 
-      console.log("Adjusted point: x: ", adjustedPoint.x, "z:", adjustedPoint.z)
+      if (this.data.debug) console.log(`Adjusted point: (${point.x}, ${point.z}) -> (${adjustedPoint.x}, ${adjustedPoint.z})`)
       
       if (i == 0) {
         planeShape.moveTo(adjustedPoint.x, adjustedPoint.z);
@@ -175,7 +175,7 @@ AFRAME.registerComponent('xr-room-physics', {
     if (this.driver === 'ammo') {      
       el.removeAttribute('ammo-shape')
       //el.removeAttribute('ammo-body') - hits bug when Ammo not yet initialzied.
-      // maybe removing shape is enough to get physics shape updated.
+      // removing/adding shape is enough to get physics shape updated.
     }
     else if (this.driver === 'physx') {
       el.removeAttribute('physx-body')
@@ -267,24 +267,28 @@ AFRAME.registerComponent('xr-room-physics', {
     // valid shortcut - helps with debugging simple cases.
     if (this.planes.length <= 1) return 
 
-    this.planes.forEach(plane => this.adjustPlaneForLeaks(plane))
+    this.planes.forEach((plane, index) => this.adjustPlaneForLeaks(plane, index))
 
   },
 
-  adjustPlaneForLeaks(plane) {
+  adjustPlaneForLeaks(plane, index) {
 
     plane.sideAdjustments = []
     const points = plane.xrPlane.polygon
 
     for (let ii = 0; ii < points.length - 1; ii++) {
-      console.log("===== Assessing side adjustment", ii, "=============")
+      if (this.data.debug) console.log("===== Assessing side adjustment", ii, "for plane", index, "=============")
       const sideAdjustmentVector = new THREE.Vector3() 
       this.getSideAdjustment(plane, points[ii], points[ii + 1], sideAdjustmentVector)
-      console.log("side adjustment", ii, "for points: ", points[ii], "and", points[ii + 1], "size:", sideAdjustmentVector.length(), "vector: ", sideAdjustmentVector)
+      if (this.data.debug) console.log("side adjustment", ii,
+                                       "for points: ", JSON.stringify(points[ii]),
+                                       "and", JSON.stringify(points[ii + 1]),
+                                       "size:", sideAdjustmentVector.length(),
+                                       "vector: ", JSON.stringify(sideAdjustmentVector))
       plane.sideAdjustments.push(sideAdjustmentVector)
     }
 
-    console.log("side adjustments", plane.sideAdjustments)
+    if (this.data.debug) console.log("side adjustments", plane.sideAdjustments)
 
     this.updatePlaneGeometry(plane)
   },
@@ -338,30 +342,33 @@ AFRAME.registerComponent('xr-room-physics', {
     rayResults.length = 0
     raycaster.intersectObjects(planeObjects, false, rayResults);
 
-    console.log("target point", targetPoint.x, targetPoint.y, targetPoint.z)
-    console.log("target point length", targetPoint.length())
-    console.log("target point distance", distance)
+    //console.log("target point", targetPoint.x, targetPoint.y, targetPoint.z)
+    //console.log("target point length", targetPoint.length())
+    //console.log("target point distance", distance)
     //console.log("plane Objects", planeObjects)
 
     let faceCounts = 0
     rayResults.forEach(intersection => {
 
       // we only care about intersections closer than the target point.
-      console.log("Target point distance", distance)
-      console.log("Intersection point", intersection.point.x, intersection.point.y, intersection.point.z)
-      console.log("Intersection distance", intersection.distance)
-      if (intersection.distance < distance) {
+      //console.log("Target point distance", distance)
+      //console.log("Intersection point", intersection.point.x, intersection.point.y, intersection.point.z)
+      //console.log("Intersection distance", intersection.distance)
+
+      // we only pay attention to points up to 1mm from the target point.
+      const epsilon = 0.001
+      if (intersection.distance < distance - epsilon) {
 
         const dot = raycaster.ray.direction.dot(intersection.face.normal);
 
         if (dot < 0) {
           // back face of geometry
-          console.log("back face")
+          //console.log("back face")
           faceCounts -= 1
         }
         else {
           // front face of geometry
-          console.log("front face")
+          //console.log("front face")
           faceCounts += 1
         }
       }
