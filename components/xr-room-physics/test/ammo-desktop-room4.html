@@ -14,7 +14,7 @@
   </head>
   <body>
     <div class="text-overlay">
-      <p>Test with multiple desktop-emulated planes to form a basic room.</p>
+      <p>Test with multiple desktop-emulated planes to form a basic room.  Space to shoot balls.</p>
     </div>
         <a class="code-link"
         target="_blank"
@@ -26,7 +26,9 @@
              physics="driver: ammo; debug: true"
              xr-room-physics="debug: true">
 
-      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+      <a-entity camera look-controls wasd-controls position="0 1.6 0">
+        <a-entity position='0 -0.3 0.3' ball-blaster="velocity: 20"></a-entity>
+      </a-entity>
 
       <a-plane width="4" height="2" position="0 1 -2" color="white" wireframe="true"
                desktop-xr-plane>
