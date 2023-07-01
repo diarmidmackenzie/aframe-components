@@ -1,0 +1,15 @@
+{
+  "name": "aframe-desktop-xr-plane",
+  "version": "0.0.1",
+  "description": "Simulation of XR Planes on Desktop, for A-Frame",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "XRPlane",
+    "A-Frame"
+  ],
+  "author": "Diarmid Mackenzie",
+  "license": "MIT"
+}
