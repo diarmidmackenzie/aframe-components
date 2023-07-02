@@ -25,14 +25,17 @@ AFRAME.registerComponent('xr-room-physics', {
     // Setting this to a larger value will reduce the likelihood of fast-moving 
     // objects moving through planes, particularly when Continuous Collision Detection (CCD) 
     // is not supported or is not enabled.
+    // Changing this setting will not affect planes that have already been created.
     depth: {default: 0.5},
 
     // The origin used for raycasting.  This should be a point inside the room.
-    rayOrigin: {default: {x: 0, y: 1.5, z: 0}},
+    // Changing this setting will not affect planes that have already been created.
+    rayOrigin: {type: 'vec3', default: {x: 0, y: 1.5, z: 0}},
 
     // The delta (in meters) used for checking whether to extend a plane for leak protection.
     // Smaller values will give more precise extensions, but one-time room setup will be more expensive to compute.
-    delta: 0.1
+    // Changing this setting will not affect planes that have already been created.
+    delta: {default: 0.1}
 
   },
 
@@ -59,6 +62,12 @@ AFRAME.registerComponent('xr-room-physics', {
 
     this.ratk = ratk
 
+  },
+
+  update() {
+    this.planes.forEach((plane) => {
+      this.setMaterial(plane)
+    })
   },
 
   // Create an ExtrudeGeometry of appropriate depth.
@@ -107,14 +116,6 @@ AFRAME.registerComponent('xr-room-physics', {
     // this.el.setObject3D('plane', plane)
     plane.el = el
 
-    // convert plane material into a "hider material", so that it can occlude entities in a scene
-    // e.g. when a ball rolls under a table.
-    // (but don't do this in debug mode, as it interferes with debug mesh rendering)
-    if (!this.data.debug) {
-      plane.planeMesh.material.colorWrite = false
-      plane.planeMesh.material.side = THREE.DoubleSide
-    }
-
     // take position & orientation from the plane
     el.object3D.position.copy(plane.position)
     el.object3D.quaternion.copy(plane.quaternion)
@@ -127,21 +128,7 @@ AFRAME.registerComponent('xr-room-physics', {
     const mesh = new THREE.Mesh(prismGeometry, plane.planeMesh.material)
     el.setObject3D('mesh', mesh)
 
-    if (this.data.debug && 
-        (this.data.showPlanes === "all" || 
-         this.data.showPlanes === plane.xrPlane.orientation)) {
-
-      var randomColor = Math.floor(Math.random()*16777215)
-      const material = new THREE.MeshBasicMaterial( {color: randomColor,
-                                                     side: THREE.DoubleSide,
-                                                     transparent: true,
-                                                     opacity: 0.5} );
-      mesh.material = material
-
-    }
-    else {
-      mesh.visible = false
-    }
+    this.setMaterial(plane)
 
     adjustmentVector.set(0, this.data.depth / 2, 0)
     adjustmentVector.applyQuaternion(plane.quaternion)
@@ -159,6 +146,47 @@ AFRAME.registerComponent('xr-room-physics', {
     // but hard to do better with current ratk interface, as we don't know how many planes are
     // going to be added, and don't get told when the last plane is added.
     this.implementLeakProtection()
+  },
+
+  setMaterial(plane) {
+
+    // If not in debug mode, convert plane material into a "hider material", so that it can occlude entities
+    // in a scene
+    // e.g. when a ball rolls under a table.
+    // (but don't do this in debug mode, as it interferes with debug mesh rendering)
+    const planeMaterial = plane.planeMesh.material
+    if (this.data.debug) {
+      planeMaterial.colorWrite = true
+      planeMaterial.side = THREE.FrontSide
+    }
+    else {
+      planeMaterial.colorWrite = false
+      planeMaterial.side = THREE.DoubleSide
+    }
+    planeMaterial.needsUpdate = true
+
+    // and in debug mode, color the physics objects.
+    const mesh = plane.el.getObject3D('mesh')
+    if (this.data.debug && 
+        (this.data.showPlanes === "all" || 
+         this.data.showPlanes === plane.xrPlane.orientation)) {
+
+      var randomColor = Math.floor(Math.random()*16777215)
+      const oldMaterial = mesh.material
+      const material = new THREE.MeshBasicMaterial( {color: randomColor,
+                                                    side: THREE.DoubleSide,
+                                                    transparent: true,
+                                                    opacity: 0.5} );
+      mesh.material = material
+      mesh.visible = true
+
+      if (oldMaterial) {
+        oldMaterial.dispose()
+      }
+    }
+    else {
+      mesh.visible = false
+    }
   },
 
   setPhysicsBody(el) {

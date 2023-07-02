@@ -9,6 +9,8 @@
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
     <script src="../dist/xr-room-physics.js"></script>
     <script src="../../ball-blaster/index.js"></script>
+    <script src="./toggle-debug.js"></script>
+    
     <link rel="stylesheet" href="../../../styles.css">
   </head>
   <body>
@@ -25,8 +27,8 @@
              xr-room-physics>
 
       <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
-      <a-entity id="left-hand" hand-controls="hand: left"></a-entity>
-      <a-entity id="right-hand" hand-controls="hand: right">
+      <a-entity id="left-hand" hand-controls="hand: left" toggle-debug></a-entity>
+      <a-entity id="right-hand" hand-controls="hand: right" toggle-debug>
         <a-entity ball-blaster rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>
       </a-entity>
     </a-scene>

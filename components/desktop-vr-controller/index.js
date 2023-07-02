@@ -118,7 +118,8 @@ AFRAME.registerComponent('desktop-vr-controller', {
     simulateController() {
 
         // If there is an XR session (real or simulated), do nothing.
-        const xrSession = this.el.sceneEl.renderer.xr.getSession()
+        const xr = this.el.sceneEl.renderer.xr
+        const xrSession = xr.getSesssion ? xr.getSession() : null
         if (xrSession) {
             console.log("desktop-vr-controller suppressed due to presence of an XR session")
             return;
