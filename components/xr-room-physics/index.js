@@ -8,7 +8,6 @@ const yAxis = new THREE.Vector3(0, 1, 0)
 const targetDirection = new THREE.Vector3()
 const adjustedPoint = new THREE.Vector3()
 const raycaster = new THREE.Raycaster()
-const rayOrigin = new THREE.Vector3(0, 1.5, 0)
 const worldQuaternion = new THREE.Quaternion()
 const worldNormal = new THREE.Vector3()
 const rayResults = []
@@ -26,8 +25,14 @@ AFRAME.registerComponent('xr-room-physics', {
     // Setting this to a larger value will reduce the likelihood of fast-moving 
     // objects moving through planes, particularly when Continuous Collision Detection (CCD) 
     // is not supported or is not enabled.
-
     depth: {default: 0.5},
+
+    // The origin used for raycasting.  This should be a point inside the room.
+    rayOrigin: {default: {x: 0, y: 1.5, z: 0}},
+
+    // The delta (in meters) used for checking whether to extend a plane for leak protection.
+    // Smaller values will give more precise extensions, but one-time room setup will be more expensive to compute.
+    delta: 0.1
 
   },
 
@@ -297,12 +302,12 @@ AFRAME.registerComponent('xr-room-physics', {
 
   getSideAdjustment(plane, v1, v2, vector) {
 
-    const delta = 0.1
+    const {delta} = this.data
     let testAdjustmentVector = new THREE.Vector3()
     let testAdjustment = 0
     let adjust = true
 
-    for (testAdjustment = 0.1; testAdjustment <= this.data.depth; testAdjustment += delta) {
+    for (testAdjustment = delta; testAdjustment <= this.data.depth; testAdjustment += delta) {
       adjust = this.testAdjustment(plane, v1, v2, testAdjustment, testAdjustmentVector)
 
       if (adjust) {
@@ -317,6 +322,7 @@ AFRAME.registerComponent('xr-room-physics', {
   },
 
   testAdjustment(plane, v1, v2, adjustment, adjustmentVector) {
+    const {rayOrigin} = this.data
 
     targetPoint.set((v1.x + v2.x) / 2, 0, (v1.z + v2.z) / 2)
     //console.log("edge point", targetPoint.x, targetPoint.y, targetPoint.z)
@@ -325,7 +331,6 @@ AFRAME.registerComponent('xr-room-physics', {
     adjustmentVector.crossVectors(yAxis, sideVector)
     adjustmentVector.normalize().multiplyScalar(adjustment)
 
-    
     targetPoint.add(adjustmentVector)
     //console.log("adjusted point", targetPoint.x, targetPoint.y, targetPoint.z)
 

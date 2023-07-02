@@ -7,15 +7,64 @@ Compatible with:
 - [aframe-physics-system](https://github.com/c-frame/aframe-physics-system) (Cannon & Ammo drivers)
 - [physx for A-Frame](https://github.com/c-frame/physx) 
 
-
-
 ## Schema
 
-TBC
+
+| Property   | Description                                                  | Default |
+| ---------- | ------------------------------------------------------------ | ------- |
+| debug      | When enabled, planes are rendered semi-opaque in random colors, to aid in debugging. | false   |
+| showPlanes | When debugging, which planes to show: "horizontal", "vertical", or "all" | all     |
+| depth      | Depth (i.e. thickness) to use for walls and surfaces (in meters).  When  Continuous Collision Detection (CCD) is not supported, or is not enabled, a significant depth is needed to prevent fast-moving objects from travelling through planes. | 0.5     |
 
 ## Usage
 
-TBC
+Add the `xr-room-physics` component to your scene, along with your physics system setup.  You will also typically need the `plane-detection` and `local-floor` WebXR features.
+
+Examples...
+
+Cannon Physics with full debug:
+
+```
+    <a-scene webxr="requiredFeatures: plane-detection,local-floor"
+             physics="debug: true"
+             xr-room-physics="debug: true">
+```
+
+Ammo physics with no debug visualization
+
+```
+ <a-scene webxr="requiredFeatures: plane-detection,local-floor"
+             physics="driver: ammo"
+             xr-room-physics>
+```
+
+PhysX with small plane depth (since CCD can be used with PhysX)
+
+```
+<a-scene webxr="requiredFeatures: plane-detection,local-floor"
+             physx="autoLoad: true; delay: 1000"
+             xr-room-physics="">
+```
+
+
+
+
+
+  <a-scene webxr="requiredFeatures: plane-detection,local-floor"
+
+​       background="color:#888"
+
+​       physics="driver: ammo; debug: true"
+
+​       xr-room-physics="debug: true">
+
+
+
+
+
+
+
+
 
 ## Limitations
 

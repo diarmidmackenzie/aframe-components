@@ -5,7 +5,7 @@ A simple gun that blasts small yellow balls.  Useful for testing / demoing physi
 Compatible with:
 
 - [aframe-physics-system](https://github.com/c-frame/aframe-physics-system) (Cannon & Ammo drivers)
-- [physx for A-Frame](https://github.com/c-frame/physx)
+- [physx for A-Frame](https://github.com/c-frame/physx) 
 
 ![image-20230701171702787](image-20230701171702787.png)
 

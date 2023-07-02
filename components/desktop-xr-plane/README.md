@@ -46,8 +46,6 @@ Or via [npm](https://www.npmjs.com/package/aframe-polygon-wireframe)
 npm install aframe-desktop-xr-plane
 ```
 
-then
-
 
 
 ## Examples
