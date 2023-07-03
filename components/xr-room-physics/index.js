@@ -62,6 +62,12 @@ AFRAME.registerComponent('xr-room-physics', {
 
     this.ratk = ratk
 
+    this.hiderMaterial = new THREE.MeshStandardMaterial()
+    this.hiderMaterial.side = THREE.DoubleSide
+    this.hiderMaterial.colorWrite = false
+
+    this.shadowMaterial = new THREE.ShadowMaterial()
+    this.shadowMaterial.side = THREE.BackSide
   },
 
   update() {
@@ -111,10 +117,22 @@ AFRAME.registerComponent('xr-room-physics', {
 
     this.planes.push(plane)
 
+    this.createPhysicsElement(plane)
+    this.createHiderMesh(plane)
+    this.createShadowMesh(plane)
+    this.setMaterial(plane)
+
+    // extend plans to protect against leakage when physics engine does not support CCD.
+    // NOTE: very inefficient to do this every time a plane is added / removed
+    // but hard to do better with current ratk interface, as we don't know how many planes are
+    // going to be added, and don't get told when the last plane is added.
+    this.implementLeakProtection()
+  },
+
+  createPhysicsElement(plane) {
+
     const el = document.createElement('a-entity')
-    // Can't do this - not an Object3D error
-    // this.el.setObject3D('plane', plane)
-    plane.el = el
+    plane.physicsEl = el
 
     // take position & orientation from the plane
     el.object3D.position.copy(plane.position)
@@ -128,8 +146,6 @@ AFRAME.registerComponent('xr-room-physics', {
     const mesh = new THREE.Mesh(prismGeometry, plane.planeMesh.material)
     el.setObject3D('mesh', mesh)
 
-    this.setMaterial(plane)
-
     adjustmentVector.set(0, this.data.depth / 2, 0)
     adjustmentVector.applyQuaternion(plane.quaternion)
     el.object3D.position.add(adjustmentVector)
@@ -141,11 +157,23 @@ AFRAME.registerComponent('xr-room-physics', {
     // World Matrix must be updated for raycasting checks against this to work.
     el.object3D.updateWorldMatrix(true, true)
 
-    // extend plans to protect against leakage when physics engine does not support CCD.
-    // NOTE: very inefficient to do this every time a plane is added / removed
-    // but hard to do better with current ratk interface, as we don't know how many planes are
-    // going to be added, and don't get told when the last plane is added.
-    this.implementLeakProtection()
+  },
+
+  createHiderMesh(plane) {
+
+    plane.hiderMesh = plane.planeMesh.clone()
+    plane.hiderMesh.material = this.hiderMaterial
+    plane.planeMesh.parent.add(plane.hiderMesh)
+    
+  },
+
+  createShadowMesh(plane) {
+
+    plane.shadowMesh = plane.planeMesh.clone()
+    plane.shadowMesh.material = this.shadowMaterial
+    plane.planeMesh.parent.add(plane.shadowMesh)
+    plane.shadowMesh.receiveShadow = true;
+    
   },
 
   setMaterial(plane) {
@@ -154,19 +182,17 @@ AFRAME.registerComponent('xr-room-physics', {
     // in a scene
     // e.g. when a ball rolls under a table.
     // (but don't do this in debug mode, as it interferes with debug mesh rendering)
-    const planeMaterial = plane.planeMesh.material
     if (this.data.debug) {
-      planeMaterial.colorWrite = true
-      planeMaterial.side = THREE.FrontSide
+      plane.hiderMesh.visible = false
+      plane.planeMesh.visible = true
     }
     else {
-      planeMaterial.colorWrite = false
-      planeMaterial.side = THREE.DoubleSide
+      plane.hiderMesh.visible = true
+      plane.planeMesh.visible = false
     }
-    planeMaterial.needsUpdate = true
 
     // and in debug mode, color the physics objects.
-    const mesh = plane.el.getObject3D('mesh')
+    const mesh = plane.physicsEl.getObject3D('mesh')
     if (this.data.debug && 
         (this.data.showPlanes === "all" || 
          this.data.showPlanes === plane.xrPlane.orientation)) {
@@ -223,25 +249,25 @@ AFRAME.registerComponent('xr-room-physics', {
 
   updatePlaneGeometry(plane) {
 
-    const mesh =  plane.el.getObject3D('mesh')
+    const mesh =  plane.physicsEl.getObject3D('mesh')
     const oldGeometry = mesh.geometry
 
     mesh.geometry = this.createPrismGeometryFromPolygon(plane.xrPlane.polygon, plane.sideAdjustments);
 
     // geometry may have been lop-sided by extensions.  Correct for this.
-    plane.el.object3D.position.copy(plane.position)
+    plane.physicsEl.object3D.position.copy(plane.position)
     plane.sideAdjustments.forEach((adj) => {
       //console.log("Adjustment: ", adj)
       adjustmentVector.copy(adj)
-      adjustmentVector.applyQuaternion(plane.el.object3D.quaternion)
-      plane.el.object3D.position.addScaledVector(adjustmentVector, 0.5)
+      adjustmentVector.applyQuaternion(plane.physicsEl.object3D.quaternion)
+      plane.physicsEl.object3D.position.addScaledVector(adjustmentVector, 0.5)
       //console.log("Applied adjustment: ", adjustmentVector)
     })
 
     // and set plane volume back behind plane in (local) y-axis
     adjustmentVector.set(0, this.data.depth / 2, 0)
     adjustmentVector.applyQuaternion(plane.quaternion)
-    plane.el.object3D.position.add(adjustmentVector)
+    plane.physicsEl.object3D.position.add(adjustmentVector)
 
     oldGeometry.dispose()
 
@@ -250,8 +276,8 @@ AFRAME.registerComponent('xr-room-physics', {
     // https://github.com/aframevr/aframe/issues/4973
     // using setTimeout() provides an adequate workaround.
     setTimeout(() => {
-      this.removePhysicsBody(plane.el)
-      this.setPhysicsBody(plane.el)
+      this.removePhysicsBody(plane.physicsEl)
+      this.setPhysicsBody(plane.physicsEl)
     })
   },
 
@@ -373,7 +399,7 @@ AFRAME.registerComponent('xr-room-physics', {
 
     const distance = targetPoint.length()
 
-    const planeObjects = this.planes.map(p => p.el.getObject3D('mesh'))
+    const planeObjects = this.planes.map(p => p.physicsEl.getObject3D('mesh'))
     rayResults.length = 0
     raycaster.intersectObjects(planeObjects, false, rayResults);
 
@@ -428,7 +454,7 @@ AFRAME.registerComponent('xr-room-physics', {
     const index = this.planes.findIndex(p => p === plane)
     this.planes.splice(index)
 
-    const el = plane.el
+    const el = plane.physicsEl
     el.parentNode.removeChild(el)
 
     this.implementLeakProtection()

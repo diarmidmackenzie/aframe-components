@@ -154,6 +154,7 @@
         radius = ${this.data.radius}
         color = ${this.data.ballColor}
         position = '0 0.05 -0.7'
+        shadow = 'cast: true'
         ${this.ballPhysicsHTML}>
       </a-sphere>
       `
