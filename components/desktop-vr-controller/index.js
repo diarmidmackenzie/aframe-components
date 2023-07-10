@@ -173,7 +173,7 @@ AFRAME.registerComponent('desktop-vr-controller', {
 
             this.labels['trigger'] = this.createLabel("R-Shift", "trigger")
             this.labels['grip'] = this.createLabel("R-Ctrl", "grip")
-            this.labels['abutton'] = this.createLabel("V", "abutton")
+            this.labels['abutton'] = this.createLabel("V (A)", "abutton")
             this.labels['bbutton'] = this.createLabel("B", "bbutton")
             this.labels['thumbstick'] = this.createLabel("2", "thumbstick")
         }
