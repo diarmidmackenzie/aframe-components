@@ -35,7 +35,23 @@ AFRAME.registerComponent('xr-room-physics', {
     // The delta (in meters) used for checking whether to extend a plane for leak protection.
     // Smaller values will give more precise extensions, but one-time room setup will be more expensive to compute.
     // Changing this setting will not affect planes that have already been created.
-    delta: {default: 0.1}
+    delta: {default: 0.1},
+
+    // Shadows will be cast on the planes by objects that cast shadows.
+    // Also requires shadow config to be set up on the rest of the scene in the normal way
+    // (https://aframe.io/docs/1.4.0/components/shadow.html)
+    receiveShadows: { default: true },
+
+    // The opacity of shadows received on the planes.
+    shadowOpacity: {default: 0.5},
+
+    // Objects that are behind the planes will be occluded by the planes.
+    // For this to work reliably, `renderer="sortObjects: true"`must be set on the `<a-scene>`
+    occludeObjects: { default: true },
+
+    // renderOrder value used for occlusion.  -1 is usually sufficient, but if your scene sets
+    // negative renderOrder values on other Object3Ds, you might need to set a larger negative value.
+    renderOrder: { default: -1 }
 
   },
 
@@ -66,7 +82,7 @@ AFRAME.registerComponent('xr-room-physics', {
     this.hiderMaterial.side = THREE.DoubleSide
     this.hiderMaterial.colorWrite = false
 
-    this.shadowMaterial = new THREE.ShadowMaterial()
+    this.shadowMaterial = new THREE.ShadowMaterial()    
     this.shadowMaterial.side = THREE.BackSide
   },
 
@@ -74,6 +90,8 @@ AFRAME.registerComponent('xr-room-physics', {
     this.planes.forEach((plane) => {
       this.setMaterial(plane)
     })
+
+    this.shadowMaterial.opacity = this.data.shadowOpacity
   },
 
   // Create an ExtrudeGeometry of appropriate depth.
@@ -118,8 +136,15 @@ AFRAME.registerComponent('xr-room-physics', {
     this.planes.push(plane)
 
     this.createPhysicsElement(plane)
-    this.createHiderMesh(plane)
-    this.createShadowMesh(plane)
+
+    if (this.data.occludeObjects) {
+      this.createHiderMesh(plane)
+    }
+
+    if (this.data.receiveShadows) {
+      this.createShadowMesh(plane)
+    }
+    
     this.setMaterial(plane)
 
     // extend plans to protect against leakage when physics engine does not support CCD.
@@ -163,6 +188,7 @@ AFRAME.registerComponent('xr-room-physics', {
 
     plane.hiderMesh = plane.planeMesh.clone()
     plane.hiderMesh.material = this.hiderMaterial
+    plane.hiderMesh.renderOrder = this.data.renderOrder
     plane.planeMesh.parent.add(plane.hiderMesh)
     
   },
@@ -183,11 +209,15 @@ AFRAME.registerComponent('xr-room-physics', {
     // e.g. when a ball rolls under a table.
     // (but don't do this in debug mode, as it interferes with debug mesh rendering)
     if (this.data.debug) {
-      plane.hiderMesh.visible = false
+      if (plane.hiderMesh) {
+        plane.hiderMesh.visible = false
+      }
       plane.planeMesh.visible = true
     }
     else {
-      plane.hiderMesh.visible = true
+      if (plane.hiderMesh) {
+        plane.hiderMesh.visible = true
+      }
       plane.planeMesh.visible = false
     }
 

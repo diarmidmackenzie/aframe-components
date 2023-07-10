@@ -19,12 +19,15 @@ On Oculus Quest, room setup is still an "experimental" feature.  [Here's a guide
 
 Add the `xr-room-physics` component to your scene, along with your physics system setup.  You will also typically need the `plane-detection` and `local-floor` WebXR features.
 
+If you want the planes to occlude objects behind them, you must also set `renderer="sortObjects: true"` on the `<a-scene>` (this may change in future - see [this A-Frame issue](https://github.com/aframevr/aframe/issues/5332))
+
 Some examples...
 
 Cannon Physics with full debug:
 
 ```
 <a-scene webxr="requiredFeatures: plane-detection,local-floor"
+         renderer="sortObjects: true"
          physics="debug: true"
          xr-room-physics="debug: true">
 ```
@@ -35,6 +38,7 @@ Ammo physics with no debug visualization
 
 ```
 <a-scene webxr="requiredFeatures: plane-detection,local-floor"
+         renderer="sortObjects: true"
          physics="driver: ammo"
          xr-room-physics>
 ```
@@ -45,6 +49,7 @@ PhysX with reduced plane depth (since CCD can be used with PhysX)
 
 ```
 <a-scene webxr="requiredFeatures: plane-detection,local-floor"
+         renderer="sortObjects: true"
          physx="autoLoad: true"
          xr-room-physics="depth: 0.05">
 ```
@@ -54,13 +59,17 @@ PhysX with reduced plane depth (since CCD can be used with PhysX)
 ## Schema
 
 
-| Property   | Description                                                  | Default            |
-| ---------- | ------------------------------------------------------------ | ------------------ |
-| debug      | When enabled, planes are rendered semi-opaque in random colors, to aid in debugging.  Enabling debug also generates additional console logging related to physics shape calculations. | false              |
-| showPlanes | When debugging, which planes to show: "horizontal", "vertical", or "all" | all                |
-| depth      | Depth (i.e. thickness) to use for walls and surfaces (in meters).  When  Continuous Collision Detection (CCD) is not supported, or is not enabled, a significant depth is needed to prevent fast-moving objects from travelling through planes.<br />As well as extruding walls by this depth, planes are also extended where they meet at corners with other plans, to avoid "leakage" at seams and corners (see [more on leak protection](#leak-protection))<br />Changing this setting will not affect planes that have already been created. | 0.5                |
-| rayOrigin  | The origin used for raycasting for  [leak protection](#leak-protection).  This should be a point inside the room.<br />Changing this setting will not affect planes that have already been created. | x: 0, y: 1.5, z: 0 |
-| delta      | The delta (in meters) used for checking whether to extend a plane for [leak protection](#leak-protection).  Smaller values will typically give more precise extensions, but one-time room setup will be more expensive to compute.<br />Changing this setting will not affect planes that have already been created. | 0.1                |
+| Property       | Description                                                  | Default            |
+| -------------- | ------------------------------------------------------------ | ------------------ |
+| debug          | When enabled, planes are rendered semi-opaque in random colors, to aid in debugging.  Enabling debug also generates additional console logging related to physics shape calculations. | false              |
+| showPlanes     | When debugging, which planes to show: "horizontal", "vertical", or "all" | all                |
+| depth          | Depth (i.e. thickness) to use for walls and surfaces (in meters).  When  Continuous Collision Detection (CCD) is not supported, or is not enabled, a significant depth is needed to prevent fast-moving objects from travelling through planes.<br />As well as extruding walls by this depth, planes are also extended where they meet at corners with other plans, to avoid "leakage" at seams and corners (see [more on leak protection](#leak-protection))<br />Changing this setting will not affect planes that have already been created. | 0.5                |
+| rayOrigin      | The origin used for raycasting for  [leak protection](#leak-protection).  This should be a point inside the room.<br />Changing this setting will not affect planes that have already been created. | x: 0, y: 1.5, z: 0 |
+| delta          | The delta (in meters) used for checking whether to extend a plane for [leak protection](#leak-protection).  Smaller values will typically give more precise extensions, but one-time room setup will be more expensive to compute.<br />Changing this setting will not affect planes that have already been created. | 0.1                |
+| receiveShadows | Shadows will be cast on the planes by objects that cast shadows.  Also requires [shadow config to be set up on the rest of the scene in the normal way](https://aframe.io/docs/1.4.0/components/shadow.html).  Changing this value will not affect planes that have already been created. | true               |
+| shadowOpacity  | The opacity of shadows received on the planes.               | 0.5                |
+| occludeObjects | Objects that are behind the planes will be occluded by the planes.  For this to work reliably, `renderer="sortObjects: true"`must be set on the `<a-scene>`.  Changing this value will not affect planes that have already been created. | true               |
+| renderOrder    | renderOrder value used for occlusion.  -1 is usually sufficient, but if your scene sets negative renderOrder values on other Object3Ds, you might need to set a larger negative. | -1                 |
 
 
 
