@@ -81,7 +81,7 @@ Because planes are extruded by a configurable depth, probems will occur if two p
 
 If using PhysX, these problems can be avoided by using a very small "depth" value for the walls, and using CCD.
 
-For physics systems that don't support CCD, there is currently solution for this problem, as fast-moving objects will tend to be able to pass through thin walls.
+For physics systems that don't support CCD, there is currently solution for this problem.  If you make the walls thin without CCD, fast-moving objects will tend to be able to pass through them.
 
 
 
@@ -126,7 +126,7 @@ There is an example for each supported physics system.  These have no pre-config
 
 If you want to check this out on a desktop computer, here's an example that uses the `desktop-xr-plane` component to simulate a set of XRPlanes.
 
-- [Desktop](https://diarmidmackenzie.github.io/aframe-components/components/xr-room-physics/test/ammo-desktop-room5.html)
+- [Desktop Example](https://diarmidmackenzie.github.io/aframe-components/components/xr-room-physics/test/ammo-desktop-room5.html)
 
 
 
