@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no,user-scalable=no,maximum-scale=1">
     <title>Configure Room Planes in Ammo Physics Engine</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/MozillaReality/ammo.js@8bbc0ea/builds/ammo.wasm.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
     <script src="../dist/xr-room-physics.js"></script>
     <script src="../../ball-blaster/index.js"></script>
@@ -16,19 +15,21 @@
   </head>
   <body>
     <div class="text-overlay">
-      <p>Ammo test with multiple desktop-emulated planes in both convex and concave arrangements.  Space to shoot balls.  Enter VR to also get access to a virtual desktop controller wielding another gun.</p>
+      <p>Cannon test with multiple desktop-emulated planes in both convex and concave arrangements.  Space to shoot balls.  Enter VR to also get access to a virtual desktop controller wielding another gun.</p>
       <p>Q, or A button on VR controller, to toggle debug view.</p>
     </div>
         <a class="code-link"
         target="_blank"
-        href="https://github.com/diarmidmackenzie/aframe-components/blob/master/xr-room-physics/test/ammo-desktop-room5.html">
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/master/xr-room-physics/test/cannon-desktop-room5.html">
         view code
     </a>
+    <!-- extend physics object depth to 1m to prevent leaks
+         (higher value required as low Cannon perf means it often runs at a lower frame rate)-->
     <a-scene webxr="requiredFeatures: plane-detection,local-floor"
              renderer="sortObjects: true"
              background="color:#888"
-             physics="driver: ammo"
-             xr-room-physics="debug: false">
+             physics
+             xr-room-physics="depth: 1">
 
       <a-entity camera look-controls wasd-controls position="0 1.6 0">
         <a-entity position='0 -0.3 0.3' ball-blaster></a-entity>

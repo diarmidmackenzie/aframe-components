@@ -22,14 +22,14 @@
     </a>
     <a-scene background="color:#88f" physx="autoLoad: true; delay: 1000">
 
-      <a-entity position='-0.5 1.5 -1' rotation='20 -20 0' ball-blaster></a-entity>
+      <a-entity position='-0.5 1.5 -1' rotation='20 -20 0' ball-blaster="velocity: 5; debug: true"></a-entity>
 
       <a-entity id="right-hand"
                 hand-controls="hand: right" 
                 position="0.4 1.4 -0.5"
                 rotation="45 0 0"
                 desktop-vr-controller>
-        <a-entity ball-blaster="debug: true" rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>
+        <a-entity controller-ball-blaster="debug: true" rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>
       </a-entity>
     </a-scene>
   </body>
