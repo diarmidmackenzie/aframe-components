@@ -2,9 +2,7 @@
 
 A component that supports simple set-up of physics to match the set of XRPlanes reported by WebXR (e.g. as configured in "room setup" on Oculus Quest).
 
-![image-20230702090037281](image-20230702090037281.png)
-
-(image shows full debug mode, with visual representations of all physics objects)
+https://github-production-user-asset-6210df.s3.amazonaws.com/16045703/252649359-1abc6a1c-2697-415f-bdb1-65b7a4973985.mp4
 
 Compatible with:
 
@@ -54,7 +52,9 @@ PhysX with reduced plane depth (since CCD can be used with PhysX)
          xr-room-physics="depth: 0.05">
 ```
 
+![image-20230702090037281](image-20230702090037281.png)
 
+(image shows full debug mode, with visual representations of all physics objects)
 
 ## Schema
 
