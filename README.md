@@ -56,6 +56,16 @@ I intend to keep all these components up-to-date & working with new versions of 
 
 
 
+### Mixed Reality & Physics
+
+| **Component**                                                | Description                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [xr-room-physics](https://diarmidmackenzie.github.io/aframe-components/components/xr-room-physics/) | Automatic config of physics to match configured room layout in Mixed Reality (compatible with Meta Quest experimental room layout feature) |
+| [ball-blaster](https://diarmidmackenzie.github.io/aframe-components/components/ball-blaster) | A simple gun that shoots small balls. Handy for testing physics. |
+| [desktop-xr-plane](https://diarmidmackenzie.github.io/aframe-components/components/desktop-xr-plane/) | Simulates a WebXR XRPlane on a desktop. Very useful for testing with XRPlanes, without having to use a VR headset. |
+
+
+
 ### Other
 
 | **Component**                                                | Description                                                  |
