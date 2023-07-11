@@ -13,6 +13,16 @@ On Oculus Quest, room setup is still an "experimental" feature.  [Here's a guide
 
 
 
+## Demo
+
+If you have an Oculus Quest headset with room setup configured, you can try this using one of the top 3 links [here](https://diarmidmackenzie.github.io/aframe-components/components/xr-room-physics/test/)
+
+Trigger to shoot balls, press A on the controller to toggle debug visualization.
+
+If you are looking at this on a desktop, use the next set of links down, [here](https://diarmidmackenzie.github.io/aframe-components/components/xr-room-physics/test/#:~:text=testing%20on%20desktop).  These use the `desktop-xr-plane` to simulate a basic room setup on desktop.
+
+
+
 ## Usage
 
 Add the `xr-room-physics` component to your scene, along with your physics system setup.  You will also typically need the `plane-detection` and `local-floor` WebXR features.
@@ -124,9 +134,9 @@ There is an example for each supported physics system.  These have no pre-config
 
 
 
-If you want to check this out on a desktop computer, here's an example that uses the `desktop-xr-plane` component to simulate a set of XRPlanes.
+If you want to check this out on a desktop computer, there are also some examples that use the `desktop-xr-plane` component to simulate a set of XRPlanes (i.e. to simulate a configured "room layout").
 
-- [Desktop Example](https://diarmidmackenzie.github.io/aframe-components/components/xr-room-physics/test/ammo-desktop-room5.html)
+You can find these [here](https://diarmidmackenzie.github.io/aframe-components/components/xr-room-physics/test/#:~:text=testing%20on%20desktop).
 
 
 
