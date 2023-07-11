@@ -2,7 +2,8 @@
 
 A component that supports simple set-up of physics to match the set of XRPlanes reported by WebXR (e.g. as configured in "room setup" on Oculus Quest).
 
-https://github-production-user-asset-6210df.s3.amazonaws.com/16045703/252649359-1abc6a1c-2697-415f-bdb1-65b7a4973985.mp4
+https://github.com/diarmidmackenzie/aframe-components/assets/16045703/9d97d49a-6fcd-450e-a120-e7278b0bcec6
+
 
 Compatible with:
 
