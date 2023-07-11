@@ -1,0 +1,91 @@
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no,user-scalable=no,maximum-scale=1">
+    <title>Configure Room Planes in Ammo Physics Engine</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.js"></script>
+    <script src="../dist/xr-room-physics.js"></script>
+    <script src="../../ball-blaster/index.js"></script>
+    <script src="../../desktop-xr-plane/index.js"></script>
+    <script src="../../desktop-vr-controller/dist/desktop-vr-controller.js"></script>
+    <script src="./toggle-debug.js"></script>
+    <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+      <p>Cannon test with multiple desktop-emulated planes in both convex and concave arrangements.  Space to shoot balls.  Enter VR to also get access to a virtual desktop controller wielding another gun.</p>
+      <p>Q, or A button on VR controller, to toggle debug view.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/master/xr-room-physics/test/cannon-desktop-room5.html">
+        view code
+    </a>
+    <!-- extend physics object depth to 1m to prevent leaks
+         (higher value required as low Cannon perf means it often runs at a lower frame rate)-->
+    <a-scene webxr="requiredFeatures: plane-detection,local-floor"
+             renderer="sortObjects: true"
+             background="color:#888"
+             physics
+             xr-room-physics="depth: 1">
+
+      <a-entity camera look-controls wasd-controls position="0 1.6 0">
+        <a-entity position='0 -0.3 0.3' ball-blaster></a-entity>
+        <a-entity id="right-hand"
+                  hand-controls="hand: right" 
+                  position="0.4 -0.2 -0.5"
+                  rotation="45 0 0"
+                  desktop-vr-controller
+                  toggle-debug>
+          <a-entity controller-ball-blaster="ballColor: orange" rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>
+        </a-entity>
+      </a-entity>
+
+      <a-plane width="2" height="2" position="-2 1 -2" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="0.5" height="2" position="-1 1 -1.75" rotation="0 -90 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="1" height="2" position="-0.5 1 -1.5" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="0.5" height="2" position="0 1 -1.75" rotation="0 90 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="2" height="2" position="1 1 -2" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="0.7071" height="2" position="2.25 1 -1.75" rotation="0 -45 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="1" height="2" position="3 1 -1.5" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="0.7071" height="2" position="3.75 1 -1.75" rotation="0 45 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="1" height="2" position="4.5 1 -2" color="white" wireframe="true"
+            desktop-xr-plane>
+      </a-plane>
+      
+      <!-- ceiling and floor-->
+      <a-plane width="8" height="4" position="1 0 0" rotation="-90 0 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+      <a-plane width="8" height="4" position="1 2 0" rotation="90 0 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+
+      <!-- desk-->
+      <a-plane width="2" height="1" position="1 0.5 0" rotation="-90 0 0" color="white" wireframe="true"
+               desktop-xr-plane>
+      </a-plane>
+
+      <a-entity light="type: ambient; color: #BBB"></a-entity>
+      <a-entity light="type: directional; color: #FFF; intensity: 0.6; castShadow: true" position="-0.5 1 1"></a-entity>
+    </a-scene>
+  </body>
+</html>

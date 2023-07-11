@@ -1,0 +1,33 @@
+{
+  "name": "aframe-xr-room-physics",
+  "version": "0.0.1",
+  "description": "Add physics objects for reported XR room layout",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run dist",
+    "deploy": "npm run build && netlify deploy --prod --dir=.",
+    "dist": "npm run dist:min && npm run dist:max",
+    "dist:max": "webpack",
+    "dist:min": "cross-env NODE_ENV=production webpack",
+    "prepublish": "npm run dist",
+    "start": "cross-env webpack serve"
+  },
+  "keywords": [
+    "aframe",
+    "physics",
+    "xr",
+    "room",
+    "planes"
+  ],
+  "author": "Diarmid Mackenzie",
+  "license": "MIT",
+  "dependencies": {
+    "ratk": "^0.1.1"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.15.1"
+  }
+}
