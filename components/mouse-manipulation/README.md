@@ -1,3 +1,5 @@
+# mouse-manipulation
+
 ## Overview
 
 The `mouse-manipulation` component can be used to provide a rich set of controls to manipulate entities in 3D space using the mouse.  The controls become active when an entity is hovered over with the mouse.

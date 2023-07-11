@@ -1,3 +1,5 @@
+# laser-manipulation
+
 ## Overview
 
 A component to add to a controller that enables the user to move objects around using a laser pointer.

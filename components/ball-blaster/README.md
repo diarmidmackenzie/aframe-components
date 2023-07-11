@@ -1,3 +1,5 @@
+# ball-blaster
+
 ## Overview
 
 A simple gun that blasts small yellow balls.  Useful for testing / demoing physics scenes.

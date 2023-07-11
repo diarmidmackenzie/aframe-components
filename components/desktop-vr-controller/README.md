@@ -1,4 +1,4 @@
-## desktop-vr-controller
+# desktop-vr-controller
 
 When entering VR on a desktop system with no actual VR headset / controllers attached, simulates a VR controller on the desktop, controllable using mouse & keyboard.
 

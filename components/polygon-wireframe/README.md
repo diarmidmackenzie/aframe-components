@@ -1,3 +1,5 @@
+# polygon-wireframe
+
 ## Overview
 
 A component to display wireframes composed of polygons, rather than triangles.

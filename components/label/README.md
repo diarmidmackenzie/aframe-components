@@ -1,3 +1,5 @@
+# label components
+
 ## Overview
 
 A set of components that can be used to add labels to entities in desktop & VR experiences.

@@ -1,3 +1,5 @@
+# stats-panel
+
 ## Overview
 
 Custom statistics based on custom events, output in the same style as A-Frame stats.

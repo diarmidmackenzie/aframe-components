@@ -1,4 +1,4 @@
-## connecting-line
+# connecting-line
 
 Uses the A-Frame "line" component to draw a line between points on two entities.
 

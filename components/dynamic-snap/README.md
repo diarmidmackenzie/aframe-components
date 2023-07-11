@@ -1,7 +1,5 @@
 # dynamic-snap component
 
-
-
 ## Overview
 
 [mouseManipulation]: https://diarmidmackenzie.github.io/aframe-components/components/mouse-manipulation/

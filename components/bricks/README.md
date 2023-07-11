@@ -1,4 +1,4 @@
-## bricks
+# bricks
 
 Building brick entities in A-Frame, pre-integrated with PhysX physics.
 
