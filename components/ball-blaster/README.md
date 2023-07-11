@@ -11,7 +11,14 @@ Compatible with:
 
 
 
+Two components are provided, both with the same schema:
+
+- `ball-blaster` intended for use directly in a scene
+- `controller-ball-blaster` intended for use as a child of a controller.  This component includes some additional functionality to appear when the controller is instantiated (e.g. on entering VR) and disappear when the controller disappears (e.g. on exiting VR)
+
 ## Schema
+
+Both components have the same schema:
 
 
 | Property     | Description                                                  | Default          |
@@ -22,7 +29,7 @@ Compatible with:
 | blasterColor | The color of the blaster                                     | #333 (dark grey) |
 | debug        | Enables detailed console logging of ball speed and position, useful for debugging issues | false            |
 
- The component automatically detects any supported physics system configured on the scene, and applies appropriate physics configuration.
+ The components automatically detects any supported physics system configured on the scene, and applies appropriate physics configuration.
 
 When PhysX is used, Continuous Collision Detection is configured (this is unsupported in Cannon and Ammo).
 
@@ -45,7 +52,7 @@ A blaster held in a player's right hand (with `desktop-vr-controller` simulation
                 position="0.4 1.4 -0.5"
                 rotation="45 0 0"
                 desktop-vr-controller>
-        <a-entity ball-blaster rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>
+        <a-entity controller-ball-blaster rotation="-80 0 0" position="-0.02 0 -0.01"></a-entity>
       </a-entity>
 ```
 

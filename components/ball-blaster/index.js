@@ -44,6 +44,7 @@
   
       const handleHTML = `
       <a-cylinder
+        id = 'ball-blaster-handle'
         color=${this.data.blasterColor}
         height=0.15
         radius=0.02
@@ -53,6 +54,7 @@
 
       const barrelHTML = `
       <a-cylinder
+        id = 'ball-blaster-barrel'
         rotation='90 0 0'
         position='0 0.07 -0.2'
         color=${this.data.blasterColor}
@@ -66,11 +68,9 @@
       this.shootBall = this.shootBall.bind(this)
       this.refreshControllers = this.refreshControllers.bind(this)
 
-
       this.listenForKeys = true
-      
 
-      this.el.sceneEl.addEventListener('controllerconnected', this.refreshControllers)
+      this.refreshControllers()
     },
 
     update() {
@@ -85,12 +85,6 @@
     refreshControllers() {
       this.parentController = this.el.closest('[tracked-controls]')
       if (this.parentController) {
-        this.parentController.addEventListener('controllerdisconnected', () => {
-          this.listenForTrigger = false
-          this.listenForKeys = true
-          this.updateListeners()
-        }, {once: true})
-
         this.listenForTrigger = true
         this.listenForKeys = false
         this.updateListeners()
@@ -112,6 +106,12 @@
 
     remove() {
       this.removeListeners()
+
+      const barrel = this.el.querySelector('#ball-blaster-barrel')
+      this.el.removeChild(barrel)
+
+      const handle = this.el.querySelector('#ball-blaster-handle')
+      this.el.removeChild(handle)
     },
 
     removeListeners() {
@@ -234,10 +234,52 @@
             ball.velocityLogged = true
           }
         }
-
-        
       })
     }
   })
 })()
 
+
+AFRAME.registerComponent('controller-ball-blaster', {
+
+  // matches schema of ball-blaster
+  schema: {
+    velocity: {default: 20},  
+    radius: {default: 0.05}, 
+    ballColor: {default: 'yellow'},
+    blasterColor: {default: '#333'},
+    debug: {default: false}
+  },
+  
+  init() {
+
+    this.refresh = this.refresh.bind(this)
+    this.el.sceneEl.addEventListener('controllerconnected', this.refresh)
+    this.el.sceneEl.addEventListener('controllerdisconnected', this.refresh)
+
+  },
+
+  update() {
+
+    if (this.el.hasAttribute('ball-blaster')) {
+      this.el.setAttribute('ball-blaster', this.data)
+    }
+  },
+
+  refresh() {
+
+    const parentController = this.el.closest('[tracked-controls]')
+
+    // On exit from VR, hand-controls doesn't remove the tracked-controls component.
+    // Arguably that's a bug, but we can work around it.
+    // It does set the controller object to not be visible, so we
+    // can use that to determine that the controller has gone away and 
+    // we should remove the ball-blaster component.
+    if (parentController && parentController.object3D.visible) {
+      this.el.setAttribute('ball-blaster', this.data)
+    }
+    else {
+      this.el.removeAttribute('ball-blaster')
+    }
+  }
+})
