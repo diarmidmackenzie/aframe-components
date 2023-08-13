@@ -20,7 +20,7 @@
   "author": "Diarmid Mackenzie",
   "license": "MIT",
   "dependencies": {
-    "ratk": "^0.1.1"
+    "@mediapipe/tasks-vision": "^0.10.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

@@ -1,3 +1,1 @@
-AFRAME.registerComponent('desktop-xr-hands', {
-  
-})
+require('./src/hand-landmarker.js')
