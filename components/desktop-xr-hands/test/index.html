@@ -14,8 +14,10 @@
         href="https://github.com/diarmidmackenzie/aframe-components/blob/master/components/desktop-xr-hands/test/index.html">
         view code
     </a>
-    <a-scene>
-      <a-entity desktop-xr-hands></a-entity>
+    <a-scene desktop-xr-hands>
+      <a-entity position="0 1.6 0" camera wasd-controls></a-entity>
+      <a-entity desktop-xr-hands hand-tracking-controls="hand: left"></a-entity>
+      <a-entity desktop-xr-hands hand-tracking-controls="hand: right"></a-entity>
     </a-scene>
   </body>
 </html>

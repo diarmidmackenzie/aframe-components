@@ -1,5 +1,46 @@
 require('aframe-screen-display')
 
+class XRJointPose {
+
+  constructor() {
+    this.transform = new XRRigidTransform
+    this.radius = 0
+  }
+}
+
+const xrJoints = [
+  "wrist",
+
+  "thumb-metacarpal",
+  "thumb-phalanx-proximal",
+  "thumb-phalanx-distal",
+  "thumb-tip",
+
+  "index-finger-metacarpal",
+  "index-finger-phalanx-proximal",
+  "index-finger-phalanx-intermediate",
+  "index-finger-phalanx-distal",
+  "index-finger-tip",
+
+  "middle-finger-metacarpal",
+  "middle-finger-phalanx-proximal",
+  "middle-finger-phalanx-intermediate",
+  "middle-finger-phalanx-distal",
+  "middle-finger-tip",
+
+  "ring-finger-metacarpal",
+  "ring-finger-phalanx-proximal",
+  "ring-finger-phalanx-intermediate",
+  "ring-finger-phalanx-distal",
+  "ring-finger-tip",
+
+  "pinky-finger-metacarpal",
+  "pinky-finger-phalanx-proximal",
+  "pinky-finger-phalanx-intermediate",
+  "pinky-finger-phalanx-distal",
+  "pinky-finger-tip"
+]
+
 AFRAME.registerSystem('desktop-xr-hands', {
 
   init() {
@@ -13,13 +54,19 @@ AFRAME.registerSystem('desktop-xr-hands', {
     this.el.sceneEl.addEventListener('enter-vr', this.simulateHands)
     this.el.sceneEl.addEventListener('exit-vr', this.removeHands)
 
+    this.createHands()
+
     this.frame = {
       fillPoses: () => {},
-      fillJointRadii: () => {}
+      fillJointRadii: () => {},
+      getJointPose: this.getJointPose.bind(this),
+    }
+
+    this.referenceSpace = {
+      getOffsetReferenceSpace: () => this.referenceSpace
     }
 
     this.xr = {
-      requestReferenceSpace:  () => {},
       getFrame:  () => {
         return(this.frame)
       },
@@ -30,7 +77,27 @@ AFRAME.registerSystem('desktop-xr-hands', {
       //setPoseTarget: () => {}
     }
 
+    this.inputSources = [
+      { 
+        hand: {
+          // !! work on simplifying this...
+          get: (key) => this.getJoint(this.leftHand, key),
+          values: () => xrJoints.map((key) => this.getJoint(this.leftHand, key))
+        },
+        handedness: 'left'
+      },
+      { 
+        hand: {
+          get: (key) => this.getJoint(this.rightHand, key),
+          values: () => xrJoints.map((key) => this.getJoint(this.rightHand, key))
+        },
+         handedness: 'right'
+      }
+    ]
+
     this.xrSession = {
+      requestReferenceSpace:  () => new Promise((resolve) => {resolve(this.referenceSpace)}),
+      inputSources: this.inputSources
     }
 
     // use parent container, so that video scale can be manipulated to flip scale and adjust height.
@@ -43,11 +110,40 @@ AFRAME.registerSystem('desktop-xr-hands', {
     this.videoOutputContainer.appendChild(this.videoOutput)
   },
 
+  getJoint(hand, key) {
+
+    return { hand: hand, jointName: key }
+
+  },
+
+  createHands() {
+
+    this.leftHand = {}
+    this.rightHand = {}
+
+    xrJoints.forEach((jointName) => {
+      const pose = new XRJointPose()
+      this.leftHand[jointName] = pose
+    })
+
+    xrJoints.forEach((jointName) => {
+      const pose = new XRJointPose()
+      this.rightHand[jointName] = pose
+    })
+  },
+
+  getJointPose(joint) {
+
+    const {hand, jointName} = joint
+    const pose = hand[jointName]
+    return pose
+  },
+
   simulateHands() {
     // If there is an XR session (real or simulated), do nothing.
     const renderer = this.el.sceneEl.renderer
     const xr = renderer.xr
-    const xrSession = xr.getSesssion ? xr.getSession() : null
+    const xrSession = xr.getSession ? xr.getSession() : null
     if (xrSession) {
         console.log("desktop-xr-hands suppressed due to presence of an XR session")
         return;
@@ -56,9 +152,12 @@ AFRAME.registerSystem('desktop-xr-hands', {
     this.originalXr = xr
     renderer.xr = this.xr
     this.xrSession.isPresenting = true
+    this.el.sceneEl.xrSession = this.xr.getSession()
 
     this.el.setAttribute('hand-landmarker', 'videoOutput: #desktop-xr-hands-video-output')
   
+    this.el.sceneEl.emit('controllerconnected')
+    this.el.sceneEl.emit('controllersupdated')
   },
 
   removeHands() {
@@ -81,4 +180,12 @@ AFRAME.registerSystem('desktop-xr-hands', {
     this.removeHands()
   }
 
+})
+
+
+AFRAME.registerComponent('desktop-xr-hands', {
+
+  tick() {
+    this.el.sceneEl.frame = this.system.frame
+  }
 })
