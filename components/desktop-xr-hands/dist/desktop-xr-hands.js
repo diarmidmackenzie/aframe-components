@@ -11,6 +11,276 @@
 return /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./node_modules/aframe-screen-display/index.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/aframe-screen-display/index.js ***!
+  \*****************************************************/
+/***/ (() => {
+
+/* xpos & ypos approximately like CSS px
+ * zdist is units in m.  Dfeault is 1cm.  Don't set below 0.5cm,
+ * or you will hit the default near clipping plane on the camera.
+ * (of course you can change that if you want...)
+ * near	Camera frustum near clipping plane.	0.005
+ * xscale - when default is 1,
+ * object is scaled so that 1m takes up about 1cm on screen, 1:100 scale */
+AFRAME.registerComponent('screen-display', {
+
+  schema: {
+    position: {type: 'string', default: "percent"},
+    xpos: {type: 'number', default: 50},
+    ypos: {type: 'number', default: 50},
+    scale: {type: 'string', default: "percent"},
+    keepaspect: {type: 'boolean', default: true},
+    width: {type: 'number', default: 10},
+    height: {type: 'number'},
+    zscale: {type: 'number'},
+    zdist: {type: 'number', default: 0.01},
+  },
+
+  update: function() {
+    // Get screen size
+    // See: https://www.w3schools.com/jsref/prop_win_innerheight.asp
+    this.screenwidth = window.innerWidth ||
+                       document.documentElement.clientWidth ||
+                       document.body.clientWidth;
+
+    this.screenheight = window.innerHeight ||
+                        document.documentElement.clientHeight ||
+                        document.body.clientHeight;
+
+    // Set up position, based on configuration.
+    switch (this.data.position) {
+      case "percent":
+        this.xpospercent = this.data.xpos;
+        this.ypospercent = this.data.ypos;
+        break;
+
+      case "pixels":
+        this.xpospercent = 100 * this.data.xpos / this.screenwidth;
+        this.ypospercent = 100 * this.data.ypos / this.screenheight;
+        break;
+
+      default:
+        console.log(`Unexpected Config: ${this.data.position}`);
+
+    }
+
+    // Set up scale, based on configuration.
+    // Swt up height & width first.
+    // Then rewrite height if we need to preserve aspect ratio.
+    switch (this.data.scale) {
+      case "percent":
+        this.xscalepercent = this.data.width;
+        this.yscalepercent = this.data.height;
+        break;
+
+      case "pixels":
+        this.xscalepercent = 100 * this.data.width / this.screenwidth;
+        this.yscalepercent = 100 * this.data.height / this.screenheight;
+        break;
+
+      default:
+        console.warn(`Unexpected Config: ${this.data.position}`);
+    }
+
+    if (this.data.keepaspect) {
+      // keep aspect ratio.
+      // Set height based on width.
+      this.yscalepercent = this.xscalepercent * this.screenwidth / this.screenheight;
+
+      if (this.data.height) {
+        console.warn(`Height being ignored, since "keepaspect" is set.`)
+      }
+    }
+    else
+    {
+      if (!this.data.height) {
+        console.warn(`"keepaspect" is not set, so height is required, but none provided.`)
+      }
+    }
+
+    // height of FOV at zdist in meters.
+    // FOV is based on height, not width:
+    // https://threejs.org/docs/#api/en/cameras/PerspectiveCamera.fov
+    // No idea why, but true FOV seems to be 59 degrees +/- from
+    // Default FOV is supposed to be 80... ???
+    var fovHeight = Math.tan(59  * Math.PI / 180) * this.data.zdist;
+    var fovWidth = fovHeight * this.screenwidth / this.screenheight;
+
+    // Now x position is (relPx from Center) / (width in Px) * fovWidth.
+    // Similarly for y...
+    //var x3DPos = xRelPx / this.width * fovWidth;
+    //var y3DPos = yRelPx / this.height * fovHeight;
+    var x3DPos = ((this.xpospercent / 100) - 0.5) * fovWidth;
+    var y3DPos = (0.5 - (this.ypospercent / 100)) * fovHeight;
+
+    this.el.object3D.position.set(x3DPos, y3DPos, -this.data.zdist)
+
+    const x3DScale = fovWidth * this.xscalepercent / 100
+    const y3DScale = fovHeight * this.yscalepercent / 100
+
+    // zscale value depends whether keepaspect is set.
+    // if it is not set, zscale parameter provides the percentage of the z-distance
+    // to be used as the depth of the object.
+    var z3DScale = this.data.zscale * this.data.zdist / 100;
+    if (this.data.keepaspect) {
+      z3DScale = x3DScale;
+    }
+    else if (!this.data.zscale) {
+      console.warn(`"keepaspect" is not set, so zscale is required, but none provided.`)
+    }
+
+    this.el.object3D.scale.set(x3DScale, y3DScale, z3DScale)
+  },
+
+  tick: function() {
+
+    const screenwidth = window.innerWidth ||
+                        document.documentElement.clientWidth ||
+                        document.body.clientWidth;
+
+    const screenheight = window.innerHeight ||
+                         document.documentElement.clientHeight ||
+                         document.body.clientHeight;
+
+    if ((this.screenwidth !== screenwidth) ||
+        (this.screenheight !== screenheight)) {
+      this.update()
+    }
+  }
+
+});
+
+/* Workarounds for the fact that the "event-set" components
+ * cannot set properties on components that include dashes
+ * in their names.  See: https://github.com/supermedium/superframe/issues/296
+ * This component wraps up the screeen-display component
+ * in a new component with no dashes in its name.  */
+AFRAME.registerComponent('screendisplay', {
+
+  schema : {
+    position: {type: 'string', default: "percent"},
+    xpos: {type: 'number', default: 50},
+    ypos: {type: 'number', default: 50},
+    scale: {type: 'string', default: "percent"},
+    keepaspect: {type: 'boolean', default: true},
+    width: {type: 'number', default: 10},
+    height: {type: 'number'},
+    zscale: {type: 'number'},
+    zdist: {type: 'number', default: 0.01},
+  },
+
+  update: function () {
+    this.el.setAttribute("screen-display",
+                          {position: this.data.position,
+                           xpos: this.data.xpos,
+                           ypos: this.data.ypos,
+                           scale: this.data.scale,
+                           keepaspect: this.data.keepaspect,
+                           width: this.data.width,
+                           height: this.data.height,
+                           zscale: this.data.zscale,
+                           zdist: this.data.zdist});
+  }
+});
+
+
+/***/ }),
+
+/***/ "./src/desktop-xr-hands.js":
+/*!*********************************!*\
+  !*** ./src/desktop-xr-hands.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+__webpack_require__(/*! aframe-screen-display */ "./node_modules/aframe-screen-display/index.js")
+
+AFRAME.registerSystem('desktop-xr-hands', {
+
+  init() {
+    
+    this.handsDetected = this.handsDetected.bind(this)
+    this.el.addEventListener('hands-detected', this.handsDetected)
+    this.latestHandData = null
+
+    this.simulateHands = this.simulateHands.bind(this)
+    this.removeHands = this.removeHands.bind(this)
+    this.el.sceneEl.addEventListener('enter-vr', this.simulateHands)
+    this.el.sceneEl.addEventListener('exit-vr', this.removeHands)
+
+    this.frame = {
+      fillPoses: () => {},
+      fillJointRadii: () => {}
+    }
+
+    this.xr = {
+      requestReferenceSpace:  () => {},
+      getFrame:  () => {
+        return(this.frame)
+      },
+      getSession: () => {
+        return this.xrSession
+      }
+      //getReferenceSpace:  () => {},
+      //setPoseTarget: () => {}
+    }
+
+    this.xrSession = {
+    }
+
+    // use parent container, so that video scale can be manipulated to flip scale and adjust height.
+    this.videoOutputContainer = document.createElement('a-entity')
+    this.videoOutputContainer.setAttribute('screen-display', 'xpos: 12; ypos: 12; width: 20')
+    document.querySelector('[camera]').appendChild(this.videoOutputContainer)
+
+    this.videoOutput = document.createElement('a-plane')
+    this.videoOutput.id = 'desktop-xr-hands-video-output'
+    this.videoOutputContainer.appendChild(this.videoOutput)
+  },
+
+  simulateHands() {
+    // If there is an XR session (real or simulated), do nothing.
+    const renderer = this.el.sceneEl.renderer
+    const xr = renderer.xr
+    const xrSession = xr.getSesssion ? xr.getSession() : null
+    if (xrSession) {
+        console.log("desktop-xr-hands suppressed due to presence of an XR session")
+        return;
+    }
+
+    this.originalXr = xr
+    renderer.xr = this.xr
+    this.xrSession.isPresenting = true
+
+    this.el.setAttribute('hand-landmarker', 'videoOutput: #desktop-xr-hands-video-output')
+  
+  },
+
+  removeHands() {
+
+    this.xrSession.isPresenting = false
+    this.el.removeAttribute('hand-landmarker')
+
+    if (this.originalXr) {
+      this.el.sceneEl.renderer.xr = this.originalXr
+    }
+  },
+
+  handsDetected(e) {
+
+    this.latestHandData = e.handData
+
+  },
+
+  remove() {
+    this.removeHands()
+  }
+
+})
+
+/***/ }),
+
 /***/ "./src/hand-landmarker.js":
 /*!********************************!*\
   !*** ./src/hand-landmarker.js ***!
@@ -22,6 +292,10 @@ const {FilesetResolver, HandLandmarker} = __webpack_require__(/*! @mediapipe/tas
 AFRAME.registerComponent('hand-landmarker', {
 
   schema: {
+    // plane for output in video mode
+    videoOutput: {type: 'selector'},
+
+    // these settings only apply when not in full-screen mode
     showVideo: {default: true},
     videoTop: {default: '10px'},
     videoLeft: {default: '10px'},
@@ -30,8 +304,10 @@ AFRAME.registerComponent('hand-landmarker', {
 
   init() {
     
+    // video will need to be in-scene to be visible in Immersive mode...
     this.lastVideoTime = 0
     this.video = document.createElement('video')
+    this.video.id = THREE.MathUtils.generateUUID()
     this.video.autoplay = true
     this.video.playsInline = true
     this.video.style.position = "absolute"
@@ -53,6 +329,36 @@ AFRAME.registerComponent('hand-landmarker', {
 
     // start face detector (completes asynchronously)
     this.startHandLandmarker()
+  },
+
+  update() {
+    if (this.data.videoOutput) {
+      this.data.videoOutput.setAttribute('src', `#${this.video.id}`)
+
+      this.video.addEventListener('play', () => {
+        const heightRatio = this.video.videoHeight / this.video.videoWidth
+        
+        // adjust height to match video & flip horizontally.
+        this.data.videoOutput.setAttribute('scale', `-1 ${heightRatio} 1`)
+      })
+    }
+  },
+
+  remove() {
+    this.data.videoOutput.setAttribute('src', '')
+    if (this.video) {
+      // shut down webcam
+      const stream = this.video.srcObject
+      const track = stream.getTracks()[0]
+      track.stop();
+
+      // remove video El.
+      this.video.parentNode.removeChild(this.video)
+      this.video = null
+    }
+
+    // stop the landmarker
+    this.handLandmarker = null
   },
 
   async startHandLandmarker() {
@@ -84,7 +390,7 @@ AFRAME.registerComponent('hand-landmarker', {
   
     // Detect hands using detectForVideo
     const startTimeMs = performance.now();
-    if (this.video.currentTime !== this.lastVideoTime) {
+    if (this.video && this.video.currentTime !== this.lastVideoTime) {
 
       try {
         //console.log("Analyzing video for hand landmarks")
@@ -94,7 +400,6 @@ AFRAME.registerComponent('hand-landmarker', {
           // recognized some hands
           this.eventData.handData = result;
           this.el.emit('hands-detected', this.eventData)
-          console.log(this.eventData)
         }
 
         const dur = performance.now() - startTimeMs
@@ -111,7 +416,9 @@ AFRAME.registerComponent('hand-landmarker', {
     }
   
     // Call this function again to keep predicting when the browser is ready
-    window.requestAnimationFrame(this.predictWebcam);
+    if (this.handLandmarker) {
+      window.requestAnimationFrame(this.predictWebcam);
+    }
   }
 })
 
@@ -177,6 +484,7 @@ var __webpack_exports__ = {};
   !*** ./index.js ***!
   \******************/
 __webpack_require__(/*! ./src/hand-landmarker.js */ "./src/hand-landmarker.js")
+__webpack_require__(/*! ./src/desktop-xr-hands.js */ "./src/desktop-xr-hands.js")
 
 })();
 

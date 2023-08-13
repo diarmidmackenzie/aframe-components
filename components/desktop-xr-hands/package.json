@@ -20,7 +20,8 @@
   "author": "Diarmid Mackenzie",
   "license": "MIT",
   "dependencies": {
-    "@mediapipe/tasks-vision": "^0.10.0"
+    "@mediapipe/tasks-vision": "^0.10.0",
+    "aframe-screen-display": "^0.1.2"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

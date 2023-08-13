@@ -3,6 +3,10 @@ const {FilesetResolver, HandLandmarker} = require('@mediapipe/tasks-vision')
 AFRAME.registerComponent('hand-landmarker', {
 
   schema: {
+    // plane for output in video mode
+    videoOutput: {type: 'selector'},
+
+    // these settings only apply when not in full-screen mode
     showVideo: {default: true},
     videoTop: {default: '10px'},
     videoLeft: {default: '10px'},
@@ -11,8 +15,10 @@ AFRAME.registerComponent('hand-landmarker', {
 
   init() {
     
+    // video will need to be in-scene to be visible in Immersive mode...
     this.lastVideoTime = 0
     this.video = document.createElement('video')
+    this.video.id = THREE.MathUtils.generateUUID()
     this.video.autoplay = true
     this.video.playsInline = true
     this.video.style.position = "absolute"
@@ -34,6 +40,36 @@ AFRAME.registerComponent('hand-landmarker', {
 
     // start face detector (completes asynchronously)
     this.startHandLandmarker()
+  },
+
+  update() {
+    if (this.data.videoOutput) {
+      this.data.videoOutput.setAttribute('src', `#${this.video.id}`)
+
+      this.video.addEventListener('play', () => {
+        const heightRatio = this.video.videoHeight / this.video.videoWidth
+        
+        // adjust height to match video & flip horizontally.
+        this.data.videoOutput.setAttribute('scale', `-1 ${heightRatio} 1`)
+      })
+    }
+  },
+
+  remove() {
+    this.data.videoOutput.setAttribute('src', '')
+    if (this.video) {
+      // shut down webcam
+      const stream = this.video.srcObject
+      const track = stream.getTracks()[0]
+      track.stop();
+
+      // remove video El.
+      this.video.parentNode.removeChild(this.video)
+      this.video = null
+    }
+
+    // stop the landmarker
+    this.handLandmarker = null
   },
 
   async startHandLandmarker() {
@@ -65,7 +101,7 @@ AFRAME.registerComponent('hand-landmarker', {
   
     // Detect hands using detectForVideo
     const startTimeMs = performance.now();
-    if (this.video.currentTime !== this.lastVideoTime) {
+    if (this.video && this.video.currentTime !== this.lastVideoTime) {
 
       try {
         //console.log("Analyzing video for hand landmarks")
@@ -91,6 +127,8 @@ AFRAME.registerComponent('hand-landmarker', {
     }
   
     // Call this function again to keep predicting when the browser is ready
-    window.requestAnimationFrame(this.predictWebcam);
+    if (this.handLandmarker) {
+      window.requestAnimationFrame(this.predictWebcam);
+    }
   }
 })
