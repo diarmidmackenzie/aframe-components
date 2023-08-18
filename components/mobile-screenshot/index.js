@@ -11,38 +11,7 @@ AFRAME.registerComponent('mobile-screenshot', {
 
     this.canvas = document.createElement('canvas')
     this.ctx = this.canvas.getContext('2d')
-    const video = this.video = document.createElement('video')
-    document.body.appendChild(video)
-    // these dettings display the video in the background, similar to what happens on entry to AR with WebXR.
-    // not quite full-screen though due to aspect ratio.
-    video.style.top = 0
-    video.style.left = 0
-    video.style.width = "100%"
-    video.style.height = "100%"
-    video.style.position = "absolute"
-    video.style.zIndex = -1
-
-    if (!navigator.mediaDevices?.getUserMedia) {
-      console.warn("getUserMedia is unsupported by this browser")
-    }
-
-    // Doesn't work - unfortunately, grabbing the camera prevents WebXR from accessing the camera at all.
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" },
-                                          audio: false })
-      .then((stream) => {
-        video.srcObject = stream
-        video.play()
-      })
-      .catch((err) => {
-        console.error(`An error occurred: ${err}`)
-      });
-
-    video.addEventListener("canplay", () => {
-      const width = data.width
-      const height = (video.videoHeight / video.videoWidth) * width;
-      video.setAttribute("width", width)
-      video.setAttribute("height", height)
-    }, { once: true})
+    
 
   },
 
