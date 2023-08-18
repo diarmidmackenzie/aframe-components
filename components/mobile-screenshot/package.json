@@ -1,0 +1,24 @@
+{
+  "name": "aframe-mobile-screenshot",
+  "version": "0.0.1",
+  "description": "AR screenshots on mobile for A-Frame",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diarmidmackenzie/aframe-components.git"
+  },
+  "keywords": [
+    "A-Frame",
+    "mobile",
+    "screenshot"
+  ],
+  "author": "Diarmid Mackenzie",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/diarmidmackenzie/aframe-components/issues"
+  },
+  "homepage": "https://github.com/diarmidmackenzie/aframe-components/components/mobile-screenshot#readme"
+}
