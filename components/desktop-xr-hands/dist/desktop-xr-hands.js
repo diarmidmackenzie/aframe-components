@@ -258,12 +258,12 @@ const xrJoints = [
 const xrJointMPMappings = [
   [0, 0, 1, 0, 9], // "wrist"
 
-  [1, 1, 1, 0, 1], // "thumb-metacarpal"
+  [0, 1, 0.6, 0, 1], // "thumb-metacarpal"
   [2, 2, 1, 1, 2], // "thumb-phalanx-proximal"
   [3, 3, 1, 2, 3], // "thumb-phalanx-distal"
   [4, 4, 1, 3, 4], // "thumb-tip"
 
-  [0, 5, 0.3, 0, 5], // "index-finger-metacarpal"
+  [1, 5, 0.3, 1, 5], // "index-finger-metacarpal"
   [5, 5, 1, 5, 6], // "index-finger-phalanx-proximal"
   [6, 6, 1, 6, 7], // "index-finger-phalanx-intermediate"
   [7, 7, 1, 6, 7], // "index-finger-phalanx-distal"
@@ -288,10 +288,11 @@ const xrJointMPMappings = [
   [20, 20, 1, 19, 20], // "pinky-finger-tip"
 ]
 
+// used for temporary working.
 const _vector = new THREE.Vector3()
 const _worldPosition = new THREE.Vector3()
 const _direction = new THREE.Vector3()
-const _yAxis = new THREE.Vector3(0, 0, -1)
+const _zAxis = new THREE.Vector3(0, 0, -1)
 const _position = new THREE.Vector3()
 const _orientation = new THREE.Quaternion()
 const _scale = new THREE.Vector3(1, 1, 1)
@@ -433,7 +434,8 @@ AFRAME.registerSystem('desktop-xr-hands', {
     this.latestHandData.handednesses.forEach((handedness, index) => {
 
       let hand
-      if (handedness[0].categoryName === "Right") {
+      // flip hand identification, as webcam feed is mirrored.
+      if (handedness[0].categoryName === "Left") {
         hand = this.rightHand
         baseX = 0.5
       }
@@ -457,6 +459,15 @@ AFRAME.registerSystem('desktop-xr-hands', {
 
   extractDataPoint(hand, jointName, jointIndex, worldLandmarks) {
 
+    // Needed to map from Mediapipe space to XR scene space.
+    // I don't understand exactly why these are needed, but this seems to work...
+    // x-flip makes sense due to front webcam mirroring the scene
+    // no real understanding why the y-flip is needed.
+    const flipVector = (v) => {
+      v.x = -v.x
+      v.y = -v.y
+    }
+
     const [posIndex, pos2Index, weight, startIndex, endIndex] = xrJointMPMappings[jointIndex]
     // ## TO DO - weight between 2 x positions.
 
@@ -464,7 +475,8 @@ AFRAME.registerSystem('desktop-xr-hands', {
     const start = worldLandmarks[startIndex]
     const end = worldLandmarks[endIndex]
     _direction.subVectors(end, start).normalize()
-    _orientation.setFromUnitVectors(_yAxis, _direction)
+    flipVector(_direction)
+    _orientation.setFromUnitVectors(_zAxis, _direction)
 
     // determine position
     // ## TO DO - get position from camera feed - hardcoded for now.
@@ -472,6 +484,7 @@ AFRAME.registerSystem('desktop-xr-hands', {
     _position.copy(worldLandmarks[posIndex])
     _vector.copy(worldLandmarks[pos2Index])
     _position.lerp(_vector, weight)
+    flipVector(_position)
     _position.add(_worldPosition)
 
     // fill in XRJointPose object with data
