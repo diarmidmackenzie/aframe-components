@@ -11,6 +11,29 @@
 return /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./node_modules/@mediapipe/drawing_utils/drawing_utils.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/@mediapipe/drawing_utils/drawing_utils.js ***!
+  \****************************************************************/
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+(function(){/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+'use strict';function h(a){var c=0;return function(){return c<a.length?{done:!1,value:a[c++]}:{done:!0}}}var l="function"==typeof Object.defineProperties?Object.defineProperty:function(a,c,b){if(a==Array.prototype||a==Object.prototype)return a;a[c]=b.value;return a};
+function m(a){a=["object"==typeof globalThis&&globalThis,a,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof __webpack_require__.g&&__webpack_require__.g];for(var c=0;c<a.length;++c){var b=a[c];if(b&&b.Math==Math)return b}throw Error("Cannot find global object");}var n=m(this);function p(a,c){if(c)a:{var b=n;a=a.split(".");for(var d=0;d<a.length-1;d++){var e=a[d];if(!(e in b))break a;b=b[e]}a=a[a.length-1];d=b[a];c=c(d);c!=d&&null!=c&&l(b,a,{configurable:!0,writable:!0,value:c})}}
+function q(a){var c="undefined"!=typeof Symbol&&Symbol.iterator&&a[Symbol.iterator];return c?c.call(a):{next:h(a)}}var r="function"==typeof Object.assign?Object.assign:function(a,c){for(var b=1;b<arguments.length;b++){var d=arguments[b];if(d)for(var e in d)Object.prototype.hasOwnProperty.call(d,e)&&(a[e]=d[e])}return a};p("Object.assign",function(a){return a||r});
+p("Array.prototype.fill",function(a){return a?a:function(c,b,d){var e=this.length||0;0>b&&(b=Math.max(0,e+b));if(null==d||d>e)d=e;d=Number(d);0>d&&(d=Math.max(0,e+d));for(b=Number(b||0);b<d;b++)this[b]=c;return this}});function t(a){return a?a:Array.prototype.fill}p("Int8Array.prototype.fill",t);p("Uint8Array.prototype.fill",t);p("Uint8ClampedArray.prototype.fill",t);p("Int16Array.prototype.fill",t);p("Uint16Array.prototype.fill",t);p("Int32Array.prototype.fill",t);
+p("Uint32Array.prototype.fill",t);p("Float32Array.prototype.fill",t);p("Float64Array.prototype.fill",t);var u=this||self;function v(a,c){a=a.split(".");var b=u;a[0]in b||"undefined"==typeof b.execScript||b.execScript("var "+a[0]);for(var d;a.length&&(d=a.shift());)a.length||void 0===c?b[d]&&b[d]!==Object.prototype[d]?b=b[d]:b=b[d]={}:b[d]=c};var w={color:"white",lineWidth:4,radius:6,visibilityMin:.5};function x(a){a=a||{};return Object.assign({},w,{fillColor:a.color},a)}function y(a,c){return a instanceof Function?a(c):a}function z(a,c,b){return Math.max(Math.min(c,b),Math.min(Math.max(c,b),a))}v("clamp",z);
+v("drawLandmarks",function(a,c,b){if(c){b=x(b);a.save();var d=a.canvas,e=0;c=q(c);for(var f=c.next();!f.done;f=c.next())if(f=f.value,void 0!==f&&(void 0===f.visibility||f.visibility>b.visibilityMin)){a.fillStyle=y(b.fillColor,{index:e,from:f});a.strokeStyle=y(b.color,{index:e,from:f});a.lineWidth=y(b.lineWidth,{index:e,from:f});var g=new Path2D;g.arc(f.x*d.width,f.y*d.height,y(b.radius,{index:e,from:f}),0,2*Math.PI);a.fill(g);a.stroke(g);++e}a.restore()}});
+v("drawConnectors",function(a,c,b,d){if(c&&b){d=x(d);a.save();var e=a.canvas,f=0;b=q(b);for(var g=b.next();!g.done;g=b.next()){var k=g.value;a.beginPath();g=c[k[0]];k=c[k[1]];g&&k&&(void 0===g.visibility||g.visibility>d.visibilityMin)&&(void 0===k.visibility||k.visibility>d.visibilityMin)&&(a.strokeStyle=y(d.color,{index:f,from:g,to:k}),a.lineWidth=y(d.lineWidth,{index:f,from:g,to:k}),a.moveTo(g.x*e.width,g.y*e.height),a.lineTo(k.x*e.width,k.y*e.height));++f;a.stroke()}a.restore()}});
+v("drawRectangle",function(a,c,b){b=x(b);a.save();var d=a.canvas;a.beginPath();a.lineWidth=y(b.lineWidth,{});a.strokeStyle=y(b.color,{});a.fillStyle=y(b.fillColor,{});a.translate(c.xCenter*d.width,c.yCenter*d.height);a.rotate(c.rotation*Math.PI/180);a.rect(-c.width/2*d.width,-c.height/2*d.height,c.width*d.width,c.height*d.height);a.translate(-c.xCenter*d.width,-c.yCenter*d.height);a.stroke();a.fill();a.restore()});v("lerp",function(a,c,b,d,e){return z(d*(1-(a-c)/(b-c))+e*(1-(b-a)/(b-c)),d,e)});}).call(this);
+
+
+/***/ }),
+
 /***/ "./node_modules/aframe-screen-display/index.js":
 /*!*****************************************************!*\
   !*** ./node_modules/aframe-screen-display/index.js ***!
@@ -536,6 +559,15 @@ AFRAME.registerSystem('desktop-xr-hands', {
 
   remove() {
     this.removeHands()
+  },
+
+  tick() {
+
+    // necessary to keep rendered texture up-to-date.
+    // see: https://aframe.io/docs/1.4.0/components/material.html#canvas-textures
+    const mesh = this.videoOutput.getObject3D('mesh')
+    if(!mesh || !mesh.material.map) return
+    mesh.material.map.needsUpdate = true
   }
 
 })
@@ -558,18 +590,35 @@ AFRAME.registerComponent('desktop-xr-hands', {
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 const {FilesetResolver, HandLandmarker} = __webpack_require__(/*! @mediapipe/tasks-vision */ "./node_modules/@mediapipe/tasks-vision/vision_bundle.cjs")
+const {drawConnectors, drawLandmarks} = __webpack_require__(/*! @mediapipe/drawing_utils */ "./node_modules/@mediapipe/drawing_utils/drawing_utils.js")
+const HAND_CONNECTIONS = [[0, 1],
+                          [1, 2],
+                          [2, 3], 
+                          [3, 4], 
+                          [0, 5], 
+                          [5, 6], 
+                          [6, 7], 
+                          [7, 8], 
+                          [5, 9], 
+                          [9, 10], 
+                          [10, 11], 
+                          [11, 12], 
+                          [9, 13], 
+                          [13, 14], 
+                          [14, 15], 
+                          [15, 16], 
+                          [13, 17], 
+                          [0, 17],
+                          [17, 18], 
+                          [18, 19], 
+                          [19, 20]]
 
 AFRAME.registerComponent('hand-landmarker', {
 
   schema: {
     // plane for output in video mode
     videoOutput: {type: 'selector'},
-
-    // these settings only apply when not in full-screen mode
-    showVideo: {default: true},
-    videoTop: {default: '10px'},
-    videoLeft: {default: '10px'},
-    videoWidth: {default: '200px'}
+    
   },
 
   init() {
@@ -580,15 +629,15 @@ AFRAME.registerComponent('hand-landmarker', {
     this.video.id = THREE.MathUtils.generateUUID()
     this.video.autoplay = true
     this.video.playsInline = true
-    this.video.style.position = "absolute"
-    this.video.style.top = this.data.videoTop
-    this.video.style.left = this.data.videoLeft
-    this.video.style.zIndex = this.data.showVideo ? 10 : -10
-    this.video.style.width = this.data.videoWidth
-    this.video.style.height = 'auto'
-    this.video.style.transform = 'rotateY(180deg)'
 
     document.body.appendChild(this.video)
+
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = 512
+    this.canvas.height = 512
+    this.canvas.id = THREE.MathUtils.generateUUID()
+    this.canvasCtx = this.canvas.getContext("2d");
+    document.body.appendChild(this.canvas)
 
     this.eventData = {
       video: this.video,
@@ -603,7 +652,7 @@ AFRAME.registerComponent('hand-landmarker', {
 
   update() {
     if (this.data.videoOutput) {
-      this.data.videoOutput.setAttribute('src', `#${this.video.id}`)
+      this.data.videoOutput.setAttribute('src', `#${this.canvas.id}`)
 
       this.video.addEventListener('play', () => {
         const heightRatio = this.video.videoHeight / this.video.videoWidth
@@ -674,12 +723,14 @@ AFRAME.registerComponent('hand-landmarker', {
 
         const dur = performance.now() - startTimeMs
         //console.log(`Analysis took: ${dur} msecs`)
+
+        this.updateCanvas(result)
       }
       catch(err) {
         console.log("Exception hit in Mediapipe")
         console.log(err)
         console.log("Restarting")
-        await startHandLandmarker();
+        await this.startHandLandmarker();
       };
 
       this.lastVideoTime = this.video.currentTime;
@@ -689,6 +740,25 @@ AFRAME.registerComponent('hand-landmarker', {
     if (this.handLandmarker) {
       window.requestAnimationFrame(this.predictWebcam);
     }
+  },
+  
+  updateCanvas(result) {
+    const canvasCtx = this.canvasCtx
+    const canvasElement = this.canvas
+    canvasCtx.save();
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasCtx.drawImage(this.video, 0, 0, canvasElement.width, canvasElement.height)
+    if (result.landmarks) {
+      for (const landmarks of result.landmarks) {
+        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
+          color: "#00FF00",
+          lineWidth: 5
+        });
+        drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
+      }
+    }
+    canvasCtx.restore();
+
   }
 })
 
@@ -727,7 +797,7 @@ Object.defineProperty(exports, "__esModule", ({value:!0}));var commonjsGlobal="u
 /******/ 		};
 /******/ 	
 /******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;

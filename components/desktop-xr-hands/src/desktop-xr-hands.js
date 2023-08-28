@@ -340,6 +340,15 @@ AFRAME.registerSystem('desktop-xr-hands', {
 
   remove() {
     this.removeHands()
+  },
+
+  tick() {
+
+    // necessary to keep rendered texture up-to-date.
+    // see: https://aframe.io/docs/1.4.0/components/material.html#canvas-textures
+    const mesh = this.videoOutput.getObject3D('mesh')
+    if(!mesh || !mesh.material.map) return
+    mesh.material.map.needsUpdate = true
   }
 
 })

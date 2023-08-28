@@ -1,16 +1,33 @@
 const {FilesetResolver, HandLandmarker} = require('@mediapipe/tasks-vision')
+const {drawConnectors, drawLandmarks} = require('@mediapipe/drawing_utils')
+const HAND_CONNECTIONS = [[0, 1],
+                          [1, 2],
+                          [2, 3], 
+                          [3, 4], 
+                          [0, 5], 
+                          [5, 6], 
+                          [6, 7], 
+                          [7, 8], 
+                          [5, 9], 
+                          [9, 10], 
+                          [10, 11], 
+                          [11, 12], 
+                          [9, 13], 
+                          [13, 14], 
+                          [14, 15], 
+                          [15, 16], 
+                          [13, 17], 
+                          [0, 17],
+                          [17, 18], 
+                          [18, 19], 
+                          [19, 20]]
 
 AFRAME.registerComponent('hand-landmarker', {
 
   schema: {
     // plane for output in video mode
     videoOutput: {type: 'selector'},
-
-    // these settings only apply when not in full-screen mode
-    showVideo: {default: true},
-    videoTop: {default: '10px'},
-    videoLeft: {default: '10px'},
-    videoWidth: {default: '200px'}
+    
   },
 
   init() {
@@ -21,15 +38,15 @@ AFRAME.registerComponent('hand-landmarker', {
     this.video.id = THREE.MathUtils.generateUUID()
     this.video.autoplay = true
     this.video.playsInline = true
-    this.video.style.position = "absolute"
-    this.video.style.top = this.data.videoTop
-    this.video.style.left = this.data.videoLeft
-    this.video.style.zIndex = this.data.showVideo ? 10 : -10
-    this.video.style.width = this.data.videoWidth
-    this.video.style.height = 'auto'
-    this.video.style.transform = 'rotateY(180deg)'
 
     document.body.appendChild(this.video)
+
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = 512
+    this.canvas.height = 512
+    this.canvas.id = THREE.MathUtils.generateUUID()
+    this.canvasCtx = this.canvas.getContext("2d");
+    document.body.appendChild(this.canvas)
 
     this.eventData = {
       video: this.video,
@@ -44,7 +61,7 @@ AFRAME.registerComponent('hand-landmarker', {
 
   update() {
     if (this.data.videoOutput) {
-      this.data.videoOutput.setAttribute('src', `#${this.video.id}`)
+      this.data.videoOutput.setAttribute('src', `#${this.canvas.id}`)
 
       this.video.addEventListener('play', () => {
         const heightRatio = this.video.videoHeight / this.video.videoWidth
@@ -115,12 +132,14 @@ AFRAME.registerComponent('hand-landmarker', {
 
         const dur = performance.now() - startTimeMs
         //console.log(`Analysis took: ${dur} msecs`)
+
+        this.updateCanvas(result)
       }
       catch(err) {
         console.log("Exception hit in Mediapipe")
         console.log(err)
         console.log("Restarting")
-        await startHandLandmarker();
+        await this.startHandLandmarker();
       };
 
       this.lastVideoTime = this.video.currentTime;
@@ -130,5 +149,24 @@ AFRAME.registerComponent('hand-landmarker', {
     if (this.handLandmarker) {
       window.requestAnimationFrame(this.predictWebcam);
     }
+  },
+  
+  updateCanvas(result) {
+    const canvasCtx = this.canvasCtx
+    const canvasElement = this.canvas
+    canvasCtx.save();
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasCtx.drawImage(this.video, 0, 0, canvasElement.width, canvasElement.height)
+    if (result.landmarks) {
+      for (const landmarks of result.landmarks) {
+        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
+          color: "#00FF00",
+          lineWidth: 5
+        });
+        drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
+      }
+    }
+    canvasCtx.restore();
+
   }
 })
