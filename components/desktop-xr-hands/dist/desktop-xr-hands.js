@@ -314,8 +314,8 @@ AFRAME.registerSystem('desktop-xr-hands', {
     this.createHands()
 
     this.frame = {
-      fillPoses: () => {},
-      fillJointRadii: () => {},
+      fillPoses: this.fillPoses.bind(this),
+      fillJointRadii: this.fillJointRadii.bind(this),
       getJointPose: this.getJointPose.bind(this),
     }
 
@@ -329,6 +329,9 @@ AFRAME.registerSystem('desktop-xr-hands', {
       },
       getSession: () => {
         return this.xrSession
+      },
+      getEnvironmentBlendMode: () => {
+        return 'alpha-blend'
       }
       //getReferenceSpace:  () => {},
       //setPoseTarget: () => {}
@@ -337,7 +340,6 @@ AFRAME.registerSystem('desktop-xr-hands', {
     this.inputSources = [
       { 
         hand: {
-          // !! work on simplifying this...
           get: (key) => this.getJoint(this.leftHand, key),
           values: () => xrJoints.map((key) => this.getJoint(this.leftHand, key))
         },
@@ -375,8 +377,8 @@ AFRAME.registerSystem('desktop-xr-hands', {
 
   createHands() {
 
-    this.leftHand = {}
-    this.rightHand = {}
+    this.leftHand = {gotData: false}
+    this.rightHand = {gotData: false}
 
     xrJoints.forEach((jointName) => {
       const pose = new MockXRJointPose()
@@ -394,6 +396,30 @@ AFRAME.registerSystem('desktop-xr-hands', {
     const {hand, jointName} = joint
     const pose = hand[jointName]
     return pose
+  },
+
+  fillPoses(spaces, baseSpace, transforms) {
+
+    if (!spaces[0].hand.gotData) return false
+
+    spaces.forEach((space, index) => {
+      const pose = this.getJointPose(space)
+      transforms.set(pose.transform.matrix, index * 16)
+    })
+
+    return true
+  },
+
+  fillJointRadii(jointSpaces, radii) {
+
+    if (!jointSpaces[0].hand.gotData) return false
+    
+    jointSpaces.forEach((space, index) => {
+      const pose = this.getJointPose(space)
+      radii[index] = pose.radius
+    })
+
+    return true
   },
 
   simulateHands() {
@@ -445,6 +471,7 @@ AFRAME.registerSystem('desktop-xr-hands', {
         baseX = -0.5
       }
 
+      hand.gotData = true
       const worldLandmarks = this.latestHandData.worldLandmarks[index]
       this.extractPoseData(hand, worldLandmarks, baseX)
     })

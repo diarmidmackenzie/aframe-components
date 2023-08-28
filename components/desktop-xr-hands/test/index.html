@@ -1,7 +1,8 @@
 <html>
   <head>
     <title>Desktop simulation of WebXR Hand Tracking using Mediapipe.</title>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <!--<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>-->
+    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@56d77f99494e01b6918612c526ae514f45d178a4/dist/aframe-master.min.js"></script>
     <script src="../dist/desktop-xr-hands.js"></script>
     <link rel="stylesheet" href="../../../styles.css">
   </head>
@@ -15,7 +16,7 @@
         view code
     </a>
     <a-scene desktop-xr-hands>
-      <a-entity position="0 1.6 0" camera wasd-controls></a-entity>
+      <a-entity camera wasd-controls></a-entity>
       <a-entity desktop-xr-hands hand-tracking-controls="hand: left"></a-entity>
       <a-entity desktop-xr-hands hand-tracking-controls="hand: right"></a-entity>
     </a-scene>
