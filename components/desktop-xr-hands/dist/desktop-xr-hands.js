@@ -313,7 +313,6 @@ const xrJointMPMappings = [
 
 // used for temporary working.
 const _vector = new THREE.Vector3()
-const _worldPosition = new THREE.Vector3()
 const _direction = new THREE.Vector3()
 const _zAxis = new THREE.Vector3(0, 0, -1)
 const _position = new THREE.Vector3()
@@ -322,6 +321,13 @@ const _scale = new THREE.Vector3(1, 1, 1)
 const _matrix = new THREE.Matrix4()
 
 AFRAME.registerSystem('desktop-xr-hands', {
+
+  schema: {
+      // fov (width) of the webcam
+      cameraFov: { default: 60},
+
+      zOffset: { default: 1}
+  },
 
   init() {
     
@@ -400,8 +406,10 @@ AFRAME.registerSystem('desktop-xr-hands', {
 
   createHands() {
 
-    this.leftHand = {gotData: false}
-    this.rightHand = {gotData: false}
+    this.leftHand = {gotData: false,
+                     position: new THREE.Vector3()}
+    this.rightHand = {gotData: false, 
+                      position: new THREE.Vector3()}
 
     xrJoints.forEach((jointName) => {
       const pose = new MockXRJointPose()
@@ -486,28 +494,71 @@ AFRAME.registerSystem('desktop-xr-hands', {
       // flip hand identification, as webcam feed is mirrored.
       if (handedness[0].categoryName === "Left") {
         hand = this.rightHand
-        baseX = 0.5
       }
       else {
         // Left
         hand = this.leftHand
-        baseX = -0.5
       }
 
       hand.gotData = true
+
+      const landmarks = this.latestHandData.landmarks[index]
+      this.extractWorldPosition(landmarks, hand.position)
+
       const worldLandmarks = this.latestHandData.worldLandmarks[index]
-      this.extractPoseData(hand, worldLandmarks, baseX)
+      this.extractPoseData(hand, worldLandmarks, hand.position)
     })
   },
 
-  extractPoseData(hand, worldLandmarks, baseX) {
+  extractWorldPosition(landmarks, position) {
+
+    const palmPoints = [0, 1, 2, 5, 9, 13, 17]
+
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+
+    palmPoints.forEach((pointIndex) => {
+      const landmark = landmarks[pointIndex]
+      const x = landmark.x
+      const y = landmark.y
+      if (x > maxX) maxX = x
+      if (x < minX) minX = x
+      if (y > maxY) maxY = y
+      if (y < minY) minY = y
+    })
+
+    const width = maxX - minX
+    const height = maxY - minY
+    const centerX = (minX + maxX) / 2
+    const centerY = (minY + maxY) / 2
+
+    const palmSize = Math.max(width, height)
+
+    // estimate face distance from camera, based on hand size
+    const {cameraFov} = this.data
+    const palmAngle = cameraFov * palmSize
+    const palmActualSize = 0.08 // assumed palm width in m.
+    const palmDistance = (palmActualSize / 2) / Math.tan(THREE.MathUtils.degToRad(palmAngle / 2))
+
+    // compute hand XYZ from hand position & distance.
+    const fustrumWidthAtPalmDistance = 2 * palmDistance * Math.tan(THREE.MathUtils.degToRad(cameraFov / 2))
+    const palmX = fustrumWidthAtPalmDistance * (1 / 2 - centerX)
+    const palmY = fustrumWidthAtPalmDistance * (1 / 2 - centerY)
+
+    // 
+    position.set(palmX, palmY, palmDistance - this.data.zOffset)
+  },
+
+  extractPoseData(hand, worldLandmarks, basePosition) {
 
     xrJoints.forEach((name, index) => {
-      this.extractDataPoint(hand, name, index, worldLandmarks, baseX)
+      this.extractDataPoint(hand, name, index, worldLandmarks, basePosition)
     })
   },
 
-  extractDataPoint(hand, jointName, jointIndex, worldLandmarks) {
+  extractDataPoint(hand, jointName, jointIndex, worldLandmarks, basePosition) {
 
     // Needed to map from Mediapipe space to XR scene space.
     // I don't understand exactly why these are needed, but this seems to work...
@@ -519,7 +570,6 @@ AFRAME.registerSystem('desktop-xr-hands', {
     }
 
     const [posIndex, pos2Index, weight, startIndex, endIndex] = xrJointMPMappings[jointIndex]
-    // ## TO DO - weight between 2 x positions.
 
     // determine orientation
     const start = worldLandmarks[startIndex]
@@ -529,13 +579,11 @@ AFRAME.registerSystem('desktop-xr-hands', {
     _orientation.setFromUnitVectors(_zAxis, _direction)
 
     // determine position
-    // ## TO DO - get position from camera feed - hardcoded for now.
-    _worldPosition.set(baseX, 0, -0.5)
     _position.copy(worldLandmarks[posIndex])
     _vector.copy(worldLandmarks[pos2Index])
     _position.lerp(_vector, weight)
     flipVector(_position)
-    _position.add(_worldPosition)
+    _position.add(basePosition)
 
     // fill in XRJointPose object with data
     _matrix.compose(_position, _orientation, _scale)
