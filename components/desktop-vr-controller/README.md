@@ -58,7 +58,7 @@ There's lots of settings that could be usefully configurable, and hopefully will
 <script src="https://cdn.jsdelivr.net/npm/aframe-desktop-vr-controller@0.1.1/dist/desktop-vr-controller.min.js"></script>
 ```
 
-Or via [npm](https://www.npmjs.com/package/aframe-laser-manipulation)
+Or via [npm](https://www.npmjs.com/package/aframe-desktop-vr-controller)
 
 ```
 npm install aframe-desktop-vr-controller

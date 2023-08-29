@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <title>Desktop simulation of WebXR Hand Tracking using Mediapipe.</title>
+    <!--<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>-->
+    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@56d77f99494e01b6918612c526ae514f45d178a4/dist/aframe-master.min.js"></script>
+    <script src="../dist/desktop-xr-hands.js"></script>
+    <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+      <p>Desktop simulation of WebXR Hand Tracking using Mediapipe.</p>
+      <p>Enter full screen to enable hand tracking via webcam.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/master/components/desktop-xr-hands/test/dots.html">
+        view code
+    </a>
+    <a-scene desktop-xr-hands>
+      <a-entity position="0 1.6 0" camera wasd-controls></a-entity>
+      <a-entity desktop-xr-hands hand-tracking-controls="hand: left; modelStyle: dots"></a-entity>
+      <a-entity desktop-xr-hands hand-tracking-controls="hand: right; modelStyle: dots"></a-entity>
+    </a-scene>
+  </body>
+</html>
