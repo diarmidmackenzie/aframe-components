@@ -30,6 +30,7 @@ I intend to keep all these components up-to-date & working with new versions of 
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [cursor-tracker](https://diarmidmackenzie.github.io/aframe-components/components/cursor-tracker) | Track the direction in 3D space being pointed to be the cursor |
 | [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-components/components/desktop-vr-controller) | Simulates a VR controller on the desktop, controllable using mouse & keyboard. |
+| [desktop-xr-hands](https://diarmidmackenzie.github.io/aframe-components/components/desktop-xr-hands) | Simulates WebXR Hand Tracking on desktop, using Mediapipe + Webcam. |
 | [laser-manipulation](https://diarmidmackenzie.github.io/aframe-components/components/laser-manipulation) | Move and rotate entities in a 3D scene using a laser pointer. |
 | [mouse-manipulation](https://diarmidmackenzie.github.io/aframe-components/components/mouse-manipulation) | Move and rotate entities in a 3D scene using a mouse.        |
 | [thumbstick-states](https://diarmidmackenzie.github.io/aframe-components/components/thumbstick-states) | Used to simplify implementation of thumbstick-based controls on VR controllers. |
