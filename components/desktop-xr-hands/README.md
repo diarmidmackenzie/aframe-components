@@ -69,7 +69,7 @@ E.g.
 
 See also:
 
-- [Simple test page with mesh hand model](https://diarmidmackenzie.github.io/aframe-components/compo- nents/desktop-xr-hands/test/mesh.html)
+- [Simple test page with mesh hand model](https://diarmidmackenzie.github.io/aframe-components/components/desktop-xr-hands/test/mesh.html)
 
 - [Simple test page with dots hand model](https://diarmidmackenzie.github.io/aframe-components/components/desktop-xr-hands/test/dots.html)
 
