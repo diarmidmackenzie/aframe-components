@@ -89,6 +89,7 @@ This is an experimental component, with limited testing so far, and plenty of li
 - No option to toggle video feed & overlay on/off or control size / position
 - No variation in reported radii of joints - all reported as a fixed 1cm.
 - Mapping for Mediapipe Hand Model to WebXR Hand Model is not perfect, can probably be improved.
+- Position tracking is pretty poor.  Worst of all is distance tracking, which is based on palm-size (as the hand landmarker itself only generates hand pose data, not hand position data), but seems rather unstable.  Possible solution is to integrate the [Mediapipe pose landmarker](https://developers.google.com/mediapipe/solutions/vision/pose_landmarker) which might provide better tracking of hand positions, than is possible through the hand landmarker alone.
 - Hands are positioned in world space, relative to an assumed camera position of (0, 1.6, 0).  If the camera is moved, hands don't move with it.
 - Gesture detection is untested.  Looking at Mediapipe fingertip positions for a pinch, it looks as though there could be precision issues with getting a reliable pinch.
   ![image-20230829175405101](image-20230829175405101.png)
