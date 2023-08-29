@@ -81,7 +81,7 @@ See also:
 
 
 
-## Limitations
+## Limitations / Futures
 
 This is an experimental component, with limited testing so far, and plenty of limitations, including:
 
@@ -90,6 +90,13 @@ This is an experimental component, with limited testing so far, and plenty of li
 - No variation in reported radii of joints - all reported as a fixed 1cm.
 - Mapping for Mediapipe Hand Model to WebXR Hand Model is not perfect, can probably be improved.
 - Hands are positioned in world space, relative to an assumed camera position of (0, 1.6, 0).  If the camera is moved, hands don't move with it.
+- Gesture detection is untested.  Looking at Mediapipe fingertip positions for a pinch, it looks as though there could be precision issues with getting a reliable pinch.
+  ![image-20230829175405101](image-20230829175405101.png)
+
+- Only tested with A-Frame `hand-tracking-controls` so far.  Would be nice to test with other hand tracking component systems, e.g. [`hand-tracking-controls-extras`](https://github.com/gftruj/aframe-hand-tracking-controls-extras) and [`handy-work`](https://github.com/AdaRoseCannon/handy-work/blob/main/README-AFRAME.md).
+- Most of the code in these components is not A-Frame-specific.  Would be nice (and probably not too hard?) to abstract the code so it can be framework-agnostic and work with any THREE.js app, Babylon etc.
+
+PRs for any of the above would be welcome!
 
 
 
