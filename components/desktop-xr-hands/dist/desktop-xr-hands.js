@@ -324,8 +324,12 @@ AFRAME.registerSystem('desktop-xr-hands', {
 
   schema: {
       // fov (width) of the webcam
+      // used in computing distance of hands from the camera.
       cameraFov: { default: 60},
 
+      // zOffset at which to render the hands.
+      // Hands will be level with the scene camera when they are 
+      // approximately this distance from the webcam.
       zOffset: { default: 1}
   },
 
@@ -370,14 +374,16 @@ AFRAME.registerSystem('desktop-xr-hands', {
       { 
         hand: {
           get: (key) => this.getJoint(this.leftHand, key),
-          values: () => xrJoints.map((key) => this.getJoint(this.leftHand, key))
+          values: () => xrJoints.map((key) => this.getJoint(this.leftHand, key)),
+          size: 25
         },
         handedness: 'left'
       },
       { 
         hand: {
           get: (key) => this.getJoint(this.rightHand, key),
-          values: () => xrJoints.map((key) => this.getJoint(this.rightHand, key))
+          values: () => xrJoints.map((key) => this.getJoint(this.rightHand, key)),
+          size: 25
         },
          handedness: 'right'
       }
@@ -396,6 +402,7 @@ AFRAME.registerSystem('desktop-xr-hands', {
     this.videoOutput = document.createElement('a-plane')
     this.videoOutput.id = 'desktop-xr-hands-video-output'
     this.videoOutputContainer.appendChild(this.videoOutput)
+    this.videoOutput.setAttribute('visible', false)
   },
 
   getJoint(hand, key) {
@@ -408,7 +415,7 @@ AFRAME.registerSystem('desktop-xr-hands', {
 
     this.leftHand = {gotData: false,
                      position: new THREE.Vector3()}
-    this.rightHand = {gotData: false, 
+    this.rightHand = {gotData: false,
                       position: new THREE.Vector3()}
 
     xrJoints.forEach((jointName) => {
@@ -472,6 +479,8 @@ AFRAME.registerSystem('desktop-xr-hands', {
   
     this.el.sceneEl.emit('controllerconnected')
     this.el.sceneEl.emit('controllersupdated')
+
+    this.videoOutput.setAttribute('visible', true)
   },
 
   removeHands() {
@@ -482,6 +491,8 @@ AFRAME.registerSystem('desktop-xr-hands', {
     if (this.originalXr) {
       this.el.sceneEl.renderer.xr = this.originalXr
     }
+
+    this.videoOutput.setAttribute('visible', false)
   },
 
   handsDetected(e) {
@@ -512,6 +523,9 @@ AFRAME.registerSystem('desktop-xr-hands', {
 
   extractWorldPosition(landmarks, position) {
 
+    // To estimate the world position of the hand, we calculate the width & height of
+    // the palm, and use the angle occluded by the larger of these two measurements
+    // to estimate the distance of the hand from the camera.
     const palmPoints = [0, 1, 2, 5, 9, 13, 17]
 
     let minX = Infinity
@@ -536,7 +550,7 @@ AFRAME.registerSystem('desktop-xr-hands', {
 
     const palmSize = Math.max(width, height)
 
-    // estimate face distance from camera, based on hand size
+    // estimate palm distance from camera, based on palm size
     const {cameraFov} = this.data
     const palmAngle = cameraFov * palmSize
     const palmActualSize = 0.08 // assumed palm width in m.
@@ -547,8 +561,9 @@ AFRAME.registerSystem('desktop-xr-hands', {
     const palmX = fustrumWidthAtPalmDistance * (1 / 2 - centerX)
     const palmY = fustrumWidthAtPalmDistance * (1 / 2 - centerY)
 
-    // 
-    position.set(palmX, palmY, palmDistance - this.data.zOffset)
+    // add assumed camera position of (0, 1.6, 0)
+    // ## TODO adapt to actual camera position so hands move with camera.
+    position.set(palmX, palmY + 1.6, palmDistance - this.data.zOffset)
   },
 
   extractPoseData(hand, worldLandmarks, basePosition) {
@@ -620,7 +635,11 @@ AFRAME.registerSystem('desktop-xr-hands', {
 
 })
 
-
+// This component exists solely to ensure that the simulated WebXR Frame is switched in
+// in place of the browser.
+// This component's tick() must be executed before the tick() of any component that uses
+// the WebXR Hand Tracking API.  This can be achieved by configuring this component first,
+// on the same that the hand-tracking-controls (or similar) component is configured on.
 AFRAME.registerComponent('desktop-xr-hands', {
 
   tick() {
