@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <title>Desktop simulation of WebXR Hand Tracking using Mediapipe.</title>
+    <!--<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>-->
+    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@56d77f99494e01b6918612c526ae514f45d178a4/dist/aframe-master.min.js"></script>
+    <script src="../dist/desktop-xr-hands.js"></script>
+    <script>      
+      AFRAME.registerComponent('hand-joint-position', {
+
+        schema: {
+          hand: {type: 'string'},
+          joint: {type: 'string'}
+        },
+
+        update() {
+          const hands = document.querySelectorAll('[hand-tracking-controls]')
+          const hand = Array.from(hands).find((h) => (h.components['hand-tracking-controls'].data.hand === this.data.hand))
+
+          hand.addEventListener('model-loaded', () => {
+
+            // wait until hand-tracking-controls has processed the model-loaded event.
+            setTimeout(() => {
+              const bones = hand.components['hand-tracking-controls'].bones
+              this.bone = bones.find((b) => (b.name === this.data.joint) )
+            })
+          })
+        },
+
+        tick() {
+
+          if (!this.bone) return
+
+          const object = this.el.object3D
+          object.matrix.copy(this.bone.matrix)
+          object.matrix.decompose( object.position, object.quaternion, object.scale );
+        }
+      })
+    </script>
+    <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+      <p>Desktop simulation of WebXR Hand Tracking using Mediapipe.</p>
+      <p>Enter full screen to enable hand tracking via webcam.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/master/components/desktop-xr-hands/test/mesh.html">
+        view code
+    </a>
+    <a-scene desktop-xr-hands>
+      <a-entity position="0 1.6 0" camera wasd-controls></a-entity>
+      <a-entity desktop-xr-hands hand-tracking-controls="hand: left"></a-entity>
+      <a-entity desktop-xr-hands hand-tracking-controls="hand: right"></a-entity>
+      <a-entity id="left-wrist" hand-joint-position="hand: left; joint: wrist">
+        <!-- sphere positioned 3cm in front of wrist - should move to stay in position as wrist rotates  -->
+        <a-sphere position="0 -0.03 0" radius="0.01" color="red">
+        </a-sphere>
+      </a-entity>
+      <a-entity id="right-wrist" hand-joint-position="hand: right; joint: wrist">
+        <!-- sphere positioned 3cm in front of wrist - should move to stay in position as wrist rotates  -->
+        <a-sphere position="0 -0.03 0" radius="0.01" color="green">
+        </a-sphere>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>

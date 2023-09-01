@@ -272,50 +272,53 @@ const xrJoints = [
   "pinky-finger-tip"
 ]
 
-// [position1, position2, weight, orientation start, orientation end]
+// [position1, position2, weight, orientation start, orientation end, perpendicular vector start, perpendicular vector end]
 // See Mediapipe landmarks here:
 // https://developers.google.com/mediapipe/solutions/vision/hand_landmarker
 // And WebXR hand joints here:
 // https://www.w3.org/TR/webxr-hand-input-1/#skeleton-joints-section
 
 const xrJointMPMappings = [
-  [0, 0, 1, 0, 9], // "wrist"
+  [0, 0, 1, 0, 9, 17, 5], // "wrist"
 
-  [0, 1, 0.6, 0, 1], // "thumb-metacarpal"
-  [2, 2, 1, 1, 2], // "thumb-phalanx-proximal"
-  [3, 3, 1, 2, 3], // "thumb-phalanx-distal"
-  [4, 4, 1, 3, 4], // "thumb-tip"
+  [0, 1, 0.6, 0, 1, 0, 9], // "thumb-metacarpal"
+  [2, 2, 1, 1, 2, 1, 9], // "thumb-phalanx-proximal"
+  [3, 3, 1, 2, 3, 1, 9], // "thumb-phalanx-distal"
+  [4, 4, 1, 3, 4, 1, 9], // "thumb-tip"
 
-  [1, 5, 0.3, 1, 5], // "index-finger-metacarpal"
-  [5, 5, 1, 5, 6], // "index-finger-phalanx-proximal"
-  [6, 6, 1, 6, 7], // "index-finger-phalanx-intermediate"
-  [7, 7, 1, 6, 7], // "index-finger-phalanx-distal"
-  [8, 8, 1, 7, 8], // "index-finger-tip"
+  [1, 5, 0.3, 1, 5, 9, 5], // "index-finger-metacarpal"
+  [5, 5, 1, 5, 6, 9, 5], // "index-finger-phalanx-proximal"
+  [6, 6, 1, 6, 7, 9, 5], // "index-finger-phalanx-intermediate"
+  [7, 7, 1, 6, 7, 9, 5], // "index-finger-phalanx-distal"
+  [8, 8, 1, 7, 8, 9, 5], // "index-finger-tip"
 
-  [0, 9, 0.3, 0, 9], // "middle-finger-metacarpal"
-  [9, 9, 1, 9, 10], // "middle-finger-phalanx-proximal"
-  [10, 10, 1, 10, 11], // "middle-finger-phalanx-intermediate"
-  [11, 11, 1, 10, 11], // "middle-finger-phalanx-distal"
-  [12, 12, 1, 11, 12], // "middle-finger-tip"
+  [0, 9, 0.3, 0, 9, 13, 5], // "middle-finger-metacarpal"
+  [9, 9, 1, 9, 10, 13, 5], // "middle-finger-phalanx-proximal"
+  [10, 10, 1, 10, 11, 13, 5], // "middle-finger-phalanx-intermediate"
+  [11, 11, 1, 10, 11, 13, 5], // "middle-finger-phalanx-distal"
+  [12, 12, 1, 11, 12, 13, 5], // "middle-finger-tip"
 
-  [0, 13, 0.3, 0, 13], // "ring-finger-metacarpal"
-  [13, 13, 1, 13, 14], // "ring-finger-phalanx-proximal"
-  [14, 14, 1, 14, 15], // "ring-finger-phalanx-intermediate"
-  [15, 15, 1, 14, 15], // "ring-finger-phalanx-distal"
-  [16, 16, 1, 15, 16], // "ring-finger-tip"
+  [0, 13, 0.3, 0, 13, 17, 9], // "ring-finger-metacarpal"
+  [13, 13, 1, 13, 14, 17, 9], // "ring-finger-phalanx-proximal"
+  [14, 14, 1, 14, 15, 17, 9], // "ring-finger-phalanx-intermediate"
+  [15, 15, 1, 14, 15, 17, 9], // "ring-finger-phalanx-distal"
+  [16, 16, 1, 15, 16, 17, 9], // "ring-finger-tip"
 
-  [0, 17, 0.3, 0, 17], // "pinky-finger-metacarpal"
-  [17, 17, 1, 17, 18], // "pinky-finger-phalanx-proximal"
-  [18, 18, 1, 18, 19], // "pinky-finger-phalanx-intermediate"
-  [19, 19, 1, 18, 19], // "pinky-finger-phalanx-distal"
-  [20, 20, 1, 19, 20], // "pinky-finger-tip"
+  [0, 17, 0.3, 0, 17, 17, 13], // "pinky-finger-metacarpal"
+  [17, 17, 1, 17, 18, 17, 13], // "pinky-finger-phalanx-proximal"
+  [18, 18, 1, 18, 19, 17, 13], // "pinky-finger-phalanx-intermediate"
+  [19, 19, 1, 18, 19, 17, 13], // "pinky-finger-phalanx-distal"
+  [20, 20, 1, 19, 20, 17, 13], // "pinky-finger-tip"
 ]
 
 // used for temporary working.
 const _vector = new THREE.Vector3()
 const _direction = new THREE.Vector3()
 const _zAxis = new THREE.Vector3(0, 0, -1)
+const _xAxis = new THREE.Vector3()
+const _perpDirection = new THREE.Vector3()
 const _position = new THREE.Vector3()
+const _twist = new THREE.Quaternion()
 const _orientation = new THREE.Quaternion()
 const _scale = new THREE.Vector3(1, 1, 1)
 const _matrix = new THREE.Matrix4()
@@ -584,7 +587,13 @@ AFRAME.registerSystem('desktop-xr-hands', {
       v.y = -v.y
     }
 
-    const [posIndex, pos2Index, weight, startIndex, endIndex] = xrJointMPMappings[jointIndex]
+    const [posIndex,
+           pos2Index,
+           weight,
+           startIndex,
+           endIndex,
+           perpStartIndex,
+           perpEndIndex] = xrJointMPMappings[jointIndex]
 
     // determine orientation
     const start = worldLandmarks[startIndex]
@@ -592,6 +601,24 @@ AFRAME.registerSystem('desktop-xr-hands', {
     _direction.subVectors(end, start).normalize()
     flipVector(_direction)
     _orientation.setFromUnitVectors(_zAxis, _direction)
+
+    // add twist, if perpendicular vector specified.
+    if (perpStartIndex !== undefined &&
+        perpEndIndex  !== undefined ) {
+      const xDirection = (hand === this.leftHand) ? 1 : -1
+      _xAxis.set(xDirection, 0, 0)
+      _xAxis.applyQuaternion(_orientation)
+      
+      const perpStart = worldLandmarks[perpStartIndex]
+      const perpEnd = worldLandmarks[perpEndIndex]
+      _perpDirection.subVectors(perpStart, perpEnd)
+      // perpendicular direction must be orthogonal to _direction, so that we only twist around the transformed z axis.
+      _perpDirection.projectOnPlane(_direction) 
+      _perpDirection.normalize()
+
+      _twist.setFromUnitVectors(_perpDirection, _xAxis)
+      _orientation.premultiply(_twist)
+    }
 
     // determine position
     _position.copy(worldLandmarks[posIndex])
@@ -803,9 +830,12 @@ AFRAME.registerComponent('hand-landmarker', {
       this.lastVideoTime = this.video.currentTime;
     }
   
-    // Call this function again to keep predicting when the browser is ready
+    // Call this function again to keep predicting when the browser is ready.
+    // include a brief pause to ensure CPU is not completely swamped by landmarking processing.
     if (this.handLandmarker) {
-      window.requestAnimationFrame(this.predictWebcam);
+      setTimeout(() => {
+        window.requestAnimationFrame(this.predictWebcam);
+      }, 10)
     }
   },
   
