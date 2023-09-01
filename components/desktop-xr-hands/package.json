@@ -1,5 +1,5 @@
 {
-  "name": "desktop-xr-hands",
+  "name": "aframe-desktop-xr-hands",
   "version": "0.0.1",
   "description": "Desktop simulation of WebXR Hand Tracking using Mediapipe",
   "main": "index.js",
