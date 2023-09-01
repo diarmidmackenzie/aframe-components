@@ -118,3 +118,17 @@ The WebXR API has to report positions & orientations for the following joints:
 [source](https://www.w3.org/TR/webxr-hand-input-1/#skeleton-joints-section)
 
 `desktop-xr-hands` takes care of mapping Mediapipe reported positions, to WebXR API positions and orientations.
+
+
+
+The following parameters are set for each WebXR joint.  The values are hard-coded within the `desktop-xr-hands` component.
+
+| parameter                  | description                                                  |      |
+| -------------------------- | ------------------------------------------------------------ | ---- |
+| position1                  | The index of a mediapipe landmark to use for the position of this joint |      |
+| position2                  | The index of a second mediapipe landmark to use for the position of this joint |      |
+| weight                     | The weight to attribute to position2 in positioning the joint.  0 => use position1, 1 => use position2, 0.5 => use the midpoint. |      |
+| orientation start          | The index of a mediapipe landmark to use for the joint orientation.  This indicates the start point of the direction vector.  For example, the wrist orientation is a vector from point 0 (start) to point 9 (end) |      |
+| orientation end            | The index of a mediapipe landmark to use for the joint orientation.  This indicates the end point of the direction vector. |      |
+| perpendicular vector start | (optional) The index of a mediapipe landmark to use for the joint orientation.     This indicates the start point for a vector that the joint should be perpendicular to.  Specifying a perpendicular vector is important to get the correct twist around the main orientation. |      |
+| perpendicular vector end   | (optional) The index of a mediapipe landmark to use for the joint orientation.     This indicates the end point for a vector that the joint should be perpendicular to. |      |
