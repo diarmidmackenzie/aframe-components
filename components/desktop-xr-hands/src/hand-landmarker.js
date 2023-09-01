@@ -145,9 +145,12 @@ AFRAME.registerComponent('hand-landmarker', {
       this.lastVideoTime = this.video.currentTime;
     }
   
-    // Call this function again to keep predicting when the browser is ready
+    // Call this function again to keep predicting when the browser is ready.
+    // include a brief pause to ensure CPU is not completely swamped by landmarking processing.
     if (this.handLandmarker) {
-      window.requestAnimationFrame(this.predictWebcam);
+      setTimeout(() => {
+        window.requestAnimationFrame(this.predictWebcam);
+      }, 10)
     }
   },
   

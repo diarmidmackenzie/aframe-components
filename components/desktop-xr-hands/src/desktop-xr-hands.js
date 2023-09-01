@@ -53,14 +53,14 @@ const xrJoints = [
   "pinky-finger-tip"
 ]
 
-// [position1, position2, weight, orientation start, orientation end]
+// [position1, position2, weight, orientation start, orientation end, perpendicular vector start, perpendicular vector end]
 // See Mediapipe landmarks here:
 // https://developers.google.com/mediapipe/solutions/vision/hand_landmarker
 // And WebXR hand joints here:
 // https://www.w3.org/TR/webxr-hand-input-1/#skeleton-joints-section
 
 const xrJointMPMappings = [
-  [0, 0, 1, 0, 9], // "wrist"
+  [0, 0, 1, 0, 9, 9, 5], // "wrist"
 
   [0, 1, 0.6, 0, 1], // "thumb-metacarpal"
   [2, 2, 1, 1, 2], // "thumb-phalanx-proximal"
@@ -96,7 +96,10 @@ const xrJointMPMappings = [
 const _vector = new THREE.Vector3()
 const _direction = new THREE.Vector3()
 const _zAxis = new THREE.Vector3(0, 0, -1)
+const _xAxis = new THREE.Vector3()
+const _perpDirection = new THREE.Vector3()
 const _position = new THREE.Vector3()
+const _twist = new THREE.Quaternion()
 const _orientation = new THREE.Quaternion()
 const _scale = new THREE.Vector3(1, 1, 1)
 const _matrix = new THREE.Matrix4()
@@ -365,7 +368,13 @@ AFRAME.registerSystem('desktop-xr-hands', {
       v.y = -v.y
     }
 
-    const [posIndex, pos2Index, weight, startIndex, endIndex] = xrJointMPMappings[jointIndex]
+    const [posIndex,
+           pos2Index,
+           weight,
+           startIndex,
+           endIndex,
+           perpStartIndex,
+           perpEndIndex] = xrJointMPMappings[jointIndex]
 
     // determine orientation
     const start = worldLandmarks[startIndex]
@@ -373,6 +382,24 @@ AFRAME.registerSystem('desktop-xr-hands', {
     _direction.subVectors(end, start).normalize()
     flipVector(_direction)
     _orientation.setFromUnitVectors(_zAxis, _direction)
+
+    // add twist, if perpendicular vector specified.
+    if (perpStartIndex !== undefined &&
+        perpEndIndex  !== undefined ) {
+      const xDirection = (hand === this.leftHand) ? 1 : -1
+      _xAxis.set(xDirection, 0, 0)
+      _xAxis.applyQuaternion(_orientation)
+      
+      const perpStart = worldLandmarks[perpStartIndex]
+      const perpEnd = worldLandmarks[perpEndIndex]
+      _perpDirection.subVectors(perpStart, perpEnd)
+      // perpendicular direction must be orthogonal to _direction, so that we only twist around the transformed z axis.
+      _perpDirection.projectOnPlane(_direction) 
+      _perpDirection.normalize()
+
+      _twist.setFromUnitVectors(_perpDirection, _xAxis)
+      _orientation.premultiply(_twist)
+    }
 
     // determine position
     _position.copy(worldLandmarks[posIndex])
