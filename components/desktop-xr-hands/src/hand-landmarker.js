@@ -100,11 +100,14 @@ AFRAME.registerComponent('hand-landmarker', {
         baseOptions: {
           modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task"
         },
-        numHands: 2
+        numHands: 2,
+        minHandDetectionConfidence: 0.25,
+        minHandPresenceConfidence: 0.25,
+        minTrackingConfidence: 0.25,
+        runningMode: "LIVE_STREAM"
       }
     );
 
-    await handLandmarker.setOptions({ runningMode: "VIDEO" });
     this.handLandmarker = handLandmarker
 
     // activate webcam
