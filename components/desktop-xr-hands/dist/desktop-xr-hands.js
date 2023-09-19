@@ -505,8 +505,8 @@ AFRAME.registerSystem('desktop-xr-hands', {
     this.latestHandData.handednesses.forEach((handedness, index) => {
 
       let hand
-      // flip hand identification, as webcam feed is mirrored.
-      if (handedness[0].categoryName === "Left") {
+
+      if (handedness[0].categoryName === "Right") {
         hand = this.rightHand
       }
       else {
