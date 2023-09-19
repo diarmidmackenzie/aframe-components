@@ -9,6 +9,7 @@
   <body>
     <div class="text-overlay">
       <p>Desktop simulation of WebXR Hand Tracking using Mediapipe.</p>
+      <p>Left Hand Red, Right Hand Green.</p>
       <p>Enter full screen to enable hand tracking via webcam.</p>
     </div>
         <a class="code-link"
@@ -18,8 +19,8 @@
     </a>
     <a-scene desktop-xr-hands>
       <a-entity position="0 1.6 0" camera wasd-controls></a-entity>
-      <a-entity desktop-xr-hands hand-tracking-controls="hand: left"></a-entity>
-      <a-entity desktop-xr-hands hand-tracking-controls="hand: right"></a-entity>
+      <a-entity desktop-xr-hands hand-tracking-controls="hand: left; modelColor: red"></a-entity>
+      <a-entity desktop-xr-hands hand-tracking-controls="hand: right; modelColor: green"></a-entity>
     </a-scene>
   </body>
 </html>
