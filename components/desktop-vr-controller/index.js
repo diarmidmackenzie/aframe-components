@@ -6,6 +6,11 @@ if (!AFRAME.components['connecting-line']) require('aframe-connecting-line')
 
 AFRAME.registerSystem('desktop-vr-controller', {
 
+    schema: {
+      // whether to disable other cursors in the scene.  Experimental option.
+      disableCursors: {default: true}
+    },
+
     init() {
         this.controllers = 0
     },
@@ -53,6 +58,8 @@ AFRAME.registerSystem('desktop-vr-controller', {
 
     disableExistingCursors() {
 
+        if (!this.data.disableCursors) return
+
         const cursors = document.querySelectorAll("[cursor]")
 
         this.oldCursorStates = []
@@ -71,6 +78,7 @@ AFRAME.registerSystem('desktop-vr-controller', {
 
     reinstateCursors() {
 
+        if (!this.data.disableCursors) return
         if (!this.oldCursorStates) return;
 
         const cursors = document.querySelectorAll("[cursor]")
