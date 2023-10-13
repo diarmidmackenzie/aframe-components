@@ -13,12 +13,6 @@ AFRAME.registerComponent('anchored', {
     this.el.sceneEl.addEventListener('enter-vr', this.onEnterVR)
 
     this.createAnchor = false
-  },  
-
-  update() {
-    if (!this.data.rig) {
-      console.error("No rig specified.  Scene cannot be anchored without a camera rig")
-    }
   },
 
   onEnterVR() {
@@ -74,10 +68,25 @@ AFRAME.registerComponent('anchored', {
     });
   },
 
+  unAnchor(resetPosition) {
+
+    console.log("un-anchoring")
+    const scene = this.el.sceneEl.object3D
+
+    if (resetPosition) {
+      scene.add(this.el.object3D)
+    }
+    else {
+      scene.attach(this.el.object3D)
+    }
+    
+    this.deleteAllAnchors()
+  },
+
+
   reAnchor() {
 
     console.log("re-anchoring")
-    this.deleteAllAnchors()
     this.onEnterVR()
   },
 

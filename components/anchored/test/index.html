@@ -3,11 +3,13 @@
   <head>
       <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
       <script src="../dist/anchored.js"></script>
+      <script src="./reset.js"></script>
       <link rel="stylesheet" href="../../../styles.css">
   </head>
   <body>
     <div class="text-overlay">
-        <p>Anchored scene.  Always created in the same place whenever you enter AR</p>
+        <p>Anchored scene.  Always anchored to a fixed place in world space.</p>
+        <p>Press A to reset scene position.</p>
     </div>
         <a class="code-link"
         target="_blank"
@@ -19,6 +21,8 @@
              vr-mode-ui="enterAREnabled: true; enterVREnabled: false">
       <a-entity id="rig">
         <a-entity camera position="0 1.6 0"></a-entity>
+        <a-entity oculus-touch-controls="hand: left"></a-entity>
+        <a-entity oculus-touch-controls="hand: right" toggle-anchored></a-entity>
       </a-entity>
 
       <a-entity id="container" anchored position = "0 0 -4">
