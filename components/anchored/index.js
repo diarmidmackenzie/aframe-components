@@ -2,7 +2,20 @@ import { RealityAccelerator } from 'ratk';
 
 AFRAME.registerComponent('anchored', {
 
+  schema: {
+    persistent: {default: true}, 
+    debug: {default: false}
+  },
+
   init() {
+
+    components = document.querySelectorAll('[anchored]')
+
+    if (components.length > 1) {
+      console.warn("Only one 'anchored' component is permitted per scene.  Nothing will be anchored")
+      console.warn(`The following ${components.lengt} entities have the 'anchored' component configured:`, components)
+      return
+    }
 
     const renderer = this.el.sceneEl.renderer
     const scene = this.el.sceneEl.object3D
@@ -13,6 +26,17 @@ AFRAME.registerComponent('anchored', {
     this.el.sceneEl.addEventListener('enter-vr', this.onEnterVR)
 
     this.createAnchor = false
+  },
+
+  update(oldData) {
+
+    if (this.data.pesrsistent != oldData.persistent) {
+
+      if (this.data.debug) console.log(`re-creating anchor to change persistence`) 
+
+      this.unAnchor(false)
+      this.reAnchor()
+    }
   },
 
   onEnterVR() {
@@ -29,10 +53,10 @@ AFRAME.registerComponent('anchored', {
       if (ratk.anchors.size > 1) {
         console.warn(`Multiple anchors recorded for this scene (${ratk.anchors.size} in total): Unexpected`)
         ratk.anchors.forEach((anchor) => {
-          console.log(anchor)
+          console.warn("Unexpected anchor", anchor)
         })
         this.deleteAllAnchors()
-        console.log("Anchors now all deleted")
+        if (this.data.debug) console.log("Anchors now all deleted")
         return
       }
 
@@ -44,9 +68,11 @@ AFRAME.registerComponent('anchored', {
           // position the rig correctly, by attaching it to the anchor
           // (modifies transform)
           // and then adding it to the scene (no modification to transform)
-          console.log("Anchor restored at...")
-          console.log("Position:", anchor.position)
-          console.log("Quaternion:", anchor.quaternion)
+          if (this.data.debug) {
+            console.log("Anchor restored at...")
+            console.log("Position:", anchor.position)
+            console.log("Quaternion:", anchor.quaternion)
+          }
 
           anchor.add(this.el.object3D)
         })
@@ -61,7 +87,8 @@ AFRAME.registerComponent('anchored', {
 
   deleteAllAnchors() {
     const {ratk} = this
-    console.log(`deleting ${ratk.anchors.size} anchors`)
+    if (this.data.debug) console.log(`deleting ${ratk.anchors.size} anchors`)
+    
     ratk.anchors.forEach((anchor) => {
       console.log(anchor.anchorID);
       ratk.deleteAnchor(anchor);
@@ -70,7 +97,7 @@ AFRAME.registerComponent('anchored', {
 
   unAnchor(resetPosition) {
 
-    console.log("un-anchoring")
+    if (this.data.debug) console.log("un-anchoring")
     const scene = this.el.sceneEl.object3D
 
     if (resetPosition) {
@@ -83,10 +110,9 @@ AFRAME.registerComponent('anchored', {
     this.deleteAllAnchors()
   },
 
-
   reAnchor() {
 
-    console.log("re-anchoring")
+    if (this.data.debug) console.log("re-anchoring")
     this.onEnterVR()
   },
 
@@ -109,10 +135,12 @@ AFRAME.registerComponent('anchored', {
 
       ratk.createAnchor(scene.position,
                         scene.quaternion,
-                        true).then((anchor) => {
-        console.log("Anchor created at...")
-        console.log("Position:", anchor.position)
-        console.log("Quaternion:", anchor.quaternion)
+                        this.data.persistent).then((anchor) => {
+        if (this.data.debug) {
+          console.log("Anchor created at...")
+          console.log("Position:", anchor.position)
+          console.log("Quaternion:", anchor.quaternion)
+        }
 
         anchor.attach(this.el.object3D)
       })
