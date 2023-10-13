@@ -60,6 +60,7 @@ I intend to keep all these components up-to-date & working with new versions of 
 
 | **Component**                                                | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [anchored](https://diarmidmackenzie.github.io/aframe-components/components/anchored/) | Anchoring of a single container entity to a fixed real-world position |
 | [xr-room-physics](https://diarmidmackenzie.github.io/aframe-components/components/xr-room-physics/) | Automatic config of physics to match configured room layout in Mixed Reality (compatible with Meta Quest experimental room layout feature) |
 | [ball-blaster](https://diarmidmackenzie.github.io/aframe-components/components/ball-blaster) | A simple gun that shoots small balls. Handy for testing physics. |
 | [desktop-xr-plane](https://diarmidmackenzie.github.io/aframe-components/components/desktop-xr-plane/) | Simulates a WebXR XRPlane on a desktop. Very useful for testing with XRPlanes, without having to use a VR headset. |
