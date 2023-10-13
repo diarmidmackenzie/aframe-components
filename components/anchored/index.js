@@ -9,7 +9,7 @@ AFRAME.registerComponent('anchored', {
 
   init() {
 
-    components = document.querySelectorAll('[anchored]')
+    const components = document.querySelectorAll('[anchored]')
 
     if (components.length > 1) {
       console.warn("Only one 'anchored' component is permitted per scene.  Nothing will be anchored")
