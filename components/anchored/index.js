@@ -90,7 +90,7 @@ AFRAME.registerComponent('anchored', {
     if (this.data.debug) console.log(`deleting ${ratk.anchors.size} anchors`)
     
     ratk.anchors.forEach((anchor) => {
-      console.log(anchor.anchorID);
+      if (this.data.debug) console.log(anchor.anchorID);
       ratk.deleteAnchor(anchor);
     });
   },
