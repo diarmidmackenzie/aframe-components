@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+      <script src="../dist/anchored.js"></script>
+      <script src="./reset.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>Anchored scene.  Always anchored to a fixed position in world space.</p>
+        <p>Press A to toggle anchoring on/off.</p>
+        <p>Hold down oculus button to reset scene origin.</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/anchored/test/index.html">
+        view code
+    </a>
+    
+    <a-scene webxr="requiredFeatures: anchors,local-floor"
+             vr-mode-ui="enterAREnabled: true; enterVREnabled: false">
+      <a-entity id="rig" wasd-controls look-controls>
+        <a-entity camera position="0 1.6 0"></a-entity>
+        <a-entity oculus-touch-controls="hand: left"></a-entity>
+        <a-entity oculus-touch-controls="hand: right" toggle-anchored></a-entity>
+      </a-entity>
+
+
+      <a-entity id="container" anchored position = "0 0 -4">
+        <a-box position="-1 0.5 1" rotation="0 45 0" color="#4CC3D9">
+        </a-box>
+        <a-sphere position="0 1.25 -1" radius="1.25" color="#EF2D5E">
+        </a-sphere>
+        <a-cylinder position="1 0.75 1" radius="0.5" height="1.5" color="#FFC65D">
+        </a-cylinder>
+        <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" side="double"></a-plane>
+      </a-entity>
+
+      <a-plane id="text" text="value: Press A to toggle anchoring on/off.
+                                Hold down oculus button to reset scene origin.
+                                This text box is never anchored"
+                          color="black"
+                          width="4"
+                          position = "0 3.2 -6">
+      </a-plane>
+    </a-scene>
+  </body>
+</html>
