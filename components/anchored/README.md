@@ -94,7 +94,7 @@ Via CDN
 <script src="https://cdn.jsdelivr.net/npm/aframe-anchored@0.0.1/dist/anchored.min.js"></script>
 ```
 
-Or via [npm](https://www.npmjs.com/package/aframe-polygon-wireframe)
+Or via [npm](https://www.npmjs.com/package/aframe-anchored)
 
 ```
 npm install aframe-anchored
