@@ -12,6 +12,8 @@ If the anchoring is persistent, this position is maintained between sessions (un
 
 ## Demo
 
+[demo here](https://diarmidmackenzie.github.io/aframe-components/components/anchored/test/)
+
 Open the scene  on a VR headset and enter AR.
 
 On a Meta Quest hold the Meta / Oculus button to reset the scene origin.  The anchored components in the scene (the sphere, cube, cylinder and plane) should stay in a fixed position, even though the scene origin has moved.  The text panel in the background is not anchored, so you should see that move.
