@@ -72,10 +72,10 @@ This means that the user does not have control over where it is anchored.  There
 
 
 
-| Method                   | Description                                                  | Parameters                                                   |
-| ------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `unAchor(resetPosition)` | Unanchor the container so it no longer has a fixed real-world position and orientation, but instead moves with the scene origin. | resetPosition - if true, the container position and orientation are reset to the scene origin.  If false, the container is left in it's previous position, relative to the scene origin. |
-| `reAnchor()`             | Re-anchor the container to a fixed real-world position and orientation. | none                                                         |
+| Method                    | Description                                                  | Parameters                                                   |
+| ------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `unAnchor(resetPosition)` | Unanchor the container so it no longer has a fixed real-world position and orientation, but instead moves with the scene origin. | resetPosition - if true, the container position and orientation are reset to the scene origin.  If false, the container is left in its previous position, relative to the scene origin. |
+| `reAnchor()`              | Re-anchor the container to a fixed real-world position and orientation. | none                                                         |
 
 
 
