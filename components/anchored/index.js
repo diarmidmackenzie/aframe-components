@@ -86,7 +86,7 @@ AFRAME.registerComponent('anchored', {
       // sometimes restoring anchors hits an exception.
       // not clear why, but recover as best we can.
       console.warn(error)
-      console.warn("Resetting all anchors.")
+      console.warn("Error retrieving all anchors.  Resetting all anchors.")
       this.deleteAllAnchors()
       this.createAnchor = true
     })
@@ -97,7 +97,7 @@ AFRAME.registerComponent('anchored', {
     if (this.data.debug) console.log(`deleting ${ratk.anchors.size} anchors`)
     
     ratk.anchors.forEach((anchor) => {
-      if (this.data.debug) console.log(anchor.anchorID);
+      if (this.data.debug) console.log(`Deleting anchor ${anchor.anchorID}`);
       ratk.deleteAnchor(anchor);
     });
   },
