@@ -82,6 +82,13 @@ AFRAME.registerComponent('anchored', {
         // (creation needs access to XRFrame, so happens on next tick)
         this.createAnchor = true
       }
+    }).catch((error) => {
+      // sometimes restoring anchors hits an exception.
+      // not clear why, but recover as best we can.
+      console.warn(error)
+      console.warn("Resetting all anchors.")
+      this.deleteAllAnchors()
+      this.createAnchor = true
     })
   },
 
