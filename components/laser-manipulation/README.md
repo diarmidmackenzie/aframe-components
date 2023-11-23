@@ -78,7 +78,7 @@ Apart from the ability to customize thumbstick controls described above, there a
 Via CDN 
 
 ```
-<script src="https://cdn.jsdelivr.net/npm/aframe-laser-manipulation@0.1.0/dist/laser-manipulation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-laser-manipulation@0.1.1/dist/laser-manipulation.min.js"></script>
 ```
 
 Or via [npm](https://www.npmjs.com/package/aframe-laser-manipulation)
