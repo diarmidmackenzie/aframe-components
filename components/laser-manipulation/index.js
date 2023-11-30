@@ -139,8 +139,9 @@ AFRAME.registerComponent('laser-manipulation', {
       
       if (this.data.grabEvents) {
         // defer event to next schedule, to allow reparenting to have completed.
+        const releasedEl = this.grabbedEl
         setTimeout(() => {
-          this.grabbedEl.emit(this.data.releaseEvent)
+          releasedEl.emit(this.data.releaseEvent)
         })
       }
       this.grabbedEl = null
