@@ -8,10 +8,11 @@ AFRAME.registerComponent('laser-manipulation', {
       center: {type: 'string', default: 'center', oneOf: ['center','contact']},
       grabEvents: {type: 'boolean', default: false},
       grabEvent: {type: 'string', default: 'laserGrab'},
-      releaseEvent: {type: 'string', default: 'laserRelease'}
+      releaseEvent: {type: 'string', default: 'laserRelease'},
+      controlMethod: {type: 'string', default: 'parent', oneOf: ['parent', 'transform']}
     },
   
-    update: function() {
+    update() {
   
       // internally store rotation rate as radians per event
       this.rotateRate = this.data.rotateRate * Math.PI / 180;
@@ -40,6 +41,7 @@ AFRAME.registerComponent('laser-manipulation', {
       this.contactPoint.setAttribute('id', `${this.el.id}-contact-point`)
       this.el.appendChild(this.contactPoint)
 
+      this.lastContactPointTransform = new THREE.Object3D()
     },
 
     /* Code below is duplicated from mouse-manipulation - should be commonized */
@@ -110,7 +112,14 @@ AFRAME.registerComponent('laser-manipulation', {
       }
 
       // reparent element to this controller.
-      element.setAttribute('object-parent', 'parent', `#${this.el.id}-contact-point`)
+      if (this.data.controlMethod === 'parent') {
+        this.activeControlMethod = 'parent'
+        element.setAttribute('object-parent', 'parent', `#${this.el.id}-contact-point`)
+      }
+      else {
+        this.activeControlMethod = 'transform'
+        this.saveContactPointTransform()
+      }
 
       // store reference to grabbed element
       this.grabbedEl = element
@@ -124,11 +133,18 @@ AFRAME.registerComponent('laser-manipulation', {
   
       if (!this.grabbedEl) return
   
-      this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.originalParentEl.id}`)
+      if (this.activeControlMethod === 'parent') {
+        this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.originalParentEl.id}`)
+      }
+      
       if (this.data.grabEvents) {
-        this.grabbedEl.emit(this.data.releaseEvent)
+        // defer event to next schedule, to allow reparenting to have completed.
+        setTimeout(() => {
+          this.grabbedEl.emit(this.data.releaseEvent)
+        })
       }
       this.grabbedEl = null
+      this.activeControlMethod = ''
     },
   
     getIntersections(controllerEl) {
@@ -151,8 +167,28 @@ AFRAME.registerComponent('laser-manipulation', {
           return el
       }
     },
+
+    saveContactPointTransform() {
+      const transform = this.lastContactPointTransform
+      transform.quaternion.identity()
+      transform.position.set(0, 0, 0)
+      transform.scale.set(1, 1, 1)
+      this.contactPoint.object3D.add(transform)
+      this.el.sceneEl.object3D.attach(transform)
+    },
+
+    followContactPoint() {
+      const object = this.grabbedEl.object3D
+      this.lastContactPointTransform.attach(object)
+      this.saveContactPointTransform()
+      this.originalParentEl.object3D.attach(object)
+    },
     
     tick: function(time, timeDelta) {
+
+      if (this.activeControlMethod === 'transform') {
+        this.followContactPoint()
+      }
       
       if (this.el.is("moving-in")) {
         this.moveOut(-timeDelta);
