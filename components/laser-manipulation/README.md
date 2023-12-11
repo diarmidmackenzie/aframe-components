@@ -94,8 +94,6 @@ npm install aframe-laser-manipulation
 
 See [object-manipulation.html](https://diarmidmackenzie.github.io/aframe-components/component-usage/object-manipulation.html) for an example of how this can be used.
 
-This example also uses [desktop-vr-controller](https://diarmidmackenzie.github.io/aframe-components/docs/desktop-vr-controller.html), so you can test out operations of a VR controller in a desktop (non-VR) environment.
-
 
 
 ## Proxy Raycasting
