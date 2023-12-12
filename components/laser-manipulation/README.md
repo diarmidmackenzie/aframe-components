@@ -71,6 +71,7 @@ Apart from the ability to customize thumbstick controls described above, there a
 | grabEvent     | If `grabEvents` is true, the name of the event to generate when an entity is grabbed | mouseGrab    |
 | releaseEvent  | If `grabEvents` is true, the name of the event to generate when an entity is released | mouseRelease |
 | controlMethod | Either 'parent' or 'transform'. <br />'parent' mode re-parents the object to become a descendant of the controller.  This is a simpler method, and may be more performant and stable.  However re-parenting can cause issues if code in other components makes assumptions about objects' positions in the THREE.js scene graph.  'transform' mode leaves the object in the same position in the THREE.js scene graph, and instead adjusts its transform every tick as required. | parent       |
+| debug         | Shows the position & orientation of the contact point.  Also shows rotation axes when rotating about X & Y axes. | false        |
 
 
 
@@ -79,7 +80,7 @@ Apart from the ability to customize thumbstick controls described above, there a
 Via CDN 
 
 ```
-<script src="https://cdn.jsdelivr.net/npm/aframe-laser-manipulation@0.2.0/dist/laser-manipulation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-laser-manipulation@0.3.0/dist/laser-manipulation.min.js"></script>
 ```
 
 Or via [npm](https://www.npmjs.com/package/aframe-laser-manipulation)

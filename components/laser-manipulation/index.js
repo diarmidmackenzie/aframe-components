@@ -1,6 +1,19 @@
 if (!AFRAME.components['object-parent']) require('aframe-object-parent')
 if (!AFRAME.components['thumbstick-states']) require('aframe-thumbstick-states')
 
+/* Used in laser-manipulation */
+const _xRotationAxis = new THREE.Vector3()
+const _yRotationAxis = new THREE.Vector3()
+const _zRotationAxis = new THREE.Vector3()
+const _localAxis = new THREE.Vector3()
+const _unused = new THREE.Vector3()
+const _worldQuaternion = new THREE.Quaternion()
+
+/* Used in debug-axis */
+const _worldPosition = new THREE.Vector3()
+const _start = new THREE.Vector3()
+const _end = new THREE.Vector3()
+
 AFRAME.registerComponent('laser-manipulation', {
 
     schema: {
@@ -16,6 +29,20 @@ AFRAME.registerComponent('laser-manipulation', {
   
       // internally store rotation rate as radians per event
       this.rotateRate = this.data.rotateRate * Math.PI / 180;
+
+      if (this.data.debug && !this.debugAxes) {
+        this.debugAxes = document.createElement('a-entity')
+        this.debugAxes.setAttribute('debug-axes', '')
+        this.contactPoint.appendChild(this.debugAxes)
+        
+      }
+      else {
+        if (this.debugAxes) {
+          this.debugAxes.parentNode.removeChild(this.debugAxes)
+          this.debugAxes = null
+        }
+      }
+      
     },
   
     init() {
@@ -90,7 +117,7 @@ AFRAME.registerComponent('laser-manipulation', {
   
       const element = this.getRaycastTarget(intersections[0])
   
-      const intersectionData = this.el.components.raycaster.getIntersection(element)
+      const intersectionData = this.el.components.raycaster.getIntersection(intersections[0])
   
       // Save record of original parent, and make sure it has a usable ID.
       if (!this.originalParentEl) {
@@ -109,7 +136,11 @@ AFRAME.registerComponent('laser-manipulation', {
         // attach to ray's contact point with entity
         const contactPoint = this.el.object3D.worldToLocal(intersectionData.point)
         this.contactPoint.object3D.position.copy(contactPoint)
+        
       }
+      
+      this.getAxesFromRay(_xRotationAxis, _yRotationAxis, _zRotationAxis)
+
 
       // reparent element to this controller.
       if (this.data.controlMethod === 'parent') {
@@ -127,6 +158,14 @@ AFRAME.registerComponent('laser-manipulation', {
       if (this.data.grabEvents) {
         this.grabbedEl.emit(this.data.grabEvent)
       }
+    },
+
+    getAxesFromRay(xAxis, yAxis, zAxis) {
+      zAxis.copy(this.el.components.raycaster.raycaster.ray.direction)   
+      this.el.object3D.matrixWorld.extractBasis(_unused, yAxis, _unused)
+      yAxis.projectOnPlane(zAxis).normalize()
+
+      xAxis.crossVectors(zAxis, yAxis)
     },
   
     triggerUp() {
@@ -198,18 +237,116 @@ AFRAME.registerComponent('laser-manipulation', {
         this.moveOut(timeDelta);
       }
   
+      const angle = timeDelta * this.rotateRate / 1000
+      const contactPoint = this.contactPoint.object3D
+      this.getAxesFromRay(_xRotationAxis, _yRotationAxis, _zRotationAxis)
       if (this.el.is("rotating-y-plus")) {
-        this.contactPoint.object3D.rotation.y += timeDelta * this.rotateRate / 1000;
+        this.rotateOnWorldAxis(contactPoint, _yRotationAxis, angle)
       }
       else if (this.el.is("rotating-y-minus")) {
-        this.contactPoint.object3D.rotation.y -= timeDelta * this.rotateRate / 1000;
+        this.rotateOnWorldAxis(contactPoint, _yRotationAxis, -angle)
       }
 
       if (this.el.is("rotating-x-plus")) {
-        this.contactPoint.object3D.rotation.x += timeDelta * this.rotateRate / 1000;
+        this.rotateOnWorldAxis(contactPoint, _xRotationAxis, angle)
       }
       else if (this.el.is("rotating-x-minus")) {
-        this.contactPoint.object3D.rotation.x -= timeDelta * this.rotateRate / 1000;
+        this.rotateOnWorldAxis(contactPoint, _xRotationAxis, -angle)
       }
+
+      if (this.data.debug) {
+        if (this.el.is("rotating-y-plus") ||
+            this.el.is("rotating-y-minus")) {
+          const y = _yRotationAxis
+          this.contactPoint.setAttribute('debug-axis__y', `direction: ${y.x}, ${y.y}, ${y.z}; color: green`)
+        }
+        else {
+          this.contactPoint.removeAttribute('debug-axis__y')
+        }
+        if (this.el.is("rotating-x-plus") ||
+            this.el.is("rotating-x-minus")) {
+          const x = _xRotationAxis
+          this.contactPoint.setAttribute('debug-axis__x', `direction: ${x.x}, ${x.y}, ${x.z}; color: red`)
+        }
+        else {
+          this.contactPoint.removeAttribute('debug-axis__x')
+        }
+      }
+    },
+
+    /* Alternative to THREE.Object3D.rotateOnWorldAxis(), which doesn't
+     * support the case where the parent (or indeed any ancestor) is
+     * rotated.
+     * https://threejs.org/docs/index.html?q=object3D#api/en/core/Object3D.rotateOnWorldAxis
+     */
+    rotateOnWorldAxis(object, axis, angle) {
+      object.getWorldQuaternion(_worldQuaternion)
+      _worldQuaternion.invert()
+      _localAxis.copy(axis)
+      _localAxis.applyQuaternion(_worldQuaternion)
+
+      object.rotateOnAxis(_localAxis, angle)
     }
   });
+
+  /* Set on an entity to show X, Y & Z axes */
+  AFRAME.registerComponent("debug-axes", {
+
+    init() {
+  
+      this.addAxis('red', '0 0 0')
+      this.addAxis('green', '0 0 90')
+      this.addAxis('blue', '0 -90 0')
+    },
+  
+    addAxis(color, rotation) {
+  
+      const axisHtml = `
+      <a-entity rotation="${rotation}"
+      line__adjustment-axis="start: -0.1 0 0;
+                              end: 0.1 0 0;
+                              color: ${color}">
+        <a-cone radius-bottom=0.01;
+                radius-top=0;
+                height=0.02;
+                color="${color}";
+                position="0.1 0 0";
+                rotation="0 0 -90">
+        </a-cone>
+      </a-entity>`
+  
+      this.el.insertAdjacentHTML('beforeend', axisHtml)
+    }
+  })
+
+  /* Set on an entity to a particular axis in world co-ordinates */
+  AFRAME.registerComponent("debug-axis", {
+
+    schema: {
+      direction: { type: 'vec3'},
+      color: { type: 'color', default: 'green'}
+    },
+
+    multiple: true,
+
+    update() {
+
+      const object = this.el.object3D
+      object.getWorldPosition(_worldPosition)
+
+      _start.subVectors(_worldPosition, this.data.direction)
+      _end.addVectors(_worldPosition, this.data.direction)
+
+      object.worldToLocal(_start)
+      object.worldToLocal(_end)
+
+      this.el.setAttribute('line__axis', 
+                           `start: ${_start.x} ${_start.y} ${_start.z};
+                            end: ${_end.x} ${_end.y} ${_end.z};
+                            color: ${this.data.color}`)
+    },
+
+    remove() {
+      this.el.removeAttribute('line__axis')
+    }
+  })
