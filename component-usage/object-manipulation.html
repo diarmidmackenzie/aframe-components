@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="../components/low-cost-raycasting.js"></script>
     <script src="../components/polygon-wireframe/index.js"></script>
     <script src="../components/cursor-tracker/index.js"></script>
@@ -50,7 +50,7 @@
         <a-entity id="rhand"
                   position="0.4 1.4 -0.5"
                   laser-controls="hand: right" raycaster="objects: [raycast-target]; far: Infinity; lineColor: red; lineOpacity: 0.5"
-                  laser-manipulation
+                  laser-manipulation="center:contact; debug: true"
                   thumbstick-states__right="controller:#rhand;
                                             tBindings:moving-in,moving-out,rotating-y-plus,rotating-y-minus;
                                             tgBindings:rotating-x-plus,rotating-x-minus,rotating-y-plus,rotating-y-minus"
@@ -81,17 +81,22 @@
 
       <a-entity id="container"
                 position="0 1 -2">
+          <!-- remove use of adjusted-model component as it's not working with A-Frame 1.5.0
+               for reasons not yet understood.  -->
           <a-entity id="eiffel" position="-2 0 0"
-                    adjusted-model="gltfModel: #eiffel-model;
-                                            dimension: 1">
+                    scale="0.01 0.01 0.01"
+                    gltf-model="#eiffel-model"
+                    raycast-target>
           </a-entity>
           <a-entity id="trex" position="0 0 0"
-                    adjusted-model="gltfModel: #trex-model;
-                                            dimension: 1">
+                    scale="0.01 0.01 0.01"
+                    gltf-model="#trex-model"
+                    raycast-target>
           </a-entity>
-          <a-entity id="cell" position="2 0 0"
-                    adjusted-model="gltfModel: #cell-model;
-                                            dimension: 1">
+          <a-entity id="cell" position="2 0.5 0"
+                    scale="0.15 0.15 0.15"
+                    gltf-model="#cell-model"
+                    raycast-target>
           </a-entity>
       </a-entity>
     </a-scene>
