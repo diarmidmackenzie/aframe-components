@@ -1,16 +1,18 @@
 if (!AFRAME.components['object-parent']) require('aframe-object-parent')
 if (!AFRAME.components['thumbstick-states']) require('aframe-thumbstick-states')
 
+/* Used in laser-manipulation */
 const _xRotationAxis = new THREE.Vector3()
 const _yRotationAxis = new THREE.Vector3()
 const _zRotationAxis = new THREE.Vector3()
 const _localAxis = new THREE.Vector3()
 const _unused = new THREE.Vector3()
-const _matrix = new THREE.Matrix4()
-
-const _quaternion = new THREE.Quaternion()
 const _worldQuaternion = new THREE.Quaternion()
 
+/* Used in debug-axis */
+const _worldPosition = new THREE.Vector3()
+const _start = new THREE.Vector3()
+const _end = new THREE.Vector3()
 
 AFRAME.registerComponent('laser-manipulation', {
 
@@ -206,14 +208,6 @@ AFRAME.registerComponent('laser-manipulation', {
       }
     },
 
-    setWorldQuaternion(object, quaternion) {
-      
-      object.parent.getWorldQuaternion(_quaternion);
-      _quaternion.invert();
-      quaternion.premultiply(_quaternion);
-      object.quaternion.copy(quaternion);
-    },
-
     saveContactPointTransform() {
       const transform = this.lastContactPointTransform
       transform.quaternion.identity()
@@ -260,12 +254,6 @@ AFRAME.registerComponent('laser-manipulation', {
         this.rotateOnWorldAxis(contactPoint, _xRotationAxis, -angle)
       }
 
-      /*if (this.data.debug) {
-        _matrix.makeBasis(_xRotationAxis, _yRotationAxis, _zRotationAxis)
-        _worldQuaternion.setFromRotationMatrix(_matrix)
-        this.setWorldQuaternion(this.debugAxes.object3D, _worldQuaternion)
-      }*/
-
       if (this.data.debug) {
         if (this.el.is("rotating-y-plus") ||
             this.el.is("rotating-y-minus")) {
@@ -286,6 +274,11 @@ AFRAME.registerComponent('laser-manipulation', {
       }
     },
 
+    /* Alternative to THREE.Object3D.rotateOnWorldAxis(), which doesn't
+     * support the case where the parent (or indeed any ancestor) is
+     * rotated.
+     * https://threejs.org/docs/index.html?q=object3D#api/en/core/Object3D.rotateOnWorldAxis
+     */
     rotateOnWorldAxis(object, axis, angle) {
       object.getWorldQuaternion(_worldQuaternion)
       _worldQuaternion.invert()
@@ -296,6 +289,7 @@ AFRAME.registerComponent('laser-manipulation', {
     }
   });
 
+  /* Set on an entity to show X, Y & Z axes */
   AFRAME.registerComponent("debug-axes", {
 
     init() {
@@ -325,10 +319,7 @@ AFRAME.registerComponent('laser-manipulation', {
     }
   })
 
-  const _worldPosition = new THREE.Vector3()
-  const _start = new THREE.Vector3()
-  const _end = new THREE.Vector3()
-
+  /* Set on an entity to a particular axis in world co-ordinates */
   AFRAME.registerComponent("debug-axis", {
 
     schema: {
