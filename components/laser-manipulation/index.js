@@ -1,9 +1,10 @@
 if (!AFRAME.components['object-parent']) require('aframe-object-parent')
 if (!AFRAME.components['thumbstick-states']) require('aframe-thumbstick-states')
 
-const _xTargetAxis = new THREE.Vector3()
-const _yTargetAxis = new THREE.Vector3()
-const _zTargetAxis = new THREE.Vector3()
+const _xRotationAxis = new THREE.Vector3()
+const _yRotationAxis = new THREE.Vector3()
+const _zRotationAxis = new THREE.Vector3()
+const _localAxis = new THREE.Vector3()
 const _unused = new THREE.Vector3()
 const _matrix = new THREE.Matrix4()
 
@@ -27,12 +28,19 @@ AFRAME.registerComponent('laser-manipulation', {
       // internally store rotation rate as radians per event
       this.rotateRate = this.data.rotateRate * Math.PI / 180;
 
-      if (this.data.debug) {
-        this.contactPoint.setAttribute('debug-axes', '')
+      if (this.data.debug && !this.debugAxes) {
+        this.debugAxes = document.createElement('a-entity')
+        this.debugAxes.setAttribute('debug-axes', '')
+        this.contactPoint.appendChild(this.debugAxes)
+        
       }
       else {
-        this.contactPoint.removeAttribute('debug-axes')
+        if (this.debugAxes) {
+          this.debugAxes.parentNode.removeChild(this.debugAxes)
+          this.debugAxes = null
+        }
       }
+      
     },
   
     init() {
@@ -129,14 +137,8 @@ AFRAME.registerComponent('laser-manipulation', {
         
       }
       
-      _zTargetAxis.copy(this.el.components.raycaster.raycaster.ray.direction)   
-      this.el.object3D.matrixWorld.extractBasis(_unused, _yTargetAxis, _unused)
-      _yTargetAxis.projectOnPlane(_zTargetAxis).normalize()
-      _xTargetAxis.crossVectors(_yTargetAxis, _zTargetAxis)
-      _matrix.makeBasis(_xTargetAxis, _yTargetAxis, _zTargetAxis)
-      _worldQuaternion.setFromRotationMatrix(_matrix)
-      
-      this.setWorldQuaternion(this.contactPoint.object3D, _worldQuaternion)
+      this.getAxesFromRay(_xRotationAxis, _yRotationAxis, _zRotationAxis)
+
 
       // reparent element to this controller.
       if (this.data.controlMethod === 'parent') {
@@ -154,6 +156,14 @@ AFRAME.registerComponent('laser-manipulation', {
       if (this.data.grabEvents) {
         this.grabbedEl.emit(this.data.grabEvent)
       }
+    },
+
+    getAxesFromRay(xAxis, yAxis, zAxis) {
+      zAxis.copy(this.el.components.raycaster.raycaster.ray.direction)   
+      this.el.object3D.matrixWorld.extractBasis(_unused, yAxis, _unused)
+      yAxis.projectOnPlane(zAxis).normalize()
+
+      xAxis.crossVectors(yAxis, zAxis)
     },
   
     triggerUp() {
@@ -235,24 +245,54 @@ AFRAME.registerComponent('laser-manipulation', {
   
       const angle = timeDelta * this.rotateRate / 1000
       const contactPoint = this.contactPoint.object3D
+      this.getAxesFromRay(_xRotationAxis, _yRotationAxis, _zRotationAxis)
       if (this.el.is("rotating-y-plus")) {
-        contactPoint.rotateY(angle)
+        this.rotateOnWorldAxis(contactPoint, _yRotationAxis, angle)
       }
       else if (this.el.is("rotating-y-minus")) {
-        contactPoint.rotateY(-angle)
+        this.rotateOnWorldAxis(contactPoint, _yRotationAxis, -angle)
       }
 
       if (this.el.is("rotating-x-plus")) {
-        contactPoint.rotateX(angle)
-        /*
-        _quaternion.setFromAxisAngle(_xAxis, angle)
-        contactQuaternion.premultiply(_quaternion)*/
+        this.rotateOnWorldAxis(contactPoint, _xRotationAxis, angle)
       }
       else if (this.el.is("rotating-x-minus")) {
-        contactPoint.rotateX(-angle)
-        /*_quaternion.setFromAxisAngle(_xAxis, -angle)
-        contactQuaternion.premultiply(_quaternion)*/
+        this.rotateOnWorldAxis(contactPoint, _xRotationAxis, -angle)
       }
+
+      /*if (this.data.debug) {
+        _matrix.makeBasis(_xRotationAxis, _yRotationAxis, _zRotationAxis)
+        _worldQuaternion.setFromRotationMatrix(_matrix)
+        this.setWorldQuaternion(this.debugAxes.object3D, _worldQuaternion)
+      }*/
+
+      if (this.data.debug) {
+        if (this.el.is("rotating-y-plus") ||
+            this.el.is("rotating-y-minus")) {
+          const y = _yRotationAxis
+          this.contactPoint.setAttribute('debug-axis__y', `direction: ${y.x}, ${y.y}, ${y.z}; color: green`)
+        }
+        else {
+          this.contactPoint.removeAttribute('debug-axis__y')
+        }
+        if (this.el.is("rotating-x-plus") ||
+            this.el.is("rotating-x-minus")) {
+          const x = _xRotationAxis
+          this.contactPoint.setAttribute('debug-axis__x', `direction: ${x.x}, ${x.y}, ${x.z}; color: red`)
+        }
+        else {
+          this.contactPoint.removeAttribute('debug-axis__x')
+        }
+      }
+    },
+
+    rotateOnWorldAxis(object, axis, angle) {
+      object.getWorldQuaternion(_worldQuaternion)
+      _worldQuaternion.invert()
+      _localAxis.copy(axis)
+      _localAxis.applyQuaternion(_worldQuaternion)
+
+      object.rotateOnAxis(_localAxis, angle)
     }
   });
 
@@ -282,5 +322,40 @@ AFRAME.registerComponent('laser-manipulation', {
       </a-entity>`
   
       this.el.insertAdjacentHTML('beforeend', axisHtml)
+    }
+  })
+
+  const _worldPosition = new THREE.Vector3()
+  const _start = new THREE.Vector3()
+  const _end = new THREE.Vector3()
+
+  AFRAME.registerComponent("debug-axis", {
+
+    schema: {
+      direction: { type: 'vec3'},
+      color: { type: 'color', default: 'green'}
+    },
+
+    multiple: true,
+
+    update() {
+
+      const object = this.el.object3D
+      object.getWorldPosition(_worldPosition)
+
+      _start.subVectors(_worldPosition, this.data.direction)
+      _end.addVectors(_worldPosition, this.data.direction)
+
+      object.worldToLocal(_start)
+      object.worldToLocal(_end)
+
+      this.el.setAttribute('line__axis', 
+                           `start: ${_start.x} ${_start.y} ${_start.z};
+                            end: ${_end.x} ${_end.y} ${_end.z};
+                            color: ${this.data.color}`)
+    },
+
+    remove() {
+      this.el.removeAttribute('line__axis')
     }
   })
