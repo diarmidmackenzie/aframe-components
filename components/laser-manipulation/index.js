@@ -1,6 +1,16 @@
 if (!AFRAME.components['object-parent']) require('aframe-object-parent')
 if (!AFRAME.components['thumbstick-states']) require('aframe-thumbstick-states')
 
+const _xTargetAxis = new THREE.Vector3()
+const _yTargetAxis = new THREE.Vector3()
+const _zTargetAxis = new THREE.Vector3()
+const _unused = new THREE.Vector3()
+const _matrix = new THREE.Matrix4()
+
+const _quaternion = new THREE.Quaternion()
+const _worldQuaternion = new THREE.Quaternion()
+
+
 AFRAME.registerComponent('laser-manipulation', {
 
     schema: {
@@ -16,6 +26,13 @@ AFRAME.registerComponent('laser-manipulation', {
   
       // internally store rotation rate as radians per event
       this.rotateRate = this.data.rotateRate * Math.PI / 180;
+
+      if (this.data.debug) {
+        this.contactPoint.setAttribute('debug-axes', '')
+      }
+      else {
+        this.contactPoint.removeAttribute('debug-axes')
+      }
     },
   
     init() {
@@ -109,7 +126,17 @@ AFRAME.registerComponent('laser-manipulation', {
         // attach to ray's contact point with entity
         const contactPoint = this.el.object3D.worldToLocal(intersectionData.point)
         this.contactPoint.object3D.position.copy(contactPoint)
+        
       }
+      
+      _zTargetAxis.copy(this.el.components.raycaster.raycaster.ray.direction)   
+      this.el.object3D.matrixWorld.extractBasis(_unused, _yTargetAxis, _unused)
+      _yTargetAxis.projectOnPlane(_zTargetAxis).normalize()
+      _xTargetAxis.crossVectors(_yTargetAxis, _zTargetAxis)
+      _matrix.makeBasis(_xTargetAxis, _yTargetAxis, _zTargetAxis)
+      _worldQuaternion.setFromRotationMatrix(_matrix)
+      
+      this.setWorldQuaternion(this.contactPoint.object3D, _worldQuaternion)
 
       // reparent element to this controller.
       if (this.data.controlMethod === 'parent') {
@@ -169,6 +196,14 @@ AFRAME.registerComponent('laser-manipulation', {
       }
     },
 
+    setWorldQuaternion(object, quaternion) {
+      
+      object.parent.getWorldQuaternion(_quaternion);
+      _quaternion.invert();
+      quaternion.premultiply(_quaternion);
+      object.quaternion.copy(quaternion);
+    },
+
     saveContactPointTransform() {
       const transform = this.lastContactPointTransform
       transform.quaternion.identity()
@@ -198,18 +233,54 @@ AFRAME.registerComponent('laser-manipulation', {
         this.moveOut(timeDelta);
       }
   
+      const angle = timeDelta * this.rotateRate / 1000
+      const contactPoint = this.contactPoint.object3D
       if (this.el.is("rotating-y-plus")) {
-        this.contactPoint.object3D.rotation.y += timeDelta * this.rotateRate / 1000;
+        contactPoint.rotateY(angle)
       }
       else if (this.el.is("rotating-y-minus")) {
-        this.contactPoint.object3D.rotation.y -= timeDelta * this.rotateRate / 1000;
+        contactPoint.rotateY(-angle)
       }
 
       if (this.el.is("rotating-x-plus")) {
-        this.contactPoint.object3D.rotation.x += timeDelta * this.rotateRate / 1000;
+        contactPoint.rotateX(angle)
+        /*
+        _quaternion.setFromAxisAngle(_xAxis, angle)
+        contactQuaternion.premultiply(_quaternion)*/
       }
       else if (this.el.is("rotating-x-minus")) {
-        this.contactPoint.object3D.rotation.x -= timeDelta * this.rotateRate / 1000;
+        contactPoint.rotateX(-angle)
+        /*_quaternion.setFromAxisAngle(_xAxis, -angle)
+        contactQuaternion.premultiply(_quaternion)*/
       }
     }
   });
+
+  AFRAME.registerComponent("debug-axes", {
+
+    init() {
+  
+      this.addAxis('red', '0 0 0')
+      this.addAxis('green', '0 0 90')
+      this.addAxis('blue', '0 -90 0')
+    },
+  
+    addAxis(color, rotation) {
+  
+      const axisHtml = `
+      <a-entity rotation="${rotation}"
+      line__adjustment-axis="start: -0.1 0 0;
+                              end: 0.1 0 0;
+                              color: ${color}">
+        <a-cone radius-bottom=0.01;
+                radius-top=0;
+                height=0.02;
+                color="${color}";
+                position="0.1 0 0";
+                rotation="0 0 -90">
+        </a-cone>
+      </a-entity>`
+  
+      this.el.insertAdjacentHTML('beforeend', axisHtml)
+    }
+  })
