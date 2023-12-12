@@ -117,7 +117,7 @@ AFRAME.registerComponent('laser-manipulation', {
   
       const element = this.getRaycastTarget(intersections[0])
   
-      const intersectionData = this.el.components.raycaster.getIntersection(element)
+      const intersectionData = this.el.components.raycaster.getIntersection(intersections[0])
   
       // Save record of original parent, and make sure it has a usable ID.
       if (!this.originalParentEl) {
@@ -165,7 +165,7 @@ AFRAME.registerComponent('laser-manipulation', {
       this.el.object3D.matrixWorld.extractBasis(_unused, yAxis, _unused)
       yAxis.projectOnPlane(zAxis).normalize()
 
-      xAxis.crossVectors(yAxis, zAxis)
+      xAxis.crossVectors(zAxis, yAxis)
     },
   
     triggerUp() {
