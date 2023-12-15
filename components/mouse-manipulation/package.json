@@ -1,6 +1,6 @@
 {
   "name": "aframe-mouse-manipulation",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Enables the user to move objects in 3D space using a mouse on desktop.",
   "main": "index.js",
   "scripts": {

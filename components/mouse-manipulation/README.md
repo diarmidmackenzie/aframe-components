@@ -24,7 +24,7 @@ Controls are as follows:
 Via CDN 
 
 ```
-<script src="https://cdn.jsdelivr.net/npm/aframe-mouse-manipulation@0.2.1/dist/mouse-manipulation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-mouse-manipulation@0.3.0/dist/mouse-manipulation.min.js"></script>
 ```
 
 Or via [npm](https://www.npmjs.com/package/aframe-laser-manipulation)
@@ -61,6 +61,7 @@ npm install aframe-mouse-manipulation
 | grabEvents   | Whether to generate events when an entity is grabbed / released | false        |
 | grabEvent    | If `grabEvents` is true, the name of the event to generate when an entity is grabbed | laserGrab    |
 | releaseEvent | If `grabEvents` is true, the name of the event to generate when an entity is released | laserRelease |
+| controlMethod | Either 'parent' or 'transform'. <br />'parent' mode re-parents the object to become a descendant of the controller. This is a simpler method, and may be more performant and stable. However re-parenting can cause issues if code in other components makes assumptions about objects' positions in the THREE.js scene graph. 'transform' mode leaves the object in the same position in the THREE.js scene graph, and instead adjusts its transform every tick as required. | parent |
 
 
 
