@@ -10,7 +10,8 @@ AFRAME.registerComponent('mouse-manipulation', {
         showHints: {type: 'boolean', default: true},
         grabEvents: {type: 'boolean', default: false},
         grabEvent: {type: 'string', default: 'mouseGrab'},
-        releaseEvent: {type: 'string', default: 'mouseRelease'}
+        releaseEvent: {type: 'string', default: 'mouseRelease'},
+        controlMethod: {type: 'string', default: 'parent', oneOf: ['parent', 'transform']}
     },
 
     events: {
@@ -30,8 +31,10 @@ AFRAME.registerComponent('mouse-manipulation', {
         // Take a root of this to get a scaling factor.
         this.moveSpeed = 3;
     
-        // variable to track any grabbed element
+        // variable to track any grabbed element, and active controls state.
         this.grabbedEl = null;
+        this.activeContactPoint = null;
+        this.activeControlMethod = '';
 
         // We create 2 children beneath the camera
         // - cursorTracker.  This is set up to match the orientation of the cursor
@@ -83,6 +86,8 @@ AFRAME.registerComponent('mouse-manipulation', {
 
         // adjustments to control ratio of mouse pixels to radians for otations.
         this.radiansPerMousePixel = 0.01
+
+        this.lastContactPointTransform = new THREE.Object3D()
     },
 
     update: function() {
@@ -315,7 +320,15 @@ AFRAME.registerComponent('mouse-manipulation', {
         const pos = contactPoint.object3D.position
         this.grabbedEl.object3D.getWorldPosition(pos)
         contactPoint.object3D.parent.worldToLocal(pos)
-        this.grabbedEl.setAttribute('object-parent', 'parent', contactPointSelector)
+
+        if (this.data.controlMethod === 'parent') {
+          this.activeControlMethod = 'parent'
+          this.grabbedEl.setAttribute('object-parent', 'parent', contactPointSelector)
+        }
+        else {
+          this.activeControlMethod = 'transform'
+          this.saveContactPointTransform(contactPoint)
+        }
 
         this.hints.object3D.position.set(0, 0 , 0)
         contactPoint.object3D.add(this.hints.object3D)
@@ -327,13 +340,21 @@ AFRAME.registerComponent('mouse-manipulation', {
 
     releaseEl() {
         const contactPoint = this.grabbedEl.object3D.parent
-        this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.originalParentEl.id}`)
+
+        if (this.activeControlMethod === 'parent') {
+          this.grabbedEl.setAttribute('object-parent', 'parent', `#${this.originalParentEl.id}`)
+        }
 
         if (this.data.grabEvents) {
-          this.grabbedEl.emit(this.data.releaseEvent)
+          // defer event to next schedule, to allow reparenting to have completed.
+          const releasedEl = this.grabbedEl
+          setTimeout(() => {
+            releasedEl.emit(this.data.releaseEvent)
+          })
         }
 
         this.grabbedEl = null
+        this.activeControlMethod = ''
         this.originalParentEl = null
         
         this.el.object3D.add(this.hints.object3D)
@@ -393,8 +414,31 @@ AFRAME.registerComponent('mouse-manipulation', {
   
         const els = cursorEl.components.raycaster.intersectedEls
         return els
-    }
+    },
 
+    saveContactPointTransform(contactPoint) {
+      const transform = this.lastContactPointTransform
+      transform.quaternion.identity()
+      transform.position.set(0, 0, 0)
+      transform.scale.set(1, 1, 1)
+      contactPoint.object3D.add(transform)
+      this.el.sceneEl.object3D.attach(transform)
+
+      this.activeContactPoint = contactPoint
+    },
+
+    followContactPoint() {
+      const object = this.grabbedEl.object3D
+      this.lastContactPointTransform.attach(object)
+      this.saveContactPointTransform(this.activeContactPoint)
+      this.originalParentEl.object3D.attach(object)
+    },
+    
+    tick() {
+      if (this.activeControlMethod === 'transform') {
+        this.followContactPoint()
+      }
+    }
 });
 
 AFRAME.registerComponent('mouse-manipulation-hints', {
