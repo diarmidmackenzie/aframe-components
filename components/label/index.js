@@ -105,8 +105,8 @@ AFRAME.registerComponent('face-camera', {
         // This works well on desktop, but is disorienting in VR.
         // fixedSize assumes the entity is scaled at 1, 1, 1.
         fixedSize: {type: 'boolean', default: false},
-        
-        // If using a perspecive camera, face back with a normal that exactly reverses the gaze
+
+        // If using a perspective camera, face back with a normal that exactly reverses the gaze
         // direction of the camera.
         // If this is false, the label simply faces directly at the camera
         // (this looks good in VR, but gives a distorting effect on a 2D screen).

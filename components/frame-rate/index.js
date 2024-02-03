@@ -23,13 +23,13 @@ AFRAME.registerComponent('frame-rate', {
 
     const renderer = scene.renderer
     if (!renderer.xr || !renderer.xr.getSession) {
-      console.warn(`Unabled to request unsupported frame rate of ${this.data}.  No XR Session found.`)
+      console.warn(`Unable to request unsupported frame rate of ${this.data}.  No XR Session found.`)
       return
     }
 
     const session = renderer.xr.getSession()
     if (!session) {
-      console.warn(`Unabled to request unsupported frame rate of ${this.data}.  No XR Session found.`)
+      console.warn(`Unable to request unsupported frame rate of ${this.data}.  No XR Session found.`)
       return
     }
 
@@ -37,11 +37,11 @@ AFRAME.registerComponent('frame-rate', {
 
     if (rates.includes(this.data)) {
       session.updateTargetFrameRate(this.data).catch((e) => {
-        console.warn(`Unabled to set target frame rate of ${this.data}. Error info: ${e}`)
+        console.warn(`Unable to set target frame rate of ${this.data}. Error info: ${e}`)
       })
     }
     else {
-      console.warn(`Unabled to request unsupported frame rate of ${this.data}.  Supported frame rates: ${rates}`)
+      console.warn(`Unable to request unsupported frame rate of ${this.data}.  Supported frame rates: ${rates}`)
     }
   },
 
@@ -49,7 +49,7 @@ AFRAME.registerComponent('frame-rate', {
 
     const renderer = this.el.sceneEl.renderer
     if (!renderer.xr || !renderer.xr.getSession) {
-      console.warn(`Unabled to get list of supported Frame Rates.  No XR Session found.`)
+      console.warn(`Unable to get list of supported Frame Rates.  No XR Session found.`)
       return
     }
 
@@ -110,7 +110,7 @@ AFRAME.registerComponent('adaptive-frame-rate', {
 
     this.frameRate = this.frameRateComponent.getFrameRate()
 
-    // Target used to measue whether ticks are slow.
+    // Target used to measure whether ticks are slow.
     // The way WebXR scheduling works, if we miss a frame, we'll miss by a lot (typically 2x),
     // so we can be pretty generous with what we consider "on time".
     this.targetTick = (1000 / this.frameRate) * 1.5

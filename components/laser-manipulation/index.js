@@ -17,6 +17,7 @@ const _end = new THREE.Vector3()
 AFRAME.registerComponent('laser-manipulation', {
 
     schema: {
+      debug: {type: 'boolean', default: false},
       rotateRate: {type: 'number', default: 45},
       center: {type: 'string', default: 'center', oneOf: ['center','contact']},
       grabEvents: {type: 'boolean', default: false},
@@ -24,7 +25,7 @@ AFRAME.registerComponent('laser-manipulation', {
       releaseEvent: {type: 'string', default: 'laserRelease'},
       controlMethod: {type: 'string', default: 'parent', oneOf: ['parent', 'transform']}
     },
-  
+
     update() {
   
       // internally store rotation rate as radians per event

@@ -1,5 +1,5 @@
 // Set on an entity to track the orientation of the cursor's ray.
-// Typically set on a enitity that is a child of the camera that the cursor uses.
+// Typically set on a entity that is a child of the camera that the cursor uses.
 AFRAME.registerComponent('cursor-tracker', {
 
     schema: {
