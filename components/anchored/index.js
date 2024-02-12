@@ -13,7 +13,7 @@ AFRAME.registerComponent('anchored', {
 
     if (components.length > 1) {
       console.warn("Only one 'anchored' component is permitted per scene.  Nothing will be anchored")
-      console.warn(`The following ${components.lengt} entities have the 'anchored' component configured:`, components)
+      console.warn(`The following ${components.length} entities have the 'anchored' component configured:`, components)
       return
     }
 
@@ -30,7 +30,7 @@ AFRAME.registerComponent('anchored', {
 
   update(oldData) {
 
-    if (this.data.pesrsistent != oldData.persistent) {
+    if (this.data.persistent != oldData.persistent) {
 
       if (this.data.debug) console.log(`re-creating anchor to change persistence`) 
 
