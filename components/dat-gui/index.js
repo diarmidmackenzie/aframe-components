@@ -20,15 +20,55 @@ AFRAME.registerComponent('dat-gui', {
     const folder = this.gui.addFolder(componentName)
 
     const data = component.data
-    const properties = Object.keys(data)
+    const componentData = AFRAME.components[componentName]
+    const schema = componentData.schema
 
-    properties.forEach((prop) => {
-      const el = this.el
-      const propController = folder.add(data, prop)
+    if (componentData.isSingleProperty) {
+      this.addProperty(folder, componentName, schema, data, componentName)
+    }
+    else {
+      const schemaEntries = Object.entries(schema)
 
+      schemaEntries.forEach(([prop, schemaData]) => {
+        this.addProperty(folder, componentName, schemaData, data, prop)
+      })
+    }
+  },
+
+  addProperty(folder, componentName, schemaData, data, prop) {
+
+    const type = schemaData.type
+
+    let propController
+
+    if (schemaData.oneOf) {
+      propController = folder.add(data, prop, schemaData.oneOf)
       propController.onChange(() => {
         this.el.setAttribute(componentName, data)
       })
+      return
+    }
+
+    switch (type) {
+      case 'int':
+        propController = folder.add(data, prop, NaN, NaN, 1)
+        break;
+
+      case 'number':
+        propController = folder.add(data, prop, NaN, NaN, 0.1)
+        break;
+
+      case 'string':
+        propController = folder.add(data, prop)
+        break;
+
+      default:
+        console.warn(`Type: ${type} is not yet supported`)
+        propController = folder.add(data, prop)
+    }
+
+    propController.onChange(() => {
+      this.el.setAttribute(componentName, data)
     })
   }
 });

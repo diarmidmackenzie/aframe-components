@@ -164,11 +164,11 @@ AFRAME.registerPrimitive('a-brick', {
 AFRAME.registerComponent('brick', {
 
   schema: {
-    width: {default: 4},
-    depth: {default: 2},
-    height: {default: 3},
-    cylinderSegments: {default: 8},
-    movement: {default: 'dynamic'},
+    width: {default: 4, type: 'int'},
+    depth: {default: 2, type: 'int'},
+    height: {default: 3, type: 'int'},
+    cylinderSegments: {default: 8, type: 'int'},
+    movement: {default: 'dynamic', oneOf: ['dynamic', 'static', 'kinematic']},
     color: {default: 'red'},
     plugs: {default: true}
   },
