@@ -13,6 +13,9 @@ AFRAME.registerComponent('dat-gui', {
 
   addFolder(component) {
 
+    // don't include this component itself.
+    if (component.attrName === 'dat-gui') return
+
     const componentName = component.attrName
     const folder = this.gui.addFolder(componentName)
 
