@@ -99,7 +99,7 @@ Via CDN
 Or via [npm](https://www.npmjs.com/package/aframe-label)
 
 ```
-npm install aframe-frame-rate
+npm install aframe-label
 ```
 
 ## Examples
