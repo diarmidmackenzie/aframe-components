@@ -39,31 +39,35 @@ AFRAME.registerComponent('dat-gui', {
 
     const type = schemaData.type
 
-    let propController
-
-    if (schemaData.oneOf) {
-      propController = folder.add(data, prop, schemaData.oneOf)
+    const addProp = (prop, ...args) => {
+      const propController = folder.add(data, prop, ...args)
       propController.onChange(() => {
         this.el.setAttribute(componentName, data)
       })
+    }
+
+    if (schemaData.oneOf) {
+      addProp(prop, schemaData.oneOf)
       return
     }
 
     switch (type) {
       case 'int':
-        propController = folder.add(data, prop, NaN, NaN, 1)
+        addProp(prop, NaN, NaN, 1)
         break;
 
       case 'number':
-        propController = folder.add(data, prop, NaN, NaN, 0.1)
+        addProp(prop, NaN, NaN, 0.1)
         break;
 
       case 'string':
       case 'boolean':
-        propController = folder.add(data, prop)
+        addProp(prop)
         break;
 
+      case 'vec2':
       case 'vec3':
+      case 'vec4':
 
         let dataRef, subFolder
         if (data[prop]) {
@@ -77,27 +81,19 @@ AFRAME.registerComponent('dat-gui', {
           dataRef = data
         }
         
-        propController = subFolder.add(dataRef, 'x', NaN, NaN, 0.1)
-        propController.onChange(() => {
-          this.el.setAttribute(componentName, data)
-        })
-        propController = subFolder.add(dataRef, 'y', NaN, NaN, 0.1)
-        propController.onChange(() => {
-          this.el.setAttribute(componentName, data)
-        })
-        propController = subFolder.add(dataRef, 'z', NaN, NaN, 0.1)
-        propController.onChange(() => {
-          this.el.setAttribute(componentName, data)
-        })
+        addProp('x', NaN, NaN, 0.1)
+        addProp('y', NaN, NaN, 0.1)
+        if (type !== 'vec2') {
+          addProp('z', NaN, NaN, 0.1)
+        }
+        if (type === 'vec4') {
+          addProp('w', NaN, NaN, 0.1)
+        }
         break;
 
       default:
         console.warn(`Type: ${type} is not yet supported`)
-        propController = folder.add(data, prop)
+        addProp(prop)
     }
-
-    propController.onChange(() => {
-      this.el.setAttribute(componentName, data)
-    })
   }
 });
