@@ -8,11 +8,13 @@
       <script>
         AFRAME.registerComponent('test-component', {
           schema: {
+            boolean: {type: 'boolean'},
             string: {type: 'string'},
             oneOf: {type: 'string', oneOf: ['aaa', 'bbb', 'ccc']},
             int: {type: 'int'},
             float: {type: 'number'},
-            color: {type: 'color'}
+            color: {type: 'color'},
+            vec3: {type: 'vec3'}
           }
         })
       </script>
@@ -23,8 +25,8 @@
     </div>
       <a-scene background="color:#88f">
         <a-camera position="0 1.6 0" look-controls="enabled: false"></a-camera>
-        <a-entity position = "0 1.3 -1" scale="10 10 10" rotation="0 30 0">
-          <a-brick test-component dat-gui></a-brick>
+        <a-entity position="0 1.3 -1" scale="10 10 10" rotation="0 30 0">
+          <a-brick position="0 0 0" rotation="0 0 0" test-component dat-gui></a-brick>
         </a-entity>
       </a-scene>
   </body>

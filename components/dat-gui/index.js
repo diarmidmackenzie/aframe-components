@@ -59,7 +59,36 @@ AFRAME.registerComponent('dat-gui', {
         break;
 
       case 'string':
+      case 'boolean':
         propController = folder.add(data, prop)
+        break;
+
+      case 'vec3':
+
+        let dataRef, subFolder
+        if (data[prop]) {
+          // not part of a single prop schema
+          subFolder = folder.addFolder(prop)
+          dataRef = data[prop]
+        }
+        else {
+          // part of a single prop schema
+          subFolder = folder
+          dataRef = data
+        }
+        
+        propController = subFolder.add(dataRef, 'x', NaN, NaN, 0.1)
+        propController.onChange(() => {
+          this.el.setAttribute(componentName, data)
+        })
+        propController = subFolder.add(dataRef, 'y', NaN, NaN, 0.1)
+        propController.onChange(() => {
+          this.el.setAttribute(componentName, data)
+        })
+        propController = subFolder.add(dataRef, 'z', NaN, NaN, 0.1)
+        propController.onChange(() => {
+          this.el.setAttribute(componentName, data)
+        })
         break;
 
       default:
