@@ -2,6 +2,7 @@
 <html>
   <head>
       <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js"></script>
       <script src="../../components/dat-gui/dist/dat-gui.js"></script>
       <link rel="stylesheet" href="../../../styles.css">
   </head>
@@ -15,9 +16,15 @@
        view code
     </a>
       <a-scene background="color:#88f">
-        <a-camera position="0 1.6 0" look-controls="enabled: false"></a-camera>
-        <a-entity position="0 1.3 -3"
-                  rotation="120 0 0">
+        <a-entity camera
+                  look-controls="enabled: false"
+                  orbit-controls="target: 0 0 0;
+                                  minDistance: 0.5;
+                                  maxDistance: 180;
+                                  initialPosition: 0 0.5 3; 
+                                  rotateSpeed: 0.5">
+        </a-entity>
+        <a-entity animation="property: rotation; from: 0 0 0; to: 360 360 0; dur: 10000; loop: true">
           <a-torus color="red" dat-gui></a-torus>
         </a-entity>
       </a-scene>
