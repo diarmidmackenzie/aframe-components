@@ -1,4 +1,5 @@
 const dat = require('dat.gui');
+const _color = new THREE.Color
 
 AFRAME.registerSystem('dat-gui', {
 
@@ -48,6 +49,8 @@ AFRAME.registerComponent('dat-gui', {
   init() {
 
     this.entityFolder = this.system.addEntityFolder(this.el)
+
+    this.colorRecords = {}
 
     const components = Object.values(this.el.components)
 
@@ -115,16 +118,31 @@ AFRAME.registerComponent('dat-gui', {
     switch (type) {
       case 'int':
         addProp(componentData, prop, NaN, NaN, 1)
-        break;
+        break
 
       case 'number':
         addProp(componentData, prop, NaN, NaN, 0.1)
-        break;
+        break
 
       case 'string':
       case 'boolean':
         addProp(componentData, prop)
-        break;
+        break
+
+      case 'color':
+        this.colorRecords[prop] = {r: 0, g: 0, b: 0}
+        _color.set(componentData[prop])
+        _color.multiplyScalar(255)
+        _color.getRGB(this.colorRecords[prop])
+        const colorController = folder.addColor(this.colorRecords, prop)
+        
+        colorController.onChange(() => {
+           const c = this.colorRecords[prop]
+           _color.setRGB(c.r / 255, c.g / 255, c.b / 255)
+           const colorString = _color.getStyle()
+           this.el.setAttribute(componentName, prop, colorString)
+        })
+        break
 
       case 'vec2':
       case 'vec3':
@@ -149,11 +167,12 @@ AFRAME.registerComponent('dat-gui', {
         if (type === 'vec4') {
           addProp(parentData, 'w', NaN, NaN, 0.1)
         }
-        break;
+        break
 
       default:
         console.warn(`Type: ${type} is not yet supported`)
         addProp(componentData, prop)
+        break
     }
   }
 });

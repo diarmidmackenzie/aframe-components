@@ -169,7 +169,7 @@ AFRAME.registerComponent('brick', {
     height: {default: 3, type: 'int'},
     cylinderSegments: {default: 8, type: 'int'},
     movement: {default: 'dynamic', oneOf: ['dynamic', 'static', 'kinematic']},
-    color: {default: 'red'},
+    color: {default: 'red', type: 'color'},
     plugs: {default: true}
   },
 
