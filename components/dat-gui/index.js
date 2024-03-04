@@ -35,65 +35,65 @@ AFRAME.registerComponent('dat-gui', {
     }
   },
 
-  addProperty(folder, componentName, schemaData, data, prop) {
+  addProperty(folder, componentName, schemaData, componentData, prop) {
 
     const type = schemaData.type
 
-    const addProp = (prop, ...args) => {
-      const propController = folder.add(data, prop, ...args)
+    const addProp = (parentData, prop, ...args) => {
+      const propController = folder.add(parentData, prop, ...args)
       propController.onChange(() => {
-        this.el.setAttribute(componentName, data)
+        this.el.setAttribute(componentName, componentData)
       })
     }
 
     if (schemaData.oneOf) {
-      addProp(prop, schemaData.oneOf)
+      addProp(componentData, prop, schemaData.oneOf)
       return
     }
 
     switch (type) {
       case 'int':
-        addProp(prop, NaN, NaN, 1)
+        addProp(componentData, prop, NaN, NaN, 1)
         break;
 
       case 'number':
-        addProp(prop, NaN, NaN, 0.1)
+        addProp(componentData, prop, NaN, NaN, 0.1)
         break;
 
       case 'string':
       case 'boolean':
-        addProp(prop)
+        addProp(componentData, prop)
         break;
 
       case 'vec2':
       case 'vec3':
       case 'vec4':
 
-        let dataRef, subFolder
-        if (data[prop]) {
+        let parentData, subFolder
+        if (componentData[prop]) {
           // not part of a single prop schema
           subFolder = folder.addFolder(prop)
-          dataRef = data[prop]
+          parentData = componentData[prop]
         }
         else {
           // part of a single prop schema
           subFolder = folder
-          dataRef = data
+          parentData = componentData
         }
         
-        addProp('x', NaN, NaN, 0.1)
-        addProp('y', NaN, NaN, 0.1)
+        addProp(parentData, 'x', NaN, NaN, 0.1)
+        addProp(parentData, 'y', NaN, NaN, 0.1)
         if (type !== 'vec2') {
-          addProp('z', NaN, NaN, 0.1)
+          addProp(parentData, 'z', NaN, NaN, 0.1)
         }
         if (type === 'vec4') {
-          addProp('w', NaN, NaN, 0.1)
+          addProp(parentData, 'w', NaN, NaN, 0.1)
         }
         break;
 
       default:
         console.warn(`Type: ${type} is not yet supported`)
-        addProp(prop)
+        addProp(componentData, prop)
     }
   }
 });
