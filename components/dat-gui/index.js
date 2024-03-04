@@ -33,6 +33,24 @@ AFRAME.registerComponent('dat-gui', {
         this.addProperty(folder, componentName, schemaData, data, prop)
       })
     }
+
+    if (component.attrName === 'geometry') {
+      this.addGeometryProperties(component, folder)
+    }
+  },
+
+  addGeometryProperties(component, folder) {
+
+    const data = component.data
+    const geometry = AFRAME.geometries[data.primitive]
+    if (!geometry) return
+
+    const schema = geometry.schema
+    const schemaEntries = Object.entries(schema)
+
+    schemaEntries.forEach(([prop, schemaData]) => {
+      this.addProperty(folder, component.attrName, schemaData, data, prop)
+    })
   },
 
   addProperty(folder, componentName, schemaData, componentData, prop) {
@@ -68,7 +86,6 @@ AFRAME.registerComponent('dat-gui', {
       case 'vec2':
       case 'vec3':
       case 'vec4':
-
         let parentData, subFolder
         if (componentData[prop]) {
           // not part of a single prop schema
