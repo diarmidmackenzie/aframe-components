@@ -1,13 +1,56 @@
 const dat = require('dat.gui');
 
+AFRAME.registerSystem('dat-gui', {
+
+  init() {
+    this.gui = new dat.GUI();
+    this.gui.domElement.classList.add('gui')
+
+    this.folderNames = []
+  },
+
+  addEntityFolder(el) {
+
+    let name = this.chooseUniqueName(el)
+    this.folderNames.push(name)
+    const folder = this.gui.addFolder(name)
+
+    return folder
+  },
+
+  chooseUniqueName(el, n = 1) {
+
+    let name = el.tagName.toLowerCase()
+    if (el.id) {
+      if (el.id.length > 12) {
+        name += ` ${el.id.substr(0, 10)}...`
+      }
+      else {
+        name += ` ${el.id}`
+      }
+    }
+    if (n > 1) {
+      name += ` (${n})`
+    }
+
+    if (this.folderNames.includes(name)) 
+    {
+      return this.chooseUniqueName(el, n + 1)
+    }
+    else {
+      return name
+    }
+  }
+})
+
 AFRAME.registerComponent('dat-gui', {
 
   init() {
 
-    this.gui = new dat.GUI();
-    this.gui.domElement.classList.add('gui')
+    this.entityFolder = this.system.addEntityFolder(this.el)
 
     const components = Object.values(this.el.components)
+
     components.forEach(component => this.addFolder(component))
   },
 
@@ -17,7 +60,7 @@ AFRAME.registerComponent('dat-gui', {
     if (component.attrName === 'dat-gui') return
 
     const componentName = component.attrName
-    const folder = this.gui.addFolder(componentName)
+    const folder = this.entityFolder.addFolder(componentName)
 
     const data = component.data
     const componentData = AFRAME.components[componentName]
