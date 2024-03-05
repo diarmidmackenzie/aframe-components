@@ -1,13 +1,25 @@
 const dat = require('dat.gui');
 const _color = new THREE.Color
 
+
 AFRAME.registerSystem('dat-gui', {
 
   init() {
     this.gui = new dat.GUI();
     this.gui.domElement.classList.add('gui')
 
+    // used for efficiently checking selector validity.
+    this.selectorChecker = document.createDocumentFragment()
     this.folderNames = []
+
+    // CSS extensions to dat.GUI to highlight errored text in red
+    // (used for selectors)
+    document.head.insertAdjacentHTML("beforeend", `
+    <style>
+     .dg .cr.string .error input[type=text] {
+      color: red;
+     }
+    </style>`)
   },
 
   addEntityFolder(el) {
@@ -51,6 +63,7 @@ AFRAME.registerComponent('dat-gui', {
     this.entityFolder = this.system.addEntityFolder(this.el)
 
     this.colorRecords = {}
+    this.selectorRecords = {}
 
     const components = Object.values(this.el.components)
 
@@ -169,9 +182,34 @@ AFRAME.registerComponent('dat-gui', {
         }
         break
 
+      case 'selector':
+        this.selectorRecords[prop] = componentData[prop] ? componentData[prop].id : ""
+        const controller = folder.add(this.selectorRecords, prop)
+
+        const isSelectorValid = (selector) => {
+          const queryCheck = (s) => this.system.selectorChecker.querySelector(s)
+          try { queryCheck(selector) } catch { return false }
+          return true
+        }
+
+        // when change starts, remove error marker, so text appears white while typing
+        controller.onChange(() => {
+          controller.domElement.classList.remove('error')
+        })
+        
+        // on finish change, recolor based on selector validity
+        controller.onFinishChange(() => {
+          const selector = this.selectorRecords[prop]
+          this.el.setAttribute(componentName, prop, selector)
+
+          if (!isSelectorValid(selector) || !document.querySelector(selector)) {
+            controller.domElement.classList.add('error')  
+          }
+        })
+        break
+
       default:
         console.warn(`Type: ${type} is not yet supported`)
-        addProp(componentData, prop)
         break
     }
   }
