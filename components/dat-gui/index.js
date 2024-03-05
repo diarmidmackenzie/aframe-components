@@ -5,7 +5,7 @@ const _color = new THREE.Color
 AFRAME.registerSystem('dat-gui', {
 
   init() {
-    this.gui = new dat.GUI();
+    this.gui = new dat.GUI({closeOnTop: true});
     this.gui.domElement.classList.add('gui')
 
     // used for efficiently checking selector validity.
