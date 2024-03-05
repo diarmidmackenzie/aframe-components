@@ -200,7 +200,9 @@ AFRAME.registerComponent('dat-gui', {
         // on finish change, recolor based on selector validity
         controller.onFinishChange(() => {
           const selector = this.selectorRecords[prop]
-          this.el.setAttribute(componentName, prop, selector)
+          if (isSelectorValid(selector)) {
+            this.el.setAttribute(componentName, prop, selector)
+          }
 
           if (!isSelectorValid(selector) || !document.querySelector(selector)) {
             controller.domElement.classList.add('error')  
