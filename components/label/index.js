@@ -159,7 +159,7 @@ AFRAME.registerComponent('face-camera', {
             // On an Orthographic camera, we always use Sprite mode, as this matches how other geometry
             // is rendered.
 
-            setWorldQuaternion = (object, quaternion) => {
+            const setWorldQuaternion = (object, quaternion) => {
 
                 object.updateMatrixWorld()
                 object.parent.getWorldQuaternion(this.parentInverseQuaternion)
