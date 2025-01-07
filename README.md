@@ -5,6 +5,7 @@ There's no particularly strong theme to this repo, other than a selection of thi
 
 I intend to keep all these components up-to-date & working with new versions of A-Frame.  If you find a bug or other problem, please [raise an issue](https://github.com/diarmidmackenzie/aframe-components/issues) and I'll be happy to take a look.
 
+If you are looking for a particular component or functionality, and can't find it here, I recommend searching in the [A-Frame Wiki Component Directory] (https://aframe.wiki/en/#!pages/component-directory.md), which is the best-maintained directory of community A-Frame components.
 
 
 ## Components
