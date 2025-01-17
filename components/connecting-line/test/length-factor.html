@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+      <script src="../index.js"></script>
+      <link rel="stylesheet" href="../../../../styles.css">
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>connecting-line: Test length adjustment parameters</p>
+        <p>We have adjustment by scale, extend (trim) & absolute.</p>
+        <p>Top-to-bottom we should end up at 0.5, 1 and 2 times the standard length (at the innermost position)</p>
+    </div>
+        <a class="code-link"
+        target="_blank"
+        href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/index.html">
+        view code
+    </a>
+    
+    <a-scene background="color:black">
+      <a-mixin id="animate-right"
+               animation="property:position;
+                          from: 0 0 0;
+                          to: 0.5 0 0;
+                          dir: alternate;
+                          loop: true">
+      </a-mixin>
+      <a-mixin id="animate-left"
+               animation="property:position;
+                          from: 0 0 0;
+                          to: -0.5 0 0;
+                          dir: alternate;
+                          loop: true">
+      </a-mixin>
+      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+      <a-entity id="container" position = "0 1 -4">
+
+        <a-entity position="-5 0 0">
+          <a-text color="white" value="Scale" align="center" position="0 1.5 0"></a-text>
+          <a-entity mixin="animate-left">
+            <a-sphere id="point11" position="-1 1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+            <a-sphere id="point13" position="-1 0 0" radius="0.1" color="#EF2D5E"></a-sphere>
+            <a-sphere id="point15" position="-1 -1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          </a-entity>
+          <a-entity mixin="animate-right">
+            <a-sphere id="point12" position="1 1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+            <a-sphere id="point14" position="1 0 0" radius="0.1" color="#EF2D5E"></a-sphere>
+            <a-sphere id="point16" position="1 -1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          </a-entity>
+        </a-entity>
+
+        <a-text color="white" value="Extend (Trim)" align="center" position="0 1.5 0"></a-text>
+        <a-entity mixin="animate-left">
+          <a-sphere id="point21" position="-1 0.9 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          <a-sphere id="point23" position="-1 -0.1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          <a-sphere id="point25" position="-1 -1.1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+        </a-entity>
+        
+        <a-entity mixin="animate-right">
+          <a-sphere id="point22" position="1 0.9 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          <a-sphere id="point24" position="1 -0.1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          <a-sphere id="point26" position="1 -1.1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+        </a-entity>
+
+        <a-entity position="5 0 0">
+          <a-text color="white" value="Absolute" align="center" position="0 1.5 0"></a-text>
+          <a-entity mixin="animate-left">
+            <a-sphere id="point31" position="-1 1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+            <a-sphere id="point33" position="-1 0 0" radius="0.1" color="#EF2D5E"></a-sphere>
+            <a-sphere id="point35" position="-1 -1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          </a-entity>
+          
+          <a-entity mixin="animate-right">
+            <a-sphere id="point32" position="1 1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+            <a-sphere id="point34" position="1 0 0" radius="0.1" color="#EF2D5E"></a-sphere>
+            <a-sphere id="point36" position="1 -1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          </a-entity>
+        </a-entity>
+      </a-entity>
+
+      <a-entity connecting-line__11="start:#point11;
+                                    end:#point12;
+                                    color:red;
+                                    lengthAdjustment: scale;
+                                    lengthAdjustmentValue: 0.5"
+                connecting-line__12="start:#point13;
+                                    end:#point14;
+                                    color:yellow
+                                    lengthAdjustment: scale;
+                                    lengthAdjustmentValue: 1"
+                connecting-line__13="start:#point15;
+                                    end:#point16;
+                                    color:cyan;
+                                    lengthAdjustment: scale;
+                                    lengthAdjustmentValue: 2"
+                connecting-line__21="start:#point21;
+                                    end:#point22;
+                                    color:red;
+                                    lengthAdjustment: extend;
+                                    lengthAdjustmentValue: -0.5"
+                connecting-line__22="start:#point23;
+                                    end:#point24;
+                                    color:yellow
+                                    lengthAdjustment: extend;
+                                    lengthAdjustmentValue: 0"
+                connecting-line__23="start:#point25;
+                                    end:#point26;
+                                    color:cyan;
+                                    lengthAdjustment: extend;
+                                    lengthAdjustmentValue: 1"
+                connecting-line__31="start:#point31;
+                                    end:#point32;
+                                    color:red;
+                                    lengthAdjustment: absolute;
+                                    lengthAdjustmentValue: 1"
+                connecting-line__32="start:#point33;
+                                    end:#point34;
+                                    color:yellow
+                                    lengthAdjustment: absolute;
+                                    lengthAdjustmentValue: 2"
+                connecting-line__33="start:#point35;
+                                    end:#point36;
+                                    color:cyan;
+                                    lengthAdjustment: absolute;
+                                    lengthAdjustmentValue: 4">
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
