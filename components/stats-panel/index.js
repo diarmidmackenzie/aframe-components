@@ -117,13 +117,15 @@ AFRAME.registerComponent('stats-row', {
       this.counterValues[property] = counterValue
     })
 
-    this.updateData = this.updateData.bind(this)
-    this.el.addEventListener(this.data.event, this.updateData)
+    this.updateStatsData = this.updateStatsData.bind(this)
+    this.el.addEventListener(this.data.event, this.updateStatsData)
 
     this.splitCache = {}
   },
 
-  updateData(e) {
+  updateStatsData(e) {
+
+    if (!this.data.properties) return
     
     this.data.properties.forEach((property) => {
       const split = this.splitDot(property);
@@ -201,7 +203,7 @@ AFRAME.registerComponent('stats-collector', {
 
   statsReceived(e) {
 
-    this.updateData(e.detail)
+    this.updateStatsData(e.detail)
 
     this.counter++ 
     if (this.counter === this.data.outputFrequency) {
@@ -210,7 +212,7 @@ AFRAME.registerComponent('stats-collector', {
     }
   },
 
-  updateData(detail) {
+  updateStatsData(detail) {
 
     this.data.properties.forEach((property) => {
       let value = detail;
