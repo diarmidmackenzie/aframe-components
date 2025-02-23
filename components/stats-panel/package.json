@@ -1,6 +1,6 @@
 {
   "name": "aframe-stats-panel",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A-Frame statistics panel for additional statistics, in the style of A-Frame stats",
   "main": "index.js",
   "scripts": {
