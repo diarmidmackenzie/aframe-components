@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-multi-camera@latest/src/multi-camera.min.js"></script>
+      <script src="../components/window-3d/index.js"></script>
+  </head>
+  <body>
+    <div>
+      <!-- Setting the a-scene as "embedded" allows us to customize the canvas dimensions, so that
+            they aren't "fullscreen".
+            See: https://aframe.io/docs/1.2.0/components/embedded.html
+            Note that the A-Frme canvas must cover the entiire area where you want to do any rendering.
+      -->
+      <a-scene embedded style="position:absolute; height: 1000px; width: 600px" vr-mode-ui="enabled: false">
+        <a-entity camera look-controls="enabled:false" position="0 1.6 0"></a-entity>
+
+        <a-entity id="container" position = "0 0 -4">
+          <a-box position="-1 0.5 1" rotation="0 0 0" color="#4CC3D9"
+                  animation="property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear"></a-box>
+          <a-sphere position="0 1.25 -1" radius="1.25" color="#EF2D5E"></a-sphere>
+          <a-cylinder position="1 0.75 1" radius="0.5" height="1.5" color="#FFC65D"
+                      animation="property: rotation; to: 360 0 0; loop: true; dur: 3000; easing: linear"></a-cylinder>
+          <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" side="double"></a-plane>
+        </a-entity>
+        <a-sky color="#ECECEC"></a-sky>
+
+        <a-entity id="camera1"
+                  secondary-camera="outputElement:#viewport1;sequence: replace"]
+                  position="-8 1.6 -4"
+                  rotation="0 -90 0"
+                  window-3d>
+        </a-entity>
+        <a-entity id="camera2" secondary-camera="outputElement:#viewport2" position="8 1.6 -4" rotation="0 90 0">
+        </a-entity>
+        <a-entity id="camera3" secondary-camera="outputElement:#viewport3" position="0 8 -4" rotation="-90 0 0">
+        </a-entity>
+
+      </a-scene>
+    </div>
+
+    <div style = "width: 600px; display: flex; flex-direction: column">
+      <div>
+        <div id="viewport1" style="float: left; width: 200px; height:200px; margin: 10px;">
+        </div>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+          velit esse cillum dolore eu fugiat nulla pariatur.
+          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+          deserunt mollit anim id est laborum.
+        </p>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+          velit esse cillum dolore eu fugiat nulla pariatur.
+          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+          deserunt mollit anim id est laborum.
+        </p>
+      </div>
+
+      <div>
+        <div id="viewport2" style="float: right; width: 200px; height:200px; margin: 10px;">
+        </div>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+          velit esse cillum dolore eu fugiat nulla pariatur.
+          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+          deserunt mollit anim id est laborum.
+        </p>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+          velit esse cillum dolore eu fugiat nulla pariatur.
+          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+          deserunt mollit anim id est laborum.
+        </p>
+      </div>
+
+      <div>
+        <div id="viewport3"style="float: left; width: 200px;height:200px; margin: 10px;">
+        </div>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+          velit esse cillum dolore eu fugiat nulla pariatur.
+          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+          deserunt mollit anim id est laborum.
+        </p>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+          velit esse cillum dolore eu fugiat nulla pariatur.
+          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+          deserunt mollit anim id est laborum.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
