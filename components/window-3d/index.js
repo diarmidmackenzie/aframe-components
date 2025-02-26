@@ -22,6 +22,7 @@ AFRAME.registerComponent('window-3d', {
 
   init() {
     this.pov = new THREE.Vector3()
+    this.povRotation = new THREE.Euler()
     this.povRelativeToWebCam = this.el.components['head-tracker']?.headPosition ||
                                new THREE.Vector3(0, 0, 0.75)
     
@@ -73,10 +74,12 @@ AFRAME.registerComponent('window-3d', {
     const camera = this.el.components['secondary-camera'].camera
     const pov = this.pov
 
-    pov.x = windowCenter.x * 7 // factor of 7 since display is ~ 7 times full screen size.
-    pov.y = -windowCenter.y * 7
-    pov.z = -2
-
+    //pov.subVectors(this.data.webCamPosition, this.povRelativeToWebCam)
+    
+    pov.x = -windowCenter.x
+    pov.y = -windowCenter.y
+    pov.z = -1
+  
     // virtual screen is what we'll use as a "Full Screen" with setViewOffset
     // For now things seem to work better without using a larger virtualScreen.  This might not actually be necessary
     // More analysis needed to determine whether this is actually necessary
@@ -87,13 +90,18 @@ AFRAME.registerComponent('window-3d', {
     // This is the fov for the virtual Screen, which may be larger than the fov for the part of the screen we'll actually render.
     const fov = 50;
 
-    const height = window.screen.height
-    const width = window.screen.width
+    const height = rect.bottom - rect.top
+    const width = rect.right - rect.left
     const fullWidth = virtualScreenFactor * width
     const fullHeight = virtualScreenFactor * height
-    const pixelsPerM = height / windowHeight
-    const xOffset = (fullWidth - width) / 2 - pixelsPerM * pov.x
-    const yOffset = (fullHeight - height) / 2 + pixelsPerM * pov.y
+    const pixelsPerM = dpm
+    
+    // These numbers tuned by hand - feel about right, but what's the mathematical justification?
+    const X_ADJUST = 4
+    const Y_ADJUST = 8 
+
+    const xOffset = (fullWidth - width) / 2 - (pixelsPerM * pov.x) / X_ADJUST
+    const yOffset = (fullHeight - height) / 2 + (pixelsPerM * pov.y) / Y_ADJUST
     camera.fov = fov
 
     if (this.data.debug) {
@@ -113,13 +121,19 @@ AFRAME.registerComponent('window-3d', {
       this.debugOutput.innerHTML = debugText
     }
 
-    /*camera.setViewOffset(fullWidth, 
+    camera.setViewOffset(fullWidth, 
                          fullHeight,
                          xOffset,
                          yOffset,
                          width,
-                         height) */
-    this.el.object3D.position.set(pov.x, pov.y, pov.z)
+                         height)
+
+    // These numbers tuned by hand - feel about right, but what's the mathematical justification?
+    const X_POV_FACTOR = 16
+    const Y_POV_FACTOR = 8
+
+    this.el.object3D.position.set(pov.x * X_POV_FACTOR, pov.y * Y_POV_FACTOR, pov.z)
+    //this.el.object3D.rotation.set(rotation.x, rotation.y, 0)
     camera.updateProjectionMatrix()
   }
 })
