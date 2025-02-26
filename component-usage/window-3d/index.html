@@ -3,7 +3,45 @@
   <head>
       <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
       <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-multi-camera@latest/src/multi-camera.min.js"></script>
-      <script src="../components/window-3d/index.js"></script>
+      <script src="../../components/head-tracking/dist/head-tracking.js"></script>
+      <script src="../../components/window-3d/index.js"></script>
+      <script> 
+        let divLeft = 0;
+        let divTop = 0;
+        let mouseOffsetX = 0;
+        let mouseOffsetY = 0;
+        let dragging = false
+
+        const onMouseMove = (e) => {
+
+          if (!dragging) return
+
+          divLeft = e.clientX - mouseOffsetX
+          divTop = e.clientY - mouseOffsetY
+          const div = document.getElementById('viewport1')
+          div.style.left = `${divLeft}px`
+          div.style.top = `${divTop}px`
+        }
+
+        const onMouseDown = (e) => {
+          dragging = true
+          mouseOffsetX = e.offsetX;
+          mouseOffsetY = e.offsetY;
+        }
+
+        const onMouseUp = (e) => {
+          dragging = false
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+          const div = document.getElementById('viewport1')
+          div.addEventListener("mousedown", onMouseDown)
+          document.addEventListener("mouseup", onMouseUp)
+          document.addEventListener("mousemove", onMouseMove)
+        })
+
+
+      </script>
   </head>
   <body>
     <div>
@@ -12,7 +50,8 @@
             See: https://aframe.io/docs/1.2.0/components/embedded.html
             Note that the A-Frme canvas must cover the entiire area where you want to do any rendering.
       -->
-      <a-scene embedded style="position:absolute; height: 1000px; width: 600px" xr-mode-ui="enabled: false">
+      <a-scene embedded style="position:absolute; height: 100%; width: 100%"
+               xr-mode-ui="enabled: false">
         <a-entity camera look-controls="enabled:false" position="0 1.6 0"></a-entity>
 
         <a-entity id="container" position = "0 0 -4">
@@ -23,88 +62,20 @@
         </a-entity>
         <a-sky color="#ECECEC"></a-sky>
 
-        <a-entity id="camera1"
-                  secondary-camera="outputElement:#viewport1;sequence: replace"]
-                  position="-8 1.6 -4"
-                  rotation="0 -90 0"
-                  window-3d>
+        <a-entity position="0 1.6 4"
+                  rotation="0 0 0">
+          <a-entity id="camera1"
+                    secondary-camera="outputElement:#viewport1;sequence: replace"]
+                    window-3d>
+          </a-entity>
         </a-entity>
-        <a-entity id="camera2" secondary-camera="outputElement:#viewport2" position="8 1.6 -4" rotation="0 90 0">
-        </a-entity>
-        <a-entity id="camera3" secondary-camera="outputElement:#viewport3" position="0 8 -4" rotation="-90 0 0">
-        </a-entity>
-
       </a-scene>
     </div>
 
-    <div style = "width: 600px; display: flex; flex-direction: column">
+    <div style = "width: 100%; display: flex; flex-direction: column">
       <div>
-        <div id="viewport1" style="float: left; width: 200px; height:200px; margin: 10px;">
+        <div id="viewport1" style="position: absolute; width: 200px; height:200px; margin: 10px;">
         </div>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-          velit esse cillum dolore eu fugiat nulla pariatur.
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-          deserunt mollit anim id est laborum.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-          velit esse cillum dolore eu fugiat nulla pariatur.
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-          deserunt mollit anim id est laborum.
-        </p>
-      </div>
-
-      <div>
-        <div id="viewport2" style="float: right; width: 200px; height:200px; margin: 10px;">
-        </div>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-          velit esse cillum dolore eu fugiat nulla pariatur.
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-          deserunt mollit anim id est laborum.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-          velit esse cillum dolore eu fugiat nulla pariatur.
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-          deserunt mollit anim id est laborum.
-        </p>
-      </div>
-
-      <div>
-        <div id="viewport3"style="float: left; width: 200px;height:200px; margin: 10px;">
-        </div>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-          velit esse cillum dolore eu fugiat nulla pariatur.
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-          deserunt mollit anim id est laborum.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-          veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-          velit esse cillum dolore eu fugiat nulla pariatur.
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-          deserunt mollit anim id est laborum.
-        </p>
       </div>
     </div>
   </body>
