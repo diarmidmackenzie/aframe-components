@@ -49,6 +49,7 @@ AFRAME.registerComponent('configure-example', {
       const { stabilizationFactor } = data
       this.cameraEntity.setAttribute("face-detector", "")
       this.cameraEntity.setAttribute("head-tracker", { stabilizationFactor })
+      this.cameraEntity.setAttribute("head-tracker", "defaultPosition: 0 0 0.75")
     }
     else {
       this.cameraEntity.removeAttribute("face-detector")

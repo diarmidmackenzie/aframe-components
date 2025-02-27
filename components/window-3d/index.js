@@ -1,5 +1,5 @@
 const INCHES_PER_M = 39.37
-const DEFAULT_HEAD_POSITION = new THREE.Vector3(0, 0.1, 0.75)
+const DEFAULT_HEAD_POSITION = new THREE.Vector3(0, 0, 0.75)
 
 AFRAME.registerComponent('window-3d', {
 
