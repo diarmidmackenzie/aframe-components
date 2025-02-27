@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+      <script src="../../bricks/index.js"></script>
+      <script src="../dist/dat-gui.js"></script>
+      <link rel="stylesheet" href="../../../styles.css">
+      <script>
+        AFRAME.registerComponent('test-component', {
+          schema: {
+            boolean: {type: 'boolean'},
+            string: {type: 'string'},
+            oneOf: {type: 'string', oneOf: ['aaa', 'bbb', 'ccc']},
+            int: {type: 'int'},
+            float: {type: 'number'},
+            color: {type: 'color'},
+            vec2: {type: 'vec2'},
+            vec3: {type: 'vec3'},
+            vec4: {type: 'vec4'}
+          }
+        })
+      </script>
+  </head>
+  <body>
+    <div class="text-overlay">
+        <p>dat.gui example with multiple unnamed entities</p>
+    </div>
+      <a-scene background="color:#88f">
+        <a-camera position="0 1.6 0" look-controls="enabled: false"></a-camera>
+          <a-torus position="-0.5 1.6 -3" scale="0.2 0.2 0.2" color="red" dat-gui></a-torus>
+          <a-torus position="0.5 1.6 -3" scale="0.2 0.2 0.2" color="green" dat-gui></a-torus>
+      </a-scene>
+  </body>
+</html>

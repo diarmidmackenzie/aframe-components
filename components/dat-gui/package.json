@@ -1,0 +1,28 @@
+{
+  "name": "aframe-dat-gui",
+  "version": "0.0.1",
+  "description": "Dataarts dat.gui for A-Frame components",
+  "main": "index.js",
+  "scripts": {
+    "dist": "npm run dist:dev && npm run dist:prod",
+    "dist:dev": "webpack --config webpack.config.js",
+    "dist:prod": "webpack --config webpack.prod.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "A-Frame",
+    "dat.gui",
+    "dat",
+    "gui",
+    "aframe"
+  ],
+  "author": "Diarmid Mackenzie",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "dat.gui": "^0.7.9"
+  }
+}
