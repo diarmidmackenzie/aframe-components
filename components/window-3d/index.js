@@ -10,7 +10,7 @@ AFRAME.registerComponent('window-3d', {
 
     // webCam position relative to the screen center
     // head tracking position is reported relative to the webcam.
-    webCamPosition: {default: {x: 0, y: 0.1, z: 0}},
+    webCamPosition: {default: {x: 0, y: 0, z: 0}},
 
     // the offset of the screen, relative to the camera.
     // With an FOV of 50, screen height of 0.2m, 
@@ -24,7 +24,7 @@ AFRAME.registerComponent('window-3d', {
     this.pov = new THREE.Vector3()
     this.povRotation = new THREE.Euler()
     this.povRelativeToWebCam = this.el.components['head-tracker']?.headPosition ||
-                               new THREE.Vector3(0, 0, 0.75)
+                               new THREE.Vector3(0, -0.1, 0.75)
     
     this.referenceForScale = document.createElement('div')
     this.referenceForScale.id="ReferenceForScale"
@@ -74,11 +74,10 @@ AFRAME.registerComponent('window-3d', {
     const camera = this.el.components['secondary-camera'].camera
     const pov = this.pov
 
-    //pov.subVectors(this.data.webCamPosition, this.povRelativeToWebCam)
+    pov.addVectors(this.data.webCamPosition, this.povRelativeToWebCam)
     
-    pov.x = -windowCenter.x
-    pov.y = -windowCenter.y
-    pov.z = -1
+    pov.x += -windowCenter.x
+    pov.y += -windowCenter.y
   
     // virtual screen is what we'll use as a "Full Screen" with setViewOffset
     // For now things seem to work better without using a larger virtualScreen.  This might not actually be necessary
@@ -97,8 +96,8 @@ AFRAME.registerComponent('window-3d', {
     const pixelsPerM = dpm
     
     // These numbers tuned by hand - feel about right, but what's the mathematical justification?
-    const X_ADJUST = 4
-    const Y_ADJUST = 8 
+    const X_ADJUST = 3
+    const Y_ADJUST = 3 
 
     const xOffset = (fullWidth - width) / 2 - (pixelsPerM * pov.x) / X_ADJUST
     const yOffset = (fullHeight - height) / 2 + (pixelsPerM * pov.y) / Y_ADJUST
@@ -129,8 +128,13 @@ AFRAME.registerComponent('window-3d', {
                          height)
 
     // These numbers tuned by hand - feel about right, but what's the mathematical justification?
-    const X_POV_FACTOR = 16
-    const Y_POV_FACTOR = 8
+    // with height 200px...
+    // X_ADJUST = 1 => 21
+    // X_ADJUST = 2 => 10.5
+    // 
+    // This formula works as height varies, and as X/Y_ADJUST vary.
+    const X_POV_FACTOR = 4200 / (height * X_ADJUST)
+    const Y_POV_FACTOR = 4200 / (height * Y_ADJUST)
 
     this.el.object3D.position.set(pov.x * X_POV_FACTOR, pov.y * Y_POV_FACTOR, pov.z)
     //this.el.object3D.rotation.set(rotation.x, rotation.y, 0)
