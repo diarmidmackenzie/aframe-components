@@ -1,3 +1,26 @@
+body {
+  background-color: grey;
+}
+
 video {
   visibility: hidden
+}
+
+#viewport1 {
+  position: absolute;
+  top: 100px;
+  left: 200px;
+  width: 600px;
+  height:400px;
+  margin: 10px;
+  border-radius: 10px;
+  border-width: 10px;
+  border-color: #113;
+  border-style: solid;
+  box-shadow: inset 0px 0px 5px 2px #113;
+}
+
+#viewport-inner {
+  width: 100%;
+  height: 100%;
 }

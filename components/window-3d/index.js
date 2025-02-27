@@ -1,8 +1,9 @@
 const INCHES_PER_M = 39.37
+const DEFAULT_HEAD_POSITION = new THREE.Vector3(0, 0.1, 0.75)
 
 AFRAME.registerComponent('window-3d', {
 
-  dependencies: ['head-tracker', 'secondary-camera'],
+  dependencies: ['secondary-camera'],
 
   schema: {
     // screen height in meters
@@ -18,16 +19,15 @@ AFRAME.registerComponent('window-3d', {
     screenOffset: { default: 0.43 },
 
     debug: {default: false},
-
-    adjustFactor: {default: 3}
+    
+    xSensitivity : {default: 0.5},
+    ySensitivity : {default: 0.5},
+    zSensitivity : {default: 1},
   },
 
   init() {
     this.pov = new THREE.Vector3()
     this.povRotation = new THREE.Euler()
-    this.povRelativeToWebCam = this.el.components['head-tracker']?.headPosition ||
-                               new THREE.Vector3(0, -0.1, 0.75)
-    
     this.referenceForScale = document.createElement('div')
     this.referenceForScale.id="ReferenceForScale"
     this.referenceForScale.setAttribute("style",
@@ -76,12 +76,15 @@ AFRAME.registerComponent('window-3d', {
     const camera = this.el.components['secondary-camera'].camera
     const pov = this.pov
 
-    pov.addVectors(this.data.webCamPosition, this.povRelativeToWebCam)
+    const povRelativeToWebCam = this.el.components['head-tracker']?.headPosition ||
+                               DEFAULT_HEAD_POSITION
+    pov.addVectors(this.data.webCamPosition, povRelativeToWebCam)
     
     pov.x += -windowCenter.x
     pov.y += -windowCenter.y
     // hack to amplify z-axis movements...  Nice effect, though not 100% "true".
-    pov.z = pov.z * 5 - 2
+    const relativeZ = (pov.z - 0.75)
+    pov.z = 0.75 + (relativeZ * this.data.zSensitivity)
   
     // virtual screen is what we'll use as a "Full Screen" with setViewOffset
     // For now things seem to work better without using a larger virtualScreen.  This might not actually be necessary
@@ -100,8 +103,8 @@ AFRAME.registerComponent('window-3d', {
     const pixelsPerM = dpm
     
     // These numbers tuned by hand - feel about right, but what's the mathematical justification?
-    const X_ADJUST = this.data.adjustFactor
-    const Y_ADJUST = this.data.adjustFactor
+    const X_ADJUST = 1 / this.data.xSensitivity
+    const Y_ADJUST = 1 / this.data.ySensitivity
 
     const xOffset = (fullWidth - width) / 2 - (pixelsPerM * pov.x) / X_ADJUST
     const yOffset = (fullHeight - height) / 2 + (pixelsPerM * pov.y) / Y_ADJUST
