@@ -2,9 +2,7 @@
 
 ## Overview
 
-This component is a refinement of an application of the `head tracker` component that I first tested here.
-
-https://diarmidmackenzie.github.io/aframe-components/components/head-tracking/test/window-camera3.html
+This component is a refinement of an application of the `head tracker` component that I previously experimented with [here](https://diarmidmackenzie.github.io/aframe-components/components/head-tracking/test/window-camera3.html).
 
 The idea is to create an illusion of 3D depth in an A-Frame scene embedded in a web page by:
 
