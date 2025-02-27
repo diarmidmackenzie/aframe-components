@@ -3,7 +3,7 @@
 ## Overview
 
 You may be familiar with `dat.GUI` from the THREE.js documentation, for example pages like this:
-https://threejs.org/docs/index.html#api/en/geometries/BoxGeometry
+[https://threejs.org/docs/index.html#api/en/geometries/BoxGeometry](https://threejs.org/docs/index.html#api/en/geometries/BoxGeometry)
 
 This component dynamically creates a `dat.GUI` panel to view and adjust the properties of all components on an A-Frame entity, like this:
 
