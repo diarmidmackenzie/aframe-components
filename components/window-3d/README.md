@@ -59,3 +59,25 @@ Use the controls in the top right to adjust settings in the example and toggle b
 
   [window-3d](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/window-3d/index.js)
 
+
+## Acknowledgments
+
+The following 3D models are used in the example...
+
+
+#### "Starry Night" Diorama
+
+"Starry Night Diorama Tilt Brush" (https://skfb.ly/TZpt) by george peaslee is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
+
+
+#### "By the Ocean" Diorama
+
+"DAE Diorama - By the Ocean" (https://skfb.ly/oCvTD) by Jens Fillée is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
+
+
+#### "Milk Delivery" Diorama
+
+"Milk Delivery" (https://skfb.ly/oDK8u) by anastasiaremezova is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
