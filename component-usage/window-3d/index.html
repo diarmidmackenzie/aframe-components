@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-multi-camera@latest/src/multi-camera.min.js"></script>
+      <script src="../../components/head-tracking/dist/head-tracking.js"></script>
+      <script src="../../components/dat-gui/dist/dat-gui.js"></script>
+      <script src="../../components/window-3d/index.js"></script>
+      <script src="../../components/polygon-wireframe/index.js"></script>
+      <script src="./draggable-div.js"></script>
+      <script src="./configure-example.js"></script>
+      <link rel="stylesheet" href="./styles.css"/>
+  </head>
+  <body>
+    <div>
+      <!-- Setting the a-scene as "embedded" allows us to customize the canvas dimensions, so that
+            they aren't "fullscreen".
+            See: https://aframe.io/docs/1.2.0/components/embedded.html
+            Note that the A-Frame canvas must cover the entiire area where you want to do any rendering.
+      -->
+      <a-scene embedded style="position:absolute; height: 100%; width: 100%"
+               xr-mode-ui="enabled: false">
+        <a-entity id="Configuration" configure-example dat-gui></a-entity>
+
+        <a-entity camera look-controls="enabled:false" position="0 1.6 0"></a-entity>
+        <a-assets>
+          <a-asset-item id="by-the-ocean" src="../../assets/by-the-ocean/by-the-ocean.glb"></a-asset-item>
+          <a-asset-item id="milk-delivery" src="../../assets/milk-delivery/milk-delivery.glb"></a-asset-item>
+          <a-asset-item id="starry-night" src="../../assets/starry-night/starry-night.glb"></a-asset-item>
+        </a-assets>
+
+        <a-entity id="by-the-ocean-container" position = "0 0 -2" visible="false">
+          <a-entity position="0.5 -0.75 0" scale="0.35 0.35 0.35" rotation="0 -90 0">
+            <a-entity gltf-model="#by-the-ocean"></a-entity>
+          </a-entity>
+          <a-sky color="#68d"></a-sky>
+        </a-entity>
+
+        <a-entity id="milk-delivery-container" position = "0 0 -2" visible="false">
+          <a-entity position="-1.5 -0.1 0" scale="50 50 50" rotation="0 -90 0">
+            <a-entity gltf-model="#milk-delivery"></a-entity>
+          </a-entity>
+          <a-sky color="#ECECEC"></a-sky>
+        </a-entity>
+
+        <a-entity id="starry-night-container" position = "0 0 -1" visible="false">
+          <a-entity position="-1 -1.8 0" scale="2 2 2" rotation="180 0 180">
+            <a-entity gltf-model="#starry-night"></a-entity>
+          </a-entity>
+          <a-sky color="#113"></a-sky>
+        </a-entity>
+
+        <a-entity id="hello-aframe-container" position = "0 -1 -4" visible="false">
+          <a-box position="-1 0.5 1" rotation="0 0 0" color="#4CC3D9"></a-box>
+          <a-sphere position="0 1.25 -1" radius="1.25" color="#EF2D5E"></a-sphere>
+          <a-cylinder position="1 0.75 1" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
+          <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" side="double"></a-plane>
+          <a-sky color="#ECECEC"></a-sky>
+        </a-entity>
+
+        <a-entity position="0 1.6 1"
+                  rotation="0 0 0">
+          <a-entity id="camera1"
+                    secondary-camera="outputElement:#viewport-inner;sequence: replace"
+                    window-3d>
+          </a-entity>
+        </a-entity>
+      </a-scene>
+    </div>
+    <div id="viewport1">
+      <div id="viewport-inner"></div>
+    </div>
+  </body>
+</html>

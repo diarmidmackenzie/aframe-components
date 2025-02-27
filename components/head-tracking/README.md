@@ -32,12 +32,13 @@ No  schema - currently no configuration parameters
 
 ### head-tracker
 
-| Property            | Description                                                  | Default |
-| ------------------- | ------------------------------------------------------------ | ------- |
-| cameraFov           | The horizontal field of view of the webCam, in degrees.  Should be set to the correct value for accurate estimation of head position | 60      |
-| ipd                 | The user's inter-pupil distance (in meters).  This is used to determine the distance of the head from the camera, by comparing the observed with to this value | 0.07    |
-| stabilizationFactor | To stabilize the reported position, head-tracker uses an Exponential Moving Average for the estimated head position.  This is the proportion of the weight, each frame, that comes from the preceding values rather than the latest value.<br />High values will give stable positions, at the cost of some lag.<br />Low values will be more responsive, but also jerkier. | 0.9     |
-| debug               | Set to true to display a box at the estimate head position, with text indicating the computed x, y & z co-ordinates | false   |
+| Property            | Description                                                  | Default  |
+| ------------------- | ------------------------------------------------------------ | -------- |
+| cameraFov           | The horizontal field of view of the webCam, in degrees.  Should be set to the correct value for accurate estimation of head position | 60       |
+| ipd                 | The user's inter-pupil distance (in meters).  This is used to determine the distance of the head from the camera, by comparing the observed with to this value | 0.07     |
+| stabilizationFactor | To stabilize the reported position, head-tracker uses an Exponential Moving Average for the estimated head position.  This is the proportion of the weight, each frame, that comes from the preceding values rather than the latest value.<br />High values will give stable positions, at the cost of some lag.<br />Low values will be more responsive, but also jerkier. | 0.9      |
+| debug               | Set to true to display a box at the estimate head position, with text indicating the computed x, y & z co-ordinates | false    |
+| defaultPosition     | Default position of head, relative to web camera             | 0 0 0.75 |
 
 
 

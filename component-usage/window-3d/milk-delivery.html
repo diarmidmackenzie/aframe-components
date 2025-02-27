@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-multi-camera@latest/src/multi-camera.min.js"></script>
+      <script src="../../components/head-tracking/dist/head-tracking.js"></script>
+      <script src="../../components/window-3d/index.js"></script>
+      <script src="./draggable-div.js"></script>
+      <link rel="stylesheet" href="./styles.css"/>
+  </head>
+  <body>
+    <div>
+      <!-- Setting the a-scene as "embedded" allows us to customize the canvas dimensions, so that
+            they aren't "fullscreen".
+            See: https://aframe.io/docs/1.2.0/components/embedded.html
+            Note that the A-Frme canvas must cover the entiire area where you want to do any rendering.
+      -->
+      <a-scene embedded style="position:absolute; height: 100%; width: 100%"
+               xr-mode-ui="enabled: false">
+        <a-entity camera look-controls="enabled:false" position="0 1.6 0"></a-entity>
+        <a-assets>
+          <a-asset-item id="milk-delivery" src="../../assets/milk-delivery/milk-delivery.glb"></a-asset-item>
+        </a-assets>
+
+        <a-entity id="container" position = "0 0 -2">
+          <a-entity position="-1.5 0.2 0" scale="50 50 50" rotation="0 -90 0">
+            <a-entity gltf-model="#milk-delivery"></a-entity>
+          </a-entity>
+        </a-entity>
+        
+        <a-sky color="#ECECEC"></a-sky>
+
+        <a-entity position="0 1.6 1"
+                  rotation="0 0 0">
+          
+          <a-entity id="camera1"
+                    secondary-camera="outputElement:#viewport1;sequence: replace"]
+                    window-3d="adjustFactor: 3"
+                    head-tracker="stabilizationFactor: 0.75"
+                    face-detector>
+          </a-entity>
+        </a-entity>
+      </a-scene>
+    </div>
+
+    <div style = "width: 100%; display: flex; flex-direction: column">
+      <div>
+        <div id="viewport1" style="position: absolute; top: 100px; left: 200px; width: 800px; height:600px; margin: 10px;">
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
