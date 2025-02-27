@@ -17,7 +17,9 @@ AFRAME.registerComponent('window-3d', {
     // this will be (0.2 / tan(25)) = 0.43m
     screenOffset: { default: 0.43 },
 
-    debug: {default: false}
+    debug: {default: false},
+
+    adjustFactor: {default: 3}
   },
 
   init() {
@@ -68,7 +70,7 @@ AFRAME.registerComponent('window-3d', {
 
     windowCenter.x = (((rect.left + rect.right) / 2) - (pageWidth / 2)) / dpm
     windowCenter.y = ((pageHeight / 2) - ((rect.top + rect.bottom) / 2)) / dpm
-    console.log(windowCenter)
+    //console.log(windowCenter)
 
     
     const camera = this.el.components['secondary-camera'].camera
@@ -78,6 +80,8 @@ AFRAME.registerComponent('window-3d', {
     
     pov.x += -windowCenter.x
     pov.y += -windowCenter.y
+    // hack to amplify z-axis movements...  Nice effect, though not 100% "true".
+    pov.z = pov.z * 5 - 2
   
     // virtual screen is what we'll use as a "Full Screen" with setViewOffset
     // For now things seem to work better without using a larger virtualScreen.  This might not actually be necessary
@@ -96,8 +100,8 @@ AFRAME.registerComponent('window-3d', {
     const pixelsPerM = dpm
     
     // These numbers tuned by hand - feel about right, but what's the mathematical justification?
-    const X_ADJUST = 3
-    const Y_ADJUST = 3 
+    const X_ADJUST = this.data.adjustFactor
+    const Y_ADJUST = this.data.adjustFactor
 
     const xOffset = (fullWidth - width) / 2 - (pixelsPerM * pov.x) / X_ADJUST
     const yOffset = (fullHeight - height) / 2 + (pixelsPerM * pov.y) / Y_ADJUST

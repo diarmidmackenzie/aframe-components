@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/aframe-multi-camera@latest/src/multi-camera.min.js"></script>
+      <script src="../../components/head-tracking/dist/head-tracking.js"></script>
+      <script src="../../components/polygon-wireframe/index.js"></script>
+      <script src="../../components/window-3d/index.js"></script>
+      <script> 
+        let divLeft = 0;
+        let divTop = 0;
+        let mouseOffsetX = 0;
+        let mouseOffsetY = 0;
+        let dragging = false
+
+        const onMouseMove = (e) => {
+
+          if (!dragging) return
+
+          divLeft = e.clientX - mouseOffsetX
+          divTop = e.clientY - mouseOffsetY
+          const div = document.getElementById('viewport1')
+          div.style.left = `${divLeft}px`
+          div.style.top = `${divTop}px`
+        }
+
+        const onMouseDown = (e) => {
+          dragging = true
+          mouseOffsetX = e.offsetX;
+          mouseOffsetY = e.offsetY;
+        }
+
+        const onMouseUp = (e) => {
+          dragging = false
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+          const div = document.getElementById('viewport1')
+          div.addEventListener("mousedown", onMouseDown)
+          document.addEventListener("mouseup", onMouseUp)
+          document.addEventListener("mousemove", onMouseMove)
+        })
+      </script>
+      <link rel="stylesheet" href="./styles.css"/>
+  </head>
+  <body>
+    <div>
+      <!-- Setting the a-scene as "embedded" allows us to customize the canvas dimensions, so that
+            they aren't "fullscreen".
+            See: https://aframe.io/docs/1.2.0/components/embedded.html
+            Note that the A-Frme canvas must cover the entiire area where you want to do any rendering.
+      -->
+      <a-scene embedded style="position:absolute; height: 100%; width: 100%"
+               xr-mode-ui="enabled: false">
+        <a-entity camera look-controls="enabled:false" position="0 1.6 0"></a-entity>
+
+        <a-entity id="container" position = "0 0 -4" >
+          <a-box position="0 2 0" width="4" height="4" depth="4" polygon-wireframe></a-box>
+          <a-box position="-1 0.5 1" rotation="0 0 0" color="#4CC3D9"></a-box>
+          <a-sphere position="0 1.25 -1" radius="1.25" color="#EF2D5E"></a-sphere>
+          <a-cylinder position="1 0.75 1" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
+          <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" side="double"></a-plane>
+          <a-box position="0 1.6 5.5" width="1" height="1" depth="4" polygon-wireframe></a-box>
+        </a-entity>
+        
+        
+        <a-sky color="#ECECEC"></a-sky>
+
+        <a-entity position="0 1.6 4"
+                  rotation="0 0 0">
+          
+          <a-entity id="camera1"
+                    secondary-camera="outputElement:#viewport1;sequence: replace"]
+                    window-3d="debug:true"
+                    head-tracker="stabilizationFactor: 0.5"
+                    face-detector>
+          </a-entity>
+        </a-entity>
+      </a-scene>
+    </div>
+
+    <div style = "width: 100%; display: flex; flex-direction: column">
+      <div>
+        <div id="viewport1" style="position: absolute; width: 600px; height:600px; margin: 10px;">
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
