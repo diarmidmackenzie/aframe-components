@@ -11,7 +11,9 @@ AFRAME.registerComponent('head-tracker', {
     // This is the weight given to old data points, rather than the new data point (0.9 = 90%)
     stabilizationFactor: {default: 0.9},
 
-    debug: {default: false}
+    debug: {default: false},
+
+    defaultPosition: {type: 'vec3', default: {x: 0, y: 0, z: 0.75}},
   },
 
   events: {
@@ -20,7 +22,7 @@ AFRAME.registerComponent('head-tracker', {
 
   init() {
 
-    this.headPosition = new THREE.Vector3(0, 0, 0.75)
+    this.headPosition = new THREE.Vector3().copy(this.data.defaultPosition)
     this.newHeadPosition = new THREE.Vector3()
 
     this.lPupil = new THREE.Vector2()
