@@ -23,10 +23,16 @@ In future we may offer a schema to filter in/out specific components/properties,
 Via CDN 
 
 ```
-<script src="https://cdn.jsdelivr.net/npm/aframe-dat-gui@0.0.1/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-dat-gui@0.0.1/dist/dat-gui.min.js"></script>
 ```
 
-Not yet published to npm.  If you want this on npm, please raise an issue.
+Or via [npm](https://www.npmjs.com/package/aframe-dat-gui)
+
+```
+npm install aframe-dat-gui
+```
+
+
 
 
 ## Usage

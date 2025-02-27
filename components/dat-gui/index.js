@@ -1,7 +1,6 @@
 const dat = require('dat.gui');
 const _color = new THREE.Color
 
-
 AFRAME.registerSystem('dat-gui', {
 
   init() {
