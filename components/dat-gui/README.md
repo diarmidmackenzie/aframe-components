@@ -56,8 +56,8 @@ At this point, there are quite a few limitations.  Requests, feedback and PRs ar
 - The `dat-gui` component checks which components and properties exist when it is initialized.  It doesn't check again.  You can force a refresh by removing and re-adding the component, but there's no  auto-refresh, and no way to refresh through the UI yet.
 - Support for schema extension is limited.  There is support for the different properties associated with different geometry primitives.  There is no support for additional `material` properties associated with different shaders.
 - No support yet for ranges (min & max values on properties)
-- Currently supported schema types are: boolean, color, int, number, string, vec2, vec3, vec4.
-- No support yet for arrays, selectors, assets and related (map, model, audio).  !! Need to test that these unsupported  types at least don't crash things!!!
+- Currently supported schema types are: boolean, color, int, number, string, vec2, vec3, vec4, selector
+- No support yet for arrays, selectorAll, assets and related (map, model, audio).
 - No control for position / styling of `dat.GUI` panel.  Some of this can probably be done using CSS, but I haven't looked at how to best do that yet.
 - When the panel fills the screen, there is a scroll bar, but the `Close controls` button is awkwardly placed, often blocking one of the properties.  Seems like a `dat.GUI` bug, but perhaps I'm doing something wrong here...
 - This only works in desktop mode, not in AR/VR.  There has been some work to provide similar functionality to`dat.GUI` in VR in the past, see [here](https://discourse.threejs.org/t/dat-gui-for-webxr/21906/5) and [here](https://github.com/dataarts/dat.guiVR), but nothing alive at the moment.
