@@ -6,22 +6,22 @@ AFRAME.registerComponent('window-3d', {
   dependencies: ['secondary-camera'],
 
   schema: {
-    // screen height in meters
-    screenHeight: {default: 0.2},
-
     // webCam position relative to the screen center
     // head tracking position is reported relative to the webcam.
-    webCamPosition: {default: {x: 0, y: 0, z: 0}},
-
-    // the offset of the screen, relative to the camera.
-    // With an FOV of 50, screen height of 0.2m, 
-    // this will be (0.2 / tan(25)) = 0.43m
-    screenOffset: { default: 0.43 },
+    webCamPosition: {type: 'vec3', default: {x: 0, y: 0.1, z: 0}},
 
     debug: {default: false},
     
-    xSensitivity : {default: 0.5},
-    ySensitivity : {default: 0.5},
+    // How much the x/y pov on the world changes as a result of movements on screen.
+    // This will also be affected by the distance of the scene from the camera
+    // and the scale of the scene, but it can be more convenient to adjust directly here.
+    // 
+    // 1 should give "realistic" behaviour.
+    xSensitivity : {default: 1},
+    ySensitivity : {default: 1},
+
+    // This one only applies when head tracking is active.
+    // This is a different scale from x & y sensitivity.
     zSensitivity : {default: 1},
   },
 
@@ -56,12 +56,14 @@ AFRAME.registerComponent('window-3d', {
   
   tick() {
 
+    // "window" in this context refers to the window into the A-Frame scene, not the HTML document window.
+    // Maybe could find a better term to use here...
+    
     const dpm = this.referenceForScale.clientWidth * INCHES_PER_M
     const windowHeight = this.outputElement.clientHeight / dpm
     const windowCenter = new THREE.Vector2()
     
     const rect = this.outputElement.getBoundingClientRect()
-    
     
     windowCenter.y = (rect.top + rect.bottom) / 2
 
@@ -87,10 +89,9 @@ AFRAME.registerComponent('window-3d', {
     pov.z = 0.75 + (relativeZ * this.data.zSensitivity)
   
     // virtual screen is what we'll use as a "Full Screen" with setViewOffset
-    // For now things seem to work better without using a larger virtualScreen.  This might not actually be necessary
-    // More analysis needed to determine whether this is actually necessary
-    const virtualScreenHeight = windowHeight //(+ 2 * (Math.max(Math.abs(pov.y), Math.abs(pov.x))))
-    const virtualScreenFactor = virtualScreenHeight / windowHeight
+    // However what seems to work well is a virtual screen that matches the display window.
+    const virtualScreenHeight = windowHeight
+    const virtualScreenFactor = virtualScreenHeight / windowHeight // (which is 1)
     
     // fov is determined by distance from screen + virtual Screen height.
     // This is the fov for the virtual Screen, which may be larger than the fov for the part of the screen we'll actually render.
@@ -100,14 +101,14 @@ AFRAME.registerComponent('window-3d', {
     const width = rect.right - rect.left
     const fullWidth = virtualScreenFactor * width
     const fullHeight = virtualScreenFactor * height
-    const pixelsPerM = dpm
     
     // These numbers tuned by hand - feel about right, but what's the mathematical justification?
+    const { xSensitivity, ySensitivity} = this.data
     const X_ADJUST = 1 / this.data.xSensitivity
     const Y_ADJUST = 1 / this.data.ySensitivity
 
-    const xOffset = (fullWidth - width) / 2 - (pixelsPerM * pov.x) / X_ADJUST
-    const yOffset = (fullHeight - height) / 2 + (pixelsPerM * pov.y) / Y_ADJUST
+    const xOffset = ((fullWidth - width) - (dpm * pov.x * xSensitivity)) / 2
+    const yOffset = ((fullHeight - height) + (dpm * pov.y * ySensitivity)) / 2
     camera.fov = fov
 
     if (this.data.debug) {
@@ -117,12 +118,11 @@ AFRAME.registerComponent('window-3d', {
         <p>height: ${height.toFixed(0)}</p>
         <p>width: ${width.toFixed(0)}</p>
         <p>virtualScreenFactor: ${virtualScreenFactor.toFixed(2)}</p>
-        <p>pixelsPerM: ${pixelsPerM.toFixed(0)}</p>
+        <p>pixelsPerM (dpm): ${dpm.toFixed(0)}</p>
         <p>xOffset: ${xOffset.toFixed(0)}</p>
         <p>yOffset: ${yOffset.toFixed(0)}</p>
       `
       console.log(debugText)
-
 
       this.debugOutput.innerHTML = debugText
     }
@@ -134,17 +134,15 @@ AFRAME.registerComponent('window-3d', {
                          width,
                          height)
 
-    // These numbers tuned by hand - feel about right, but what's the mathematical justification?
-    // with height 200px...
-    // X_ADJUST = 1 => 21
-    // X_ADJUST = 2 => 10.5
-    // 
-    // This formula works as height varies, and as X/Y_ADJUST vary.
-    const X_POV_FACTOR = 4200 / (height * X_ADJUST)
-    const Y_POV_FACTOR = 4200 / (height * Y_ADJUST)
+    // These numbers tuned by hand - seem to be about right, but what's the mathematical justification?
+    // Not entirely sure where 2100 comes from...
+    // Probably fov should be factored into this - testing with different fovs might reveal insights.
+    // Does screen size make a difference?  That may be accounted for already by dpm.  Or maybe not...?
+    // Both these are scaled by height (not width) because fov is defined relative to window height.
+    const X_POV_FACTOR = (2100 * xSensitivity) / height
+    const Y_POV_FACTOR = (2100 * ySensitivity) / height
 
     this.el.object3D.position.set(pov.x * X_POV_FACTOR, pov.y * Y_POV_FACTOR, pov.z)
-    //this.el.object3D.rotation.set(rotation.x, rotation.y, 0)
     camera.updateProjectionMatrix()
   }
 })
