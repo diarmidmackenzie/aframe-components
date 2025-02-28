@@ -11,8 +11,9 @@ AFRAME.registerComponent('configure-example', {
     xSensitivity: {default: 1 },
     ySensitivity: {default: 1 },
     headTracking: {default: false},
-    zSensitivity: {default: 2 },
-    stabilizationFactor: {default: 0.75},
+    zSensitivity: {default: 3 },
+    stabilizationFactor: {default: 0.9},
+    moveSideToSide: {default: true},
   },
 
   init() {
