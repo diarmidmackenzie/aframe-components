@@ -1,9 +1,9 @@
-
-let divLeft = 0;
-let divTop = 0;
+let divLeft = 200;
+let divTop = 100;
 let mouseOffsetX = 0;
 let mouseOffsetY = 0;
 let dragging = false
+let direction = 1;
 
 const onMouseMove = (e) => {
 
@@ -24,6 +24,10 @@ const onMouseDown = (e) => {
 
 const onMouseUp = (e) => {
   dragging = false
+  const div = document.getElementById('viewport1')
+  const rect = div.getBoundingClientRect()
+  divLeft = rect.left
+  divTop = rect.top
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -32,3 +36,20 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener("mouseup", onMouseUp)
   document.addEventListener("mousemove", onMouseMove)
 })
+
+setInterval(() => {
+
+  config = document.getElementById('Configuration')?.components["configure-example"]?.data
+
+  if (!config?.moveSideToSide) return
+  
+  const div = document.getElementById('viewport1')
+  if (!dragging) {
+    divLeft += direction
+    div.style.left = `${divLeft}px`
+    const rect = div.getBoundingClientRect()
+    if (rect.right > window.innerWidth - 5 || rect.left < 5) {
+      direction = -direction
+    }
+  }
+}, 10)
