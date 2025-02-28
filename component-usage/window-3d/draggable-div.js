@@ -45,11 +45,11 @@ setInterval(() => {
   
   const div = document.getElementById('viewport1')
   if (!dragging) {
-    divLeft += direction
+    divLeft += (direction * 4)
     div.style.left = `${divLeft}px`
     const rect = div.getBoundingClientRect()
     if (rect.right > window.innerWidth - 5 || rect.left < 5) {
       direction = -direction
     }
   }
-}, 10)
+}, 40)
