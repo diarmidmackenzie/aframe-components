@@ -133,7 +133,7 @@ AFRAME.registerComponent('dat-gui', {
         break
 
       case 'number':
-        addProp(componentData, prop, NaN, NaN, 0.1)
+        addProp(componentData, prop, NaN, NaN, undefined)
         break
 
       case 'string':
