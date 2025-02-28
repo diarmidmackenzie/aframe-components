@@ -171,13 +171,13 @@ AFRAME.registerComponent('dat-gui', {
           parentData = componentData
         }
         
-        addProp(parentData, 'x', NaN, NaN, 0.1)
-        addProp(parentData, 'y', NaN, NaN, 0.1)
+        addProp(parentData, 'x', NaN, NaN, undefined)
+        addProp(parentData, 'y', NaN, NaN, undefined)
         if (type !== 'vec2') {
-          addProp(parentData, 'z', NaN, NaN, 0.1)
+          addProp(parentData, 'z', NaN, NaN, undefined)
         }
         if (type === 'vec4') {
-          addProp(parentData, 'w', NaN, NaN, 0.1)
+          addProp(parentData, 'w', NaN, NaN, undefined)
         }
         break
 

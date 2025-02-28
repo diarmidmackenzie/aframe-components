@@ -23,7 +23,7 @@ In future we may offer a schema to filter in/out specific components/properties,
 Via CDN 
 
 ```
-<script src="https://cdn.jsdelivr.net/npm/aframe-dat-gui@0.0.1/dist/dat-gui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aframe-dat-gui@0.0.3/dist/dat-gui.min.js"></script>
 ```
 
 Or via [npm](https://www.npmjs.com/package/aframe-dat-gui)
