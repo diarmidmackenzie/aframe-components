@@ -1,4 +1,9 @@
 # aframe-components
+> "...with the growing interest in VR and AR experiences, projects like this are key. They lower the barrier to entry for developers, providing ready-to-use components to quickly build innovative applications. It's about enabling creativity without the need to reinvent the wheel every time."
+>
+> Liam Cohen, gitpodcast.com (listen [here](https://www.gitpodcast.com/diarmidmackenzie/aframe-components))
+
+
 A repository containing a variety of re-usable A-Frame components.
 
 There's no particularly strong theme to this repo, other than a selection of things I found I needed (or just wanted) to build, that I thought might be useful for other people too.
