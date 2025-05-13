@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="../index.js"></script>
+  <link rel="stylesheet" href="../../../../styles.css">
+</head>
+
+<body>
+  <div class="text-overlay">
+    <p>connecting-line: Test width parameters</p>
+    <p>Top-to-bottom we have widths of 0.1, 0.05 and 0.01</p>
+  </div>
+  <a class="code-link" target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/length-factor.html">
+    view code
+  </a>
+
+  <a-scene background="color:black">
+    <a-mixin id="animate-right" animation="property:position;
+                          from: 0 0 0;
+                          to: 0.5 0 0;
+                          dir: alternate;
+                          loop: true">
+    </a-mixin>
+    <a-mixin id="animate-left" animation="property:position;
+                          from: 0 0 0;
+                          to: -0.5 0 0;
+                          dir: alternate;
+                          loop: true">
+    </a-mixin>
+    <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+    <a-entity id="container" position="0 1 -4">
+      <a-entity position="0 0 0">
+        <a-text color="white" value="Width" align="center" position="0 1.5 0"></a-text>
+        <a-entity mixin="animate-left">
+          <a-sphere id="point11" position="-1 0 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          <a-sphere id="point13" position="-1 -1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          <a-sphere id="point15" position="-1 -2 0" radius="0.1" color="#EF2D5E"></a-sphere>
+        </a-entity>
+        <a-entity mixin="animate-right">
+          <a-sphere id="point12" position="1 1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          <a-sphere id="point14" position="1 0 0" radius="0.1" color="#EF2D5E"></a-sphere>
+          <a-sphere id="point16" position="1 -1 0" radius="0.1" color="#EF2D5E"></a-sphere>
+        </a-entity>
+      </a-entity>
+    </a-entity>
+
+    <a-entity connecting-line__11="start:#point11;
+                                    end:#point12;
+                                    color:red;
+                                    width: 0.1"
+              connecting-line__12="start:#point13;
+                                    end:#point14;
+                                    color:yellow;
+                                    width: 0.02"
+              connecting-line__13="start:#point15;
+                                    end:#point16;
+                                    color:cyan;
+                                    width: 0.01">
+    </a-entity>
+  </a-scene>
+</body>
+
+</html>

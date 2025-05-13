@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="../index.js"></script>
+  <link rel="stylesheet" href="../../../../styles.css">
+  <script>
+    const startEvent = () => {
+      document.getElementById('point1').emit('update');
+    }
+    const endEvent = () => {
+      document.getElementById('point2').emit('update');
+    }
+    const lineElEvent = () => {
+      document.getElementById('lineEl').emit('update');
+    }
+    
+  </script>
+</head>
+
+<body>
+  <div class="text-overlay">
+    <p>connecting-line: Test manual updates</p>
+    <p>Use bottons on the right to trigger events on start, end or line elements, which will update the line render</p>
+    <p>All three buttons have the same effect.</p>
+  </div>
+  <a class="code-link" target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/length-factor.html">
+    view code
+  </a>
+
+  <div class="buttons">
+    <button onClick="startEvent()">
+      Start event
+    </button>
+
+    <button onClick="endEvent()">
+      End event
+    </button>
+
+    <button onClick="lineElEvent()">
+      Line El event
+    </button>
+  </div>
+
+  <a-scene background="color:black">
+    <a-mixin id="animate-right" animation="property:position;
+                          from: 0 0 0;
+                          to: 0.5 0 0;
+                          dir: alternate;
+                          loop: true">
+    </a-mixin>
+    <a-mixin id="animate-left" animation="property:position;
+                          from: 0 0 0;
+                          to: 0 0.5 0;
+                          dir: alternate;
+                          loop: true">
+    </a-mixin>
+    <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+    <a-entity id="container" position="0 0 -4">
+      <a-entity position="0 0 0">
+        <a-text color="white" value="Manual updates" align="center" position="0 2.5 0"></a-text>
+        <a-entity mixin="animate-left">
+          <a-sphere id="point1" position="-1 0 0" radius="0.1" color="#EF2D5E"></a-sphere>
+        </a-entity>
+        <a-entity mixin="animate-right">
+          <a-sphere id="point2" position="1 0 0" radius="0.1" color="#EF2D5E"></a-sphere>
+        </a-entity>
+      </a-entity>
+    </a-entity>
+
+    <a-entity id="lineEl" connecting-line__1="start:#point1;
+                                    end:#point2;
+                                    color:red;
+                                    updateEvent: update">
+    </a-entity>
+  </a-scene>
+</body>
+
+</html>

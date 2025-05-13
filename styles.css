@@ -36,3 +36,13 @@
   top: 150px;
   right: 10px;
 }
+
+.buttons {
+  position: absolute;
+  top: 150px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+}
