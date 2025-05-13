@@ -1,6 +1,6 @@
 {
   "name": "aframe-connecting-line",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Uses the A-Frame \"line\" component to draw a line between points on two entities.",
   "main": "index.js",
   "directories": {
