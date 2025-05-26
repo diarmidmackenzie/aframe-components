@@ -115,6 +115,10 @@
 
     remove() {
         this.el.removeAttribute(`line__${this.attrName}`)
+        if(this.cylinder) {
+          this.el.removeChild(this.cylinder)
+          this.cylinder = null
+        }
         this.removeEventListeners()
     },
 
