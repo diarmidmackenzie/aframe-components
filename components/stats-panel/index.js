@@ -1,3 +1,5 @@
+import './styles.css'
+
 AFRAME.registerComponent('stats-panel', {
   schema: {
     merge: {type: 'boolean', default: true}
@@ -130,7 +132,7 @@ AFRAME.registerComponent('stats-row', {
     this.data.properties.forEach((property) => {
       const split = this.splitDot(property);
       let value = e.detail;
-      for (i = 0; i < split.length; i++) {
+      for (let i = 0; i < split.length; i++) {
         value = value[split[i]];
       }
       this.counterValues[property].innerHTML = value
