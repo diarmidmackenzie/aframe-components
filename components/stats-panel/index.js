@@ -1,3 +1,17 @@
+const semver = require('semver');
+function isAFrameVersionAtLeast(minVersion) {
+  if (!AFRAME || !AFRAME.version) {
+    console.warn('A-Frame not found or version not available');
+    return false;
+  }
+
+  return semver.gte(AFRAME.version, minVersion);
+}
+
+if (isAFrameVersionAtLeast('1.8.0')) {
+  require('./styles.css')
+}
+
 AFRAME.registerComponent('stats-panel', {
   schema: {
     merge: {type: 'boolean', default: true}
@@ -130,7 +144,7 @@ AFRAME.registerComponent('stats-row', {
     this.data.properties.forEach((property) => {
       const split = this.splitDot(property);
       let value = e.detail;
-      for (i = 0; i < split.length; i++) {
+      for (let i = 0; i < split.length; i++) {
         value = value[split[i]];
       }
       this.counterValues[property].innerHTML = value
