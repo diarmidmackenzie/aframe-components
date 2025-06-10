@@ -61,7 +61,8 @@ PhysX with reduced plane depth (since CCD can be used with PhysX)
 ```
 <a-scene webxr="requiredFeatures: plane-detection,local-floor"
          renderer="sortObjects: true"
-         physx="autoLoad: true"
+         physx="autoLoad: true";
+                wasmUrl: https://cdn.jsdelivr.net/gh/c-frame/physx@v0.2.0/wasm/physx.release.wasm"
          xr-room-physics="depth: 0.05">
 ```
 

@@ -2,7 +2,7 @@
 <html>
   <head>
       <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/gh/c-frame/physx@v0.1.2/dist/physx.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/c-frame/physx@v0.2.0/dist/physx.min.js"></script>
       <script src="../../components/bricks/index.js"></script>
       <script src="./colors.js"></script>
       <script>
@@ -131,7 +131,9 @@
         view code
     </a>
       <a-scene background="color:#88f" stats
-               physx="autoLoad: true; delay: 1000; useDefaultScene: false; stats: panel">
+               physx="autoLoad: true;
+                      wasmUrl: https://cdn.jsdelivr.net/gh/c-frame/physx@v0.2.0/wasm/physx.release.wasm;
+                      delay: 1000; useDefaultScene: false; stats: panel">
         <a-entity position = "0 1 -3" scale="10 10 10" brick-wall>
             <a-brick id="base" width="16" movement="static" depth="60" height="3" color="#4B9F4A" position="0 0 0">
             </a-brick>
