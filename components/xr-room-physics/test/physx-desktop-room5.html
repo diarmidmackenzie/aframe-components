@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no,user-scalable=no,maximum-scale=1">
     <title>Configure Room Planes in Ammo Physics Engine</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/diarmidmackenzie/physx@117b6be/dist/physx.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/physx@v0.2.0/dist/physx.js"></script>
     <script src="../dist/xr-room-physics.js"></script>
     <script src="../../ball-blaster/index.js"></script>
     <script src="../../desktop-xr-plane/index.js"></script>
@@ -26,7 +26,8 @@
     <a-scene webxr="requiredFeatures: plane-detection,local-floor"
              renderer="sortObjects: true"
              background="color:#888"
-             physx="autoLoad: true; delay: 1000"
+             physx="autoLoad: true; delay: 1000;
+                    wasmUrl: https://cdn.jsdelivr.net/gh/c-frame/physx@v0.2.0/wasm/physx.release.wasm""
              xr-room-physics="depth: 0.05">
 
       <a-entity camera look-controls wasd-controls position="0 1.6 0">
