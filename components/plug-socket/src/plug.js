@@ -1,3 +1,4 @@
+/* global AFRAME */
 AFRAME.registerComponent('plug', {
 
   init() {

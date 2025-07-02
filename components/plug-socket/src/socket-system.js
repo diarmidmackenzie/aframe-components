@@ -1,3 +1,4 @@
+/* global AFRAME THREE */
 AFRAME.registerSystem('socket', {
 
   schema: {
@@ -166,7 +167,7 @@ AFRAME.registerSystem('socket', {
       const plug = plugs[ii]
       const plugComponent = plug.el.components.socket
       
-      adjustmentTransform = plugComponent.adjustmentTransform
+      const adjustmentTransform = plugComponent.adjustmentTransform
       const socket = this.matchPlugToSocket(plug, adjustmentTransform)
 
       if (socket) {
@@ -261,7 +262,7 @@ AFRAME.registerSystem('socket', {
           bestDistanceSq = distanceSq
           bestSocket = socket
 
-          plugInverseQuaternion = this.tempQuaternion
+          const plugInverseQuaternion = this.tempQuaternion
           plugInverseQuaternion.copy(plug.quaternion).invert()
 
           adjustmentTransform.position.subVectors(socket.position, plug.position)
