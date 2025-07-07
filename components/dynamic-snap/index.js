@@ -39,7 +39,7 @@ AFRAME.registerComponent("dynamic-snap", {
         this.setMaterials(this.projectedEl, projectedMesh, this.data.renderSnap)
       }
       else {
-        this.el.addEventListener('model-loaded', () => this.configureProjectedEl())
+        this.el.addEventListener('model-loaded', () => this.configureProjectedEl(), {once: true})
       }
     },
 
@@ -52,9 +52,11 @@ AFRAME.registerComponent("dynamic-snap", {
         this.setMaterials(this.el, mesh, renderString)
       }
       else {
+        if (this.configureThisElListenerAdded) return
+        this.configureThisElListenerAdded = true
         this.el.addEventListener('model-loaded', () => {
           this.configureThisEl(renderString)
-        })
+        }, {once: true})
       }
     },
 

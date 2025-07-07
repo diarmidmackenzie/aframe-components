@@ -43,6 +43,13 @@ AFRAME.registerComponent('socket', {
     this.debugDistanceVector = new THREE.Vector3()
   },
 
+  remove() {
+    this.el.removeEventListener('binding-failed', this.bindingFailed)
+    this.el.removeEventListener('binding-success', this.bindingSuccess)
+    this.removeFromSystem()
+    this.worldSpaceObject.el = undefined
+  },
+
   findFabric() {
     
     function findFabricAbove(el, sceneEl) {
