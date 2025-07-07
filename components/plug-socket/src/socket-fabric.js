@@ -1,3 +1,4 @@
+/* global AFRAME THREE */
 AFRAME.registerComponent('socket-fabric', {
 
   schema: {
@@ -28,9 +29,9 @@ AFRAME.registerComponent('socket-fabric', {
 
   bindingRequest(evt) {
 
-    source = evt.target
-    sourceNode = source.components['socket']
-    target = sourceNode.peer
+    const source = evt.target
+    const sourceNode = source.components['socket']
+    const target = sourceNode.peer
 
     if (!this.requests.includes(sourceNode)) {
       this.requests.push(sourceNode)
@@ -43,8 +44,8 @@ AFRAME.registerComponent('socket-fabric', {
 
   bindingCancel(evt) {
 
-    source = evt.target
-    sourceNode = source.components['socket']
+    const source = evt.target
+    const sourceNode = source.components['socket']
     this.disposeOfRequest(sourceNode, false)
   },
 

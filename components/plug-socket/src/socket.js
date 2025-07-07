@@ -1,3 +1,4 @@
+/* global AFRAME THREE */
 const PS_STATE_FREE = 0
 const PS_STATE_BINDING = 1
 const PS_STATE_BOUND = 2
@@ -21,7 +22,7 @@ AFRAME.registerComponent('socket', {
 
     // worldSpaceObject is a world-space representation of the transform
     // of this socket.  Used for matching sockets in space.
-    this.worldSpaceObject = new THREE.Object3D
+    this.worldSpaceObject = new THREE.Object3D()
     this.worldSpaceObject.el = this.el
     this.updateWorldSpaceObject()
     this.el.sceneEl.object3D.add(this.worldSpaceObject)
@@ -57,7 +58,7 @@ AFRAME.registerComponent('socket', {
 
     if (!this.debugVisual) return
 
-    let color, radius
+    let color
 
     switch (this.bindingState) {
       case PS_STATE_FREE:
@@ -75,7 +76,7 @@ AFRAME.registerComponent('socket', {
         break
     }
     
-    radius = (this.data.type === 'socket') ? 0.1 : 0.08
+    const radius = (this.data.type === 'socket') ? 0.1 : 0.08
     
     const sides = 360 / this.system.data.rotationIncrement
 
