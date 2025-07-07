@@ -13,6 +13,10 @@ AFRAME.registerComponent('socket-fabric', {
     this.bindingCancel = this.bindingCancel.bind(this)
     this.el.addEventListener('binding-cancel', this.bindingCancel)
 
+    this.handleSnappedTo = this.handleSnappedTo.bind(this)
+    // used when snap === 'events' with dynamic-snap component
+    this.el.addEventListener('snappedTo', this.handleSnappedTo)
+
     // Temporary solution to break bonds when brick is selected.
     // !! Need to figure out correct mechanism to use here.
     this.breakBonds = this.breakBonds.bind(this)
@@ -25,6 +29,16 @@ AFRAME.registerComponent('socket-fabric', {
     this.transform = new THREE.Object3D()
     this.identityTransform = new THREE.Object3D()
     this.eventData = {worldTransform: this.transform}
+  },
+
+  handleSnappedTo() {
+    this.allRequestsCompleted()
+  },
+
+  remove() {
+    this.el.removeEventListener('binding-request', this.bindingRequest)
+    this.el.removeEventListener('binding-cancel', this.bindingCancel)
+    this.el.removeEventListener('snappedTo', this.handleSnappedTo)
   },
 
   bindingRequest(evt) {
@@ -240,7 +254,7 @@ AFRAME.registerComponent('socket-fabric', {
         this.allRequestsCompleted()
       }
       else {
-        this.el.addEventListener('snappedTo', this.allRequestsCompleted.bind(this))
+        // dynamic-snap will emit snappedTo that will call allRequestsCompleted()
       }
     }
   },
