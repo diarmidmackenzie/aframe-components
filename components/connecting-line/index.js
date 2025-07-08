@@ -1,3 +1,4 @@
+/* global AFRAME THREE */
 (() => {
 
   const _startVector = new THREE.Vector3()
@@ -6,7 +7,7 @@
   const _posVector = new THREE.Vector3()
   const _deltaVector = new THREE.Vector3()
   const _lineDirectionVector = new THREE.Vector3()
-  const _up = new THREE.Vector3(0,1,0)
+  const _up = new THREE.Vector3(0, 1, 0)
 
   AFRAME.registerComponent('connecting-line', {
 
@@ -53,7 +54,7 @@
           this.cylinder = document.createElement('a-cylinder')
           this.el.appendChild(this.cylinder)
         }
-        this.cylinder.setAttribute('radius', this.data.width/2)
+        this.cylinder.setAttribute('radius', this.data.width / 2)
         this.cylinder.setAttribute('segments-radial', this.data.segments)
         this.cylinder.setAttribute('segments-height', 1)
         this.cylinder.setAttribute('material',
@@ -133,23 +134,25 @@
         case "none":
           return
 
-        case "scale":
+        case "scale": {
           const lengthFactor = this.data.lengthAdjustmentValue
           if (!lengthFactor) return
           delta.subVectors(end, start)
           const scaleExtension = 1 + ((lengthFactor - 1) / 2)
           delta.multiplyScalar(scaleExtension)
           break
+        }
 
-        case "extend":
+        case "extend": {
           const extension = this.data.lengthAdjustmentValue
           if (!extension) return
           delta.subVectors(end, start)
           delta.normalize()
           delta.multiplyScalar(-extension)
           break
+        }
 
-        case "absolute":
+        case "absolute": {
           const targetLength = this.data.lengthAdjustmentValue
           if (!targetLength) return
           delta.subVectors(end, start)
@@ -158,6 +161,7 @@
           const absExtension = ((targetLength / currentLength) - 1) / 2
           delta.multiplyScalar(-absExtension)
           break
+        }
 
         default:
           console.error("Unexpected value for lengthAdjustment: ", lengthAdjustment)
@@ -195,8 +199,8 @@
                               end: ${end.x} ${end.y} ${end.z}`)
 
       if (this.cylinder) {
-        _lineVector.subVectors(end,start)
-        _posVector.addVectors(start,end).multiplyScalar(0.5)
+        _lineVector.subVectors(end, start)
+        _posVector.addVectors(start, end).multiplyScalar(0.5)
         _lineDirectionVector.copy(_lineVector).normalize()
 
         const object = this.cylinder.object3D
