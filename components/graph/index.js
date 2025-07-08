@@ -6,6 +6,7 @@ import {getConnectedComponent} from './src/utils.js'
 const GRAPH_ROOT = new Graph({multi: true, type: 'undirected'})
 
 AFRAME.registerComponent('graph', {
+  sceneOnly: true,
 
   schema: {
     debug: {default: false}
@@ -42,7 +43,7 @@ AFRAME.registerComponent('graph-edge', {
     }
 
     if (!target.hasLoaded) {
-      this.data.target.addEventListener('loaded', () => this.addEdge())
+      this.data.target.addEventListener('loaded', () => this.addEdge(), {once: true})
     }
     else {
       this.addEdge()
@@ -91,7 +92,7 @@ AFRAME.registerComponent('graph-edge', {
       this.onSceneLoaded()
     }
     else {
-      this.el.sceneEl.addEventListener('loaded', () => this.onSceneLoaded())
+      this.el.sceneEl.addEventListener('loaded', () => this.onSceneLoaded(), {once: true})
     }
     
     if (componentsNewlyJoined) {
