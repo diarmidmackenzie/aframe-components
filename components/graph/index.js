@@ -6,6 +6,7 @@ import {getConnectedComponent} from './src/utils.js'
 const GRAPH_ROOT = new Graph({multi: true, type: 'undirected'})
 
 AFRAME.registerComponent('graph', {
+  sceneOnly: true,
 
   schema: {
     debug: {default: false}
