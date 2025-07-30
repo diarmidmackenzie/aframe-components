@@ -178,6 +178,10 @@
     },
 
     updateLine() {
+      // Because calls to this function can be deferred, handle race condition where component has
+      // already been removed.
+      if (!this.data) return
+
       const start = _startVector
       const end = _endVector
 
