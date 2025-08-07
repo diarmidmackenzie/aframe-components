@@ -47,7 +47,6 @@ AFRAME.registerComponent('socket', {
     this.el.removeEventListener('binding-failed', this.bindingFailed)
     this.el.removeEventListener('binding-success', this.bindingSuccess)
     this.removeFromSystem()
-    this.worldSpaceObject.el = undefined
   },
 
   findFabric() {
