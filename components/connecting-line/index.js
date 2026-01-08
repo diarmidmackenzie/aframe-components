@@ -37,18 +37,23 @@
         end: null
       }
 
-      this.updateLine = this.updateLine.bind(this)
+      this.updateLinePosition = this.updateLinePosition.bind(this)
     },
     update() {
 
-        this.el.setAttribute(`line__${this.attrName}`,
-                             {
-                                color: this.data.color,
-                                opacity: this.data.opacity,
-                                visible: this.data.visible
-                             })
+      if (!this.data.start || !this.data.end) {
+        this.remove()
+        return
+      }
 
-       if (this.data.width > 0) {
+      this.el.setAttribute(`line__${this.attrName}`,
+                            {
+                              color: this.data.color,
+                              opacity: this.data.opacity,
+                              visible: this.data.visible
+                            })
+
+      if (this.data.width > 0) {
 
         if (!this.cylinder) {
           this.cylinder = document.createElement('a-cylinder')
@@ -64,16 +69,16 @@
                                       opacity: this.data.opacity,
                                       visible: this.data.visible
                                    })
-       }
-       else if (this.cylinder) {
-         this.el.removeChild(this.cylinder)
-         this.cylinder = null
-       }
+      }
+      else if (this.cylinder) {
+        this.el.removeChild(this.cylinder)
+        this.cylinder = null
+      }
 
-       this.updateEventListeners()
+      this.updateEventListeners()
 
-       // initial update should be deferred until scene load has completed.
-       setTimeout(this.updateLine)
+      // initial update should be deferred until scene load has completed.
+      setTimeout(this.updateLinePosition)
     },
 
 
@@ -93,9 +98,15 @@
     addAndTrackEventListeners() {
       const { data, listenerData } = this
       
-      data.start.addEventListener(data.updateEvent, this.updateLine)
-      data.end.addEventListener(data.updateEvent, this.updateLine)
-      this.el.addEventListener(data.updateEvent, this.updateLine)
+      if (data.start) {
+        data.start.addEventListener(data.updateEvent, this.updateLinePosition)
+      }
+      
+      if (data.end) {
+        data.end.addEventListener(data.updateEvent, this.updateLinePosition)
+      }
+      
+      this.el.addEventListener(data.updateEvent, this.updateLinePosition)
 
       listenerData.event = data.updateEvent
       listenerData.start = data.start
@@ -106,21 +117,21 @@
       const { listenerData } = this
       
       if (listenerData.start) {
-        listenerData.start.removeEventListener(listenerData.event, this.updateLine)
+        listenerData.start.removeEventListener(listenerData.event, this.updateLinePosition)
       }
       if (listenerData.end) {
-        listenerData.start.removeEventListener(listenerData.event, this.updateLine)
+        listenerData.start.removeEventListener(listenerData.event, this.updateLinePosition)
       }
-      this.el.removeEventListener(listenerData.event, this.updateLine)
+      this.el.removeEventListener(listenerData.event, this.updateLinePosition)
     },
 
     remove() {
-        this.el.removeAttribute(`line__${this.attrName}`)
-        if(this.cylinder) {
-          this.el.removeChild(this.cylinder)
-          this.cylinder = null
-        }
-        this.removeEventListeners()
+      this.el.removeAttribute(`line__${this.attrName}`)
+      if(this.cylinder) {
+        this.el.removeChild(this.cylinder)
+        this.cylinder = null
+      }
+      this.removeEventListeners()
     },
 
     // Position is updated on a tick() to accommodate movement of entities, which may
@@ -174,13 +185,17 @@
     
     tick() {
       if (this.data.updateEvent) return
-      this.updateLine()
+      this.updateLinePosition()
     },
 
-    updateLine() {
+    updateLinePosition() {
       // Because calls to this function can be deferred, handle race condition where component has
       // already been removed.
       if (!this.data) return
+      if (!this.data.start || !this.data.end) {
+        this.remove()
+        return
+      }
 
       const start = _startVector
       const end = _endVector
@@ -199,8 +214,8 @@
       this.adjustLength(start, end)
 
       this.el.setAttribute(`line__${this.attrName}`,
-        `start: ${start.x} ${start.y} ${start.z};
-                              end: ${end.x} ${end.y} ${end.z}`)
+                           `start: ${start.x} ${start.y} ${start.z};
+                            end: ${end.x} ${end.y} ${end.z}`)
 
       if (this.cylinder) {
         _lineVector.subVectors(end, start)
