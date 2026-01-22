@@ -4,6 +4,9 @@
   "description": "A-Frame statistics panel for additional statistics, in the style of A-Frame stats",
   "main": "index.js",
   "scripts": {
+    "dist": "npm run dist:dev && npm run dist:prod",
+    "dist:dev": "webpack --config webpack.config.js",
+    "dist:prod": "webpack --config webpack.prod.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -13,5 +16,13 @@
   ],
   "homepage": "https://diarmidmackenzie.github.io/aframe-components/components/stats-panel#readme",
   "author": "Diarmid Mackenzie",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "css-loader": "^7.1.2",
+    "style-loader": "^4.0.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "semver": "^7.7.2"
+  }
 }
