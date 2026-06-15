@@ -16,13 +16,23 @@ module.exports = {
     libraryTarget: 'umd'
   },
 
-  // Externalize ONLY the exact request `three` to the page's global THREE
-  // (the single super-three that owns sceneEl.renderer). The function form
-  // matches the bare `three` request exactly and externalizes it, while the
-  // deep `three/examples/jsm/lines/...` request does NOT match and therefore
-  // BUNDLES (resolved via the resolve.alias below out of super-three). This
-  // is load-bearing: bundling a second copy of core three would break
-  // instanceof / raycast / rendering against the scene renderer.
+  // Externalize ONLY the exact request `three` to the page's RUNTIME GLOBAL
+  // THREE (the single super-three that owns sceneEl.renderer). The function
+  // form matches the bare `three` request exactly and externalizes it, while
+  // the deep `three/examples/jsm/lines/...` request does NOT match and
+  // therefore BUNDLES (resolved via the resolve.alias below out of
+  // super-three). This is load-bearing: bundling a second copy of core three
+  // would break instanceof / raycast / rendering against the scene renderer.
+  //
+  // externalsType: 'global' (MED-2) makes the external resolve to a runtime
+  // global lookup (globalThis.THREE / window.THREE / root.THREE) in EVERY
+  // module-system branch of the UMD wrapper — crucially the CommonJS branch
+  // emits `globalThis["THREE"]`, NOT `require("THREE")`. The CDN <script> path
+  // still works (global THREE), AND bundlers like Vite (simple-draw / TASK-140)
+  // can resolve it without a `three` module resolution — provided the consumer
+  // exposes THREE as a global. The deep examples/jsm imports remain bundled
+  // and are unaffected by externalsType.
+  externalsType: 'global',
   externals: [
     ({ request }, cb) => (request === 'three' ? cb(null, 'THREE') : cb()),
   ],

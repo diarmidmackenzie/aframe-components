@@ -189,8 +189,19 @@ AFRAME.registerComponent('connecting-line2', {
   update(oldData) {
     const data = this.data;
 
+    // Lazily (re)create geometry / group / overlays if a prior teardown
+    // (A-Frame remove(), or an older destructive invalid path) disposed them.
+    // This keeps a component that was torn down and re-updated rebuildable
+    // (HIGH-1).
+    this.ensureScaffold();
+
     if (!data.start || !data.end) {
-      this.remove();
+      // Transient invalid endpoints (e.g. a selector that resolves only after
+      // load, or a runtime start/end swap that briefly clears one end). Do NOT
+      // dispose geometry/group (that's remove()'s job, the teardown hook) —
+      // just hide everything and bail. A later valid update() rebuilds cleanly
+      // (HIGH-1).
+      this.hideAll();
       return;
     }
 
@@ -231,6 +242,40 @@ AFRAME.registerComponent('connecting-line2', {
 
     // Defer the initial position update until scene load completes.
     setTimeout(this.updateLinePosition);
+  },
+
+  // -------------------------------------------------------------------------
+  // Scaffold (re)creation + non-destructive hide (HIGH-1).
+  // -------------------------------------------------------------------------
+
+  // (Re)create group + shared geometry if a prior remove() disposed them.
+  // Idempotent: a no-op on the normal path where init() already built them.
+  ensureScaffold() {
+    if (!this.group) {
+      this.group = new Group();
+      if (this.el && this.el.object3D) this.el.object3D.add(this.group);
+    }
+    if (!this.lineGeometry) {
+      this.lineGeometry = new LineGeometry();
+      // Geometry was rebuilt — overlays (if any) reference a disposed
+      // geometry, so force a clean overlay rebuild + reposition.
+      this.overlays = [];
+      this.overlayParams = [];
+      this._prevStart.set(NaN, NaN, NaN);
+      this._prevEnd.set(NaN, NaN, NaN);
+    }
+  },
+
+  // Non-destructive "transient invalid" path: hide every overlay line and the
+  // tube. Disposes nothing — a later valid update() un-hides via
+  // applyMaterialStyle / updateTube (HIGH-1).
+  hideAll() {
+    for (let i = 0; i < this.overlays.length; i++) {
+      if (this.overlays[i].line) this.overlays[i].line.visible = false;
+    }
+    if (this.cylinder) {
+      this.cylinder.setAttribute('visible', false);
+    }
   },
 
   // -------------------------------------------------------------------------
@@ -284,6 +329,9 @@ AFRAME.registerComponent('connecting-line2', {
       // always < dashSize => never discards.
       const o = this.overlays[0];
       if (o) {
+        // Solid trick: a dashed material with a huge dashSize and zero gap
+        // never discards (mod(lineDistance) < dashSize always holds), so it
+        // draws as a continuous solid line without flipping USE_DASH (D22).
         o.material.dashSize = 1e9;
         o.material.gapSize = 0;
         o.material.dashOffset = 0;
@@ -306,14 +354,26 @@ AFRAME.registerComponent('connecting-line2', {
     // width: 0 => the Line2 stroke is invisible (D9) — NOT linewidth:0 (AA sliver).
     const lineVisible = data.visible && data.width > 0;
 
+    // LOW-a: only a translucent line, or co-located overlays sharing geometry
+    // (multi-element dash patterns), need alpha blending + depthWrite off. A
+    // solid single line stays opaque + depth-writing, matching the legacy
+    // THREE.Line it replaces (avoids sort/transparency artefacts).
+    const needsBlend = data.opacity < 1 || this.overlays.length > 1;
+
     for (let i = 0; i < this.overlays.length; i++) {
       const m = this.overlays[i].material;
       m.color.set(data.color);
-      m.worldUnits = worldUnits;
+      // worldUnits toggles a #define in the LineMaterial shader => recompile
+      // required, but ONLY when it actually changes (D22/MED-1). Plain uniform
+      // writes (color/linewidth/opacity) need no needsUpdate.
+      if (m.worldUnits !== worldUnits) {
+        m.worldUnits = worldUnits;
+        m.needsUpdate = true;
+      }
       m.linewidth = data.width;
       m.opacity = data.opacity;
-      m.transparent = true;
-      m.needsUpdate = true;
+      m.transparent = needsBlend;
+      m.depthWrite = !needsBlend;
       // visibility is also gated by the degenerate (zero-length) guard (D25),
       // applied in updateLinePosition.
       this.overlays[i].line.visible = lineVisible && !this._degenerate;
@@ -359,6 +419,16 @@ AFRAME.registerComponent('connecting-line2', {
     // resolution sync (always, from the single getViewport basis).
     if (viewportHeightPx > 0 && viewportWidthPx > 0) {
       material.uniforms.resolution.value.set(viewportWidthPx, viewportHeightPx);
+    }
+
+    // LOW-b: the solid case (no overlay params) renders via the dashSize:1e9
+    // solid trick — there is no real period to scale, so skip the
+    // worldPerPixel / dashScale computation entirely. dashScale:1 keeps the
+    // huge dashSize huge (never discards); we don't rely on the 1e9 sentinel
+    // surviving the clamp.
+    if (!this.overlayParams || this.overlayParams.length === 0) {
+      material.dashScale = 1;
+      return;
     }
 
     // dashUnits / dashScale resolution (D8). Recomputed per overlay each frame
@@ -599,7 +669,9 @@ AFRAME.registerComponent('connecting-line2', {
     // Calls can be deferred; handle the case where the component was removed.
     if (!this.data) return;
     if (!this.data.start || !this.data.end) {
-      this.remove();
+      // Transient invalid (HIGH-1) — hide, don't dispose. A subsequent valid
+      // update()/updateLinePosition rebuilds + re-shows.
+      this.hideAll();
       return;
     }
     if (!this.lineGeometry) return;

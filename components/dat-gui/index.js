@@ -141,6 +141,27 @@ AFRAME.registerComponent('dat-gui', {
         addProp(componentData, prop)
         break
 
+      case 'array': {
+        // dat.GUI has no native array control. Render a text input seeded with
+        // the current array joined by spaces; on change, parse space/comma-
+        // separated numbers and set the property to the parsed array (empty
+        // input => []). Lets array props (e.g. connecting-line2 `dash`) be
+        // edited live.
+        const arrayRecords = this.arrayRecords || (this.arrayRecords = {})
+        const current = componentData[prop]
+        arrayRecords[prop] = Array.isArray(current) ? current.join(' ') : ''
+        const arrayController = folder.add(arrayRecords, prop)
+        arrayController.onFinishChange(() => {
+          const raw = arrayRecords[prop]
+          const parsed = (raw || '')
+            .split(/[\s,]+/)
+            .filter(s => s.length > 0)
+            .map(Number)
+          this.el.setAttribute(componentName, prop, parsed)
+        })
+        break
+      }
+
       case 'color':
         this.colorRecords[prop] = {r: 0, g: 0, b: 0}
         _color.set(componentData[prop])

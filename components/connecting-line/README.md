@@ -117,6 +117,18 @@ global `THREE` (the one A-Frame's renderer uses); only the
 `super-three` dev-dependency, pinned to the version A-Frame ships —
 `super-three@0.173.5`).
 
+> **Consuming from a bundler (Vite / Webpack / Rollup).** The `three`
+> external is configured with `externalsType: 'global'`, so the built UMD
+> reads `THREE` from the runtime global (`self["THREE"]`) in **every** module
+> branch — including the CommonJS branch (it emits `self["THREE"]`, **not**
+> `require("THREE")`). This keeps the CDN `<script>` path working and lets a
+> bundler consume the dist without a `three` module resolution — **provided
+> the host page exposes `THREE` as a global** (A-Frame does this
+> automatically by assigning `window.THREE`). A bundler consumer that does
+> **not** load A-Frame / does not set a global `THREE` must provide one. This
+> is an acceptance gate for the simple-draw Vite migration (TASK-140): verify
+> `globalThis.THREE` is populated before this component first renders.
+
 > **Build coupling note.** The deep `three/examples/jsm/lines/…` import relies
 > on `super-three`'s `exports["./examples/jsm/*"]` wildcard. If a future
 > A-Frame bumps its `super-three`, re-pin the `super-three` dev-dependency to

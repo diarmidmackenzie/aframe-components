@@ -4,7 +4,7 @@
 <head>
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
   <script src="../dist/connecting-line.js"></script>
-  <link rel="stylesheet" href="../../../../styles.css">
+  <link rel="stylesheet" href="../../../styles.css">
   <script>
     // D11 manual checks:
     //  - swap the end entity of a line at runtime; the listeners must rebind
@@ -18,6 +18,23 @@
       const el = document.getElementById('swapLine');
       el.removeAttribute('connecting-line__sw');
     }
+
+    // LOW-d: raycast / hover delta check. The legacy wrapper now renders a
+    // THREE.Line2 (+ optional tube) rather than the old 1px THREE.Line. Line2
+    // is a wide mesh-like stroke and raycasts differently from the old thin
+    // line. Hover the dedicated hover line below: on mouseenter it goes
+    // yellow, on mouseleave back to #18f — so the raycast hit behaviour of the
+    // Line2-backed legacy line can be eyeballed against expectations.
+    AFRAME.registerComponent('hover-recolor', {
+      init() {
+        this.el.addEventListener('mouseenter', () => {
+          this.el.setAttribute('connecting-line__hov', 'color', 'yellow');
+        });
+        this.el.addEventListener('mouseleave', () => {
+          this.el.setAttribute('connecting-line__hov', 'color', '#18f');
+        });
+      }
+    });
   </script>
 </head>
 
@@ -45,7 +62,12 @@
   <a-scene background="color:black">
     <a-mixin id="animate-right" animation="property:position; from: 0 0 0; to: 0.5 0 0; dir: alternate; loop: true"></a-mixin>
     <a-mixin id="animate-left" animation="property:position; from: 0 0 0; to: -0.5 0 0; dir: alternate; loop: true"></a-mixin>
-    <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+    <a-entity camera look-controls wasd-controls position="0 1.6 0">
+      <!-- LOW-d: mouse cursor + raycaster so the Line2-backed legacy line can
+           be hovered (raycast/hover delta vs the old THREE.Line). -->
+      <a-cursor fuse="false" raycaster="objects: [connecting-line__hov]; far: 30"
+                color="#0ff" position="0 0 -1" geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.01"></a-cursor>
+    </a-entity>
 
     <a-entity id="container" position="0 1.5 -4">
       <a-entity mixin="animate-left">
@@ -71,6 +93,14 @@
     <a-sphere id="swB2" position=" 1.5 -1.5 -3" radius="0.06" color="#f80"></a-sphere>
     <a-entity id="swapLine"
       connecting-line__sw="start:#swA; end:#swB; color:lime; width:0.05; updateEvent:moved"></a-entity>
+
+    <!-- LOW-d: dedicated hoverable legacy line. width:0.06 => it carries a tube
+         (real raycastable mesh) plus the Line2 base stripe — hover it to see
+         the raycast/hover behaviour of the Line2-backed legacy line. -->
+    <a-sphere id="hovA" position="-1.5 -2.2 -3" radius="0.06" color="#08f"></a-sphere>
+    <a-sphere id="hovB" position=" 1.5 -2.2 -3" radius="0.06" color="#08f"></a-sphere>
+    <a-entity hover-recolor
+      connecting-line__hov="start:#hovA; end:#hovB; color:#18f; width:0.06"></a-entity>
   </a-scene>
 </body>
 
