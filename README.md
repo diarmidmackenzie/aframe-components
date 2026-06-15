@@ -21,7 +21,8 @@ If you are looking for a particular component or functionality, and can't find i
 
 | **Component**                                                | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [connecting-line](https://diarmidmackenzie.github.io/aframe-components/components/connecting-line) | Draw a line between two entities.                            |
+| [connecting-line2](https://diarmidmackenzie.github.io/aframe-components/components/connecting-line) | Draw a line between two entities, with width control (px/world units) and dash patterns (Line2-based). The recommended component. |
+| [connecting-line](https://diarmidmackenzie.github.io/aframe-components/components/connecting-line) | Legacy line-between-entities component, kept for back-compat; new users should prefer connecting-line2. |
 | [frame-rate](https://diarmidmackenzie.github.io/aframe-components/components/frame-rate) | Request that the browser targets a particular frame rate (e.g. 60fps, 72fps). |
 | [adaptive-frame-rate](https://diarmidmackenzie.github.io/aframe-components/components/adaptive-frame-rate) | Adapts the browser frame rate to best match the performance of the app. |
 | [polygon-wireframe](https://diarmidmackenzie.github.io/aframe-components/components/polygon-wireframe) | Display wireframes composed of polygons, rather than triangles. |

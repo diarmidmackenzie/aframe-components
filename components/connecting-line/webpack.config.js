@@ -24,14 +24,15 @@ module.exports = {
   // super-three). This is load-bearing: bundling a second copy of core three
   // would break instanceof / raycast / rendering against the scene renderer.
   //
-  // externalsType: 'global' (MED-2) makes the external resolve to a runtime
-  // global lookup (globalThis.THREE / window.THREE / root.THREE) in EVERY
-  // module-system branch of the UMD wrapper — crucially the CommonJS branch
-  // emits `globalThis["THREE"]`, NOT `require("THREE")`. The CDN <script> path
-  // still works (global THREE), AND bundlers like Vite (simple-draw / TASK-140)
-  // can resolve it without a `three` module resolution — provided the consumer
-  // exposes THREE as a global. The deep examples/jsm imports remain bundled
-  // and are unaffected by externalsType.
+  // externalsType: 'global' (MED-2) makes the external resolve to the bundle's
+  // runtime global (the UMD wrapper's root — `self["THREE"]` in the emitted
+  // bundle), NOT `require("THREE")`. This works for the two supported targets:
+  // the CDN <script> path (global THREE on window/self) and bundlers like Vite
+  // (simple-draw / TASK-140) running in the browser, where `self` is defined and
+  // the consumer exposes THREE as a global. NOTE: because the lookup is the
+  // wrapper root (`self`), a Node/SSR/worker consumer that lacks `self` must
+  // shim it — out of scope here (this is a browser/A-Frame component). The deep
+  // examples/jsm imports remain bundled and are unaffected by externalsType.
   externalsType: 'global',
   externals: [
     ({ request }, cb) => (request === 'three' ? cb(null, 'THREE') : cb()),
