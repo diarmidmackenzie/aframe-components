@@ -203,7 +203,11 @@ AFRAME.registerComponent('dat-gui', {
         break
 
       case 'selector':
-        this.selectorRecords[prop] = componentData[prop] ? componentData[prop].id : ""
+        // Seed with a valid id selector ("#id"), not the bare id — otherwise
+        // committing the field (blur) fails selector validation and goes red.
+        this.selectorRecords[prop] = componentData[prop] && componentData[prop].id
+          ? '#' + componentData[prop].id
+          : ""
         const controller = folder.add(this.selectorRecords, prop)
 
         const isSelectorValid = (selector) => {
