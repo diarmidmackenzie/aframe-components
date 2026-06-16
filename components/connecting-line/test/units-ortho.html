@@ -11,12 +11,10 @@
   <script>
     // A-Frame's built-in `camera` component is ALWAYS a PerspectiveCamera (it
     // has no orthographic option), so this demo supplies its own
-    // THREE.OrthographicCamera and swaps it in as the scene's render camera.
-    // The swap mechanism (setObject3D + sceneEl.camera + components.camera.camera)
-    // is adapted from SimpleDraw's 2D-editor orthographic camera, shared here
-    // under this package's MIT licence; mouse-wheel zoom + resize are added for
-    // the demo. Put this alongside the built-in `camera` component so A-Frame
-    // doesn't inject a default camera.
+    // THREE.OrthographicCamera and swaps it in as the scene's render camera
+    // (setObject3D + sceneEl.camera + components.camera.camera), with mouse-wheel
+    // zoom + resize handling. Put this alongside the built-in `camera` component
+    // so A-Frame doesn't inject a default camera.
     AFRAME.registerComponent('ortho-camera', {
       schema: {
         height: { default: 6 },     // world height visible at zoom 1
