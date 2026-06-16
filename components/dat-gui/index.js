@@ -128,13 +128,23 @@ AFRAME.registerComponent('dat-gui', {
     }
 
     switch (type) {
-      case 'int':
-        addProp(componentData, prop, NaN, NaN, 1)
+      case 'int': {
+        const min = Number.isFinite(schemaData.min) ? schemaData.min : NaN
+        const max = Number.isFinite(schemaData.max) ? schemaData.max : NaN
+        addProp(componentData, prop, min, max, 1)
         break
+      }
 
-      case 'number':
-        addProp(componentData, prop, NaN, NaN, undefined)
+      case 'number': {
+        // Pass through schema min/max/step when present, so a bounded numeric
+        // (e.g. opacity 0..1) renders as a slider. Unbounded numbers keep NaN
+        // bounds, which dat.GUI shows as a drag-to-change number field.
+        const min = Number.isFinite(schemaData.min) ? schemaData.min : NaN
+        const max = Number.isFinite(schemaData.max) ? schemaData.max : NaN
+        const step = Number.isFinite(schemaData.step) ? schemaData.step : undefined
+        addProp(componentData, prop, min, max, step)
         break
+      }
 
       case 'string':
       case 'boolean':

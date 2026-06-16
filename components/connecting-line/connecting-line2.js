@@ -57,7 +57,7 @@ AFRAME.registerComponent('connecting-line2', {
     end: { type: 'selector' },
     endOffset: { type: 'vec3', default: { x: 0, y: 0, z: 0 } },
     color: { type: 'color', default: '#74BEC1' },
-    opacity: { type: 'number', default: 1 },
+    opacity: { type: 'number', default: 1, min: 0, max: 1 },
     visible: { default: true },
     lengthAdjustment: { default: 'none', oneOf: ['none', 'scale', 'extend', 'absolute'] },
     lengthAdjustmentValue: { type: 'number' },
