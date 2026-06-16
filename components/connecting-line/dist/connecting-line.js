@@ -188,7 +188,21 @@ AFRAME.registerComponent('connecting-line2', {
     // New / changed.
     width: { type: 'number', default: 1 },
     units: { default: 'px', oneOf: ['px', 'm'] },
-    dash: { type: 'array', default: [] },
+    // A-Frame's stock `array` type splits on commas and yields an array of
+    // STRINGS — which our numeric sanitiser rejects as non-finite. Parse to
+    // numbers explicitly, and accept whitespace- OR comma-separated values
+    // (matching the dat-gui array control) so `dash: 12 8` and `dash: 12, 8`
+    // both work. Genuine garbage (e.g. `dash: 12 x`) yields NaN, which
+    // sanitiseDash then catches and falls back to solid.
+    dash: {
+      default: [],
+      parse: (value) => {
+        if (Array.isArray(value)) return value.map(Number);
+        if (typeof value !== 'string') return [];
+        return value.split(/[\s,]+/).filter((s) => s.length > 0).map(Number);
+      },
+      stringify: (value) => (Array.isArray(value) ? value.join(' ') : '')
+    },
     dashUnits: { default: 'auto', oneOf: ['auto', 'px', 'm'] },
     dashOffset: { type: 'number', default: 0 },
     tubeRadius: { type: 'number', default: 0 },
@@ -750,8 +764,13 @@ AFRAME.registerComponent('connecting-line2', {
     if (moved) {
       // Shared geometry rewrite: one geometry, all overlays reference it.
       this.lineGeometry.setPositions([start.x, start.y, start.z, end.x, end.y, end.z]);
-      // Dashing requires computeLineDistances after any endpoint change.
-      this.lineGeometry.computeLineDistances();
+      // Dashing requires line distances after any endpoint change.
+      // computeLineDistances() is a Line2/LineSegments2 (object) method, NOT a
+      // geometry method — it reads the geometry's instance positions and writes
+      // the instanceDistance attributes back onto that same geometry. Because
+      // every overlay shares this one geometry, calling it on a single overlay
+      // updates the distances for all of them.
+      if (this.overlays.length > 0) this.overlays[0].line.computeLineDistances();
       this._prevStart.copy(start);
       this._prevEnd.copy(end);
     }
