@@ -15,6 +15,14 @@ This package registers **two** A-Frame components:
   `connecting-line2`. Its schema is documented in
   [`connecting-line-legacy.md`](./connecting-line-legacy.md).
 
+## Requirements
+
+**A-Frame ≥ 1.5.0.** `connecting-line2` renders with `THREE.Line2`
+(`three/examples/jsm/lines`), which needs the version of `THREE` that A-Frame
+1.5.0+ ships — it does **not** render on A-Frame ≤ 1.4.0. (The `0.3.x` releases
+used `THREE.Line` from core and ran on any A-Frame version; this minimum is new
+in `0.4.0` — see [Upgrading from 0.3.x](#upgrading-from-03x).)
+
 ## Installation
 
 > **⚠ Breaking packaging change in 0.4.0.** This package now ships a built
@@ -41,6 +49,37 @@ npm install aframe-connecting-line
 ```js
 import 'aframe-connecting-line'; // registers both components
 ```
+
+## Upgrading from 0.3.x
+
+The `connecting-line` schema is **unchanged**, so existing configurations keep
+working without edits. Three things need action on upgrade:
+
+1. **Change the include path.** The package now ships a built bundle, not raw
+   source. Update
+   `<script src=".../connecting-line/index.js">` →
+   `<script src=".../connecting-line/dist/connecting-line.js">` (or `.min.js`).
+   npm / bundler consumers: `main` and `module` already point at the bundle —
+   just ensure `THREE` is exposed as a global (A-Frame sets `window.THREE`
+   automatically).
+
+2. **Check your A-Frame version: 1.5.0 is now the minimum.** The base stroke is
+   now `THREE.Line2`, which needs the `THREE` A-Frame 1.5.0+ ships; on A-Frame
+   ≤ 1.4.0 the lines will not render. If you can't upgrade A-Frame, stay on a
+   `0.3.x` release.
+
+3. **Be aware of two minor behaviour changes** (no config change needed):
+   - The base stroke is a `THREE.Line2` instead of a 1px `THREE.Line` — it is
+     antialiased, and the too-thin-on-high-resolution-export hairline is fixed.
+     Its raycast / hover hit threshold differs slightly from the old thin line.
+   - `updateEvent` listeners are now cleaned up / rebound correctly: the
+     end-entity listener is removed on teardown (previously leaked), and
+     listeners rebind when the `start` / `end` **entity** is swapped at runtime
+     (previously they stayed on the old entity).
+
+**New capabilities** — width, units, dash patterns, and the optional tube — are
+on the new `connecting-line2` component (schema below). New work should use
+`connecting-line2`; the `connecting-line` wrapper exists only for back-compat.
 
 ## `connecting-line2` schema
 
@@ -154,11 +193,13 @@ npm run dist:prod   # minified build only
   Raw `<script src=".../connecting-line/index.js">` includes must change to
   `.../connecting-line/dist/connecting-line.js`. Schema/render behaviour is
   otherwise backward-compatible.
+- **⚠ Minimum A-Frame version is now 1.5.0** (was: any). `connecting-line2`'s
+  `THREE.Line2` stroke needs the `THREE` A-Frame 1.5.0+ ships; it does not
+  render on A-Frame ≤ 1.4.0.
 - **Behaviour changes for legacy `connecting-line` consumers:**
   - The base stroke is now a `THREE.Line2` instead of a 1px `THREE.Line`
-    (antialiased; fixes the too-thin hairline on high-resolution export). For
-    `width > 0` configs the crisp 1px base line reads as a faint centre-stripe
-    down the cylinder axis.
+    (antialiased; fixes the too-thin hairline on high-resolution export). Its
+    raycast / hover hit threshold differs slightly from the old thin line.
   - The `updateEvent` end-entity listener is now correctly removed on teardown
     (was previously leaked).
   - `updateEvent` listeners now rebind when the `start` / `end` **entity**

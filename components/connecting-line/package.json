@@ -29,6 +29,9 @@
   "homepage": "https://diarmidmackenzie.github.io/aframe-components/components/connecting-line#readme",
   "author": "Diarmid Mackenzie",
   "license": "MIT",
+  "peerDependencies": {
+    "aframe": ">=1.5.0"
+  },
   "devDependencies": {
     "super-three": "0.173.5",
     "webpack": "^5.75.0",
