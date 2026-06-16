@@ -199,7 +199,11 @@ npm run dist:prod   # minified build only
 - **Behaviour changes for legacy `connecting-line` consumers:**
   - The base stroke is now a `THREE.Line2` instead of a 1px `THREE.Line`
     (antialiased; fixes the too-thin hairline on high-resolution export). Its
-    raycast / hover hit threshold differs slightly from the old thin line.
+    raycast / hover hit threshold differs slightly from the old thin line. For
+    `width > 0` (cylinder) configs the base line is still drawn in addition to
+    the cylinder, exactly as in 0.3.x: up close an opaque cylinder covers it,
+    but it keeps the line visible once the cylinder's rendered diameter falls
+    below ~1px (far away or zoomed out) — which is its original purpose.
   - The `updateEvent` end-entity listener is now correctly removed on teardown
     (was previously leaked).
   - `updateEvent` listeners now rebind when the `start` / `end` **entity**
