@@ -51,6 +51,7 @@ function mod(x, p) {
   return ((x % p) + p) % p;
 }
 
+//!! Now we have a modular structure, put these utility functions into a separate module and import them.
 // ---------------------------------------------------------------------------
 // Dash decomposition (Decision 3 / spec Worked Examples E1–E8; D7/D26).
 //
@@ -159,9 +160,13 @@ AFRAME.registerComponent('connecting-line2', {
 
   init() {
     // Group holding all overlay Line2s.
+    //!! Naming.  this.overlayLineGroup would be better - group is very vague.
     this.group = new Group();
     this.el.object3D.add(this.group);
 
+    //!! References to D5 etc. are meaningless in the context of this repo.  Don't rely on them.
+    //!! Explain what you mean (but only if extra explanation is really required)
+    //!! Could add a DESIGN-NOTES.md to this repo if there is valuable explanation that doesn't fit naturally inline in the code.
     // Single shared geometry (D5) — all overlays reference it; never per-overlay.
     this.lineGeometry = new LineGeometry();
 
@@ -192,6 +197,7 @@ AFRAME.registerComponent('connecting-line2', {
     // Lazily (re)create geometry / group / overlays if a prior teardown
     // (A-Frame remove(), or an older destructive invalid path) disposed them.
     // This keeps a component that was torn down and re-updated rebuildable
+    //!! What does HIGH-1 mean?
     // (HIGH-1).
     this.ensureScaffold();
 
@@ -205,8 +211,14 @@ AFRAME.registerComponent('connecting-line2', {
       return;
     }
 
+    //!! From here to the call to this.applyMaterialStyles should be a function
+    //!! it exclusively deals with dash patterns, so for code readability by people who don't care about dash patterns,
+    //!! a single function that they can see deals with dash patterns is preferable.
     // Resolve dash -> overlay descriptors.
     const sanitised = sanitiseDash(data.dash, this.attrName);
+    //!! Needless let here?
+    //!! Prefer const pubicOffset = Number.isFinite(data.dashOffset) ? data.dashOffset : 0;
+    //!! Variable naming, what does public mean?
     let publicOffset = data.dashOffset;
     if (!Number.isFinite(publicOffset)) publicOffset = 0; // D18
     const newParams = decomposeDash(sanitised, publicOffset);
@@ -303,6 +315,11 @@ AFRAME.registerComponent('connecting-line2', {
         depthWrite: false,
         transparent: true
       });
+
+      //!! I have no idea what seedResolution does, either from the name, or from reading the code.
+      //!! Function names should be self-explanatory where possible.  Else an explanatory comment that explains WHY
+      //!! something is necessary, not just what it's doing.
+      //!! OK, now I understand this is related to the onBeforeRender code.  This whole thing needs a better explanation.
       // Seed resolution from the live drawing buffer, NOT the default (1,1) —
       // one-shot fallback overwritten by the first getViewport() sync (D4/D17).
       this.seedResolution(material);
@@ -476,6 +493,7 @@ AFRAME.registerComponent('connecting-line2', {
     material.dashScale = dashScale;
   },
 
+  //!! Could be an imported utility function?
   // worldPerPixel: world units per device pixel of vertical viewport.
   //  - orthographic (exact): ((top - bottom) / zoom) / viewportHeightPx
   //  - perspective forced-px (D8, known limitation): approximate at the line
@@ -502,6 +520,7 @@ AFRAME.registerComponent('connecting-line2', {
 
   // Sum of the currently-applied dash period (for the dashScale clamp). For the
   // solid case the period is 0 (clamp skipped).
+  //!! Would it be clearer if this was a utility function getPeriod(this.overlayParams)?
   currentPeriod() {
     const p = this.overlayParams;
     if (!p || p.length === 0) return 0;
