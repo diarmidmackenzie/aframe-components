@@ -5,6 +5,9 @@
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
   <script src="../dist/connecting-line.js"></script>
   <link rel="stylesheet" href="../../../styles.css">
+  <style>
+    .text-overlay { max-height: 38vh; max-width: 28rem; overflow-y: auto; }
+  </style>
   <script>
     // Listener-rebind manual checks:
     //  - swap the end entity of a line at runtime; the listeners must rebind
@@ -41,13 +44,21 @@
 <body>
   <div class="text-overlay">
     <p>connecting-line (LEGACY wrapper) back-compat</p>
-    <p>Top: width omitted (1px line). Middle: width:0 (no visible stroke).
-       Bottom: width:0.1 (cylinder + faint 1px centre-stripe — accepted minor
-       AA upgrade). All render through the wrapper, which maps onto
+    <p>In the legacy schema <code>width</code> is the <em>cylinder</em> radius
+       driver, so "no width" means "no cylinder" — a plain 1px line:</p>
+    <ul>
+      <li><b>Top (red)</b> — <code>width</code> omitted → a 1px line.</li>
+      <li><b>Middle (yellow)</b> — <code>width:0</code> → also a 1px line
+        (identical to omitted; legacy <code>width:0</code> means "no cylinder",
+        not "invisible").</li>
+      <li><b>Bottom (cyan)</b> — <code>width:0.1</code> → a 1px line plus a
+        cylinder of radius 0.05.</li>
+    </ul>
+    <p>All render through the wrapper, which maps the legacy schema onto
        connecting-line2.</p>
     <p>Buttons (right): "Swap end" rebinds the updateEvent line to a new end
-       entity (listeners must follow). "Remove" tears the line down
-       (end listener must be removed).</p>
+       entity (listeners must follow). "Remove" tears the line down (the end
+       listener must be removed).</p>
   </div>
   <a class="code-link" target="_blank"
     href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/legacy-compat.html">
