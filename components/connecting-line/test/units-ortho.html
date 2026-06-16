@@ -9,29 +9,58 @@
     .text-overlay { max-height: 38vh; max-width: 28rem; overflow-y: auto; }
   </style>
   <script>
-    // Mouse-wheel zoom for the orthographic camera, so you can drive the zoom
-    // yourself and watch px units stay screen-constant while m units scale with
-    // the world. Wheel is bound to the canvas so scrolling the description box
-    // still works.
-    AFRAME.registerComponent('ortho-zoom-controls', {
-      schema: { min: { default: 0.3 }, max: { default: 4 }, step: { default: 1.1 } },
+    // A-Frame's built-in `camera` component is ALWAYS a PerspectiveCamera (it
+    // has no orthographic option), so this demo supplies its own
+    // THREE.OrthographicCamera and swaps it in as the scene's render camera —
+    // the same approach simple-draw's 2D editor uses. Mouse-wheel adjusts the
+    // camera's zoom so you can drive it yourself. Put this alongside the
+    // built-in `camera` component (so A-Frame doesn't inject a default camera).
+    AFRAME.registerComponent('ortho-camera', {
+      schema: {
+        height: { default: 6 },     // world height visible at zoom 1
+        near: { default: 0.1 }, far: { default: 100 },
+        minZoom: { default: 0.3 }, maxZoom: { default: 5 }, step: { default: 1.1 }
+      },
       init() {
-        this.onWheel = (e) => {
-          const cam = this.el.getObject3D('camera');
-          if (!cam || !cam.isOrthographicCamera) return;
-          e.preventDefault();
-          const factor = e.deltaY < 0 ? this.data.step : 1 / this.data.step;
-          cam.zoom = Math.min(this.data.max, Math.max(this.data.min, cam.zoom * factor));
-          cam.updateProjectionMatrix();
-        };
         const sceneEl = this.el.sceneEl;
-        const attach = () => sceneEl.canvas &&
+        const setup = () => {
+          const h = this.data.height / 2;
+          const aspect = () => window.innerWidth / window.innerHeight;
+          const cam = this.cam = new THREE.OrthographicCamera(
+            -h * aspect(), h * aspect(), h, -h, this.data.near, this.data.far);
+          cam.updateProjectionMatrix();
+
+          // Swap our ortho camera in for the perspective one the `camera`
+          // component created, both as the entity's object3D (inherits the
+          // entity transform) and as the scene's active render camera.
+          this.el.setObject3D('camera', cam);
+          sceneEl.camera = cam;
+          if (this.el.components.camera) this.el.components.camera.camera = cam;
+
+          this.onResize = () => {
+            cam.left = -h * aspect(); cam.right = h * aspect();
+            cam.top = h; cam.bottom = -h;
+            cam.updateProjectionMatrix();
+          };
+          window.addEventListener('resize', this.onResize);
+
+          // Wheel zoom, bound to the canvas so the description box still scrolls.
+          this.onWheel = (e) => {
+            e.preventDefault();
+            const f = e.deltaY < 0 ? this.data.step : 1 / this.data.step;
+            cam.zoom = Math.min(this.data.maxZoom, Math.max(this.data.minZoom, cam.zoom * f));
+            cam.updateProjectionMatrix();
+          };
           sceneEl.canvas.addEventListener('wheel', this.onWheel, { passive: false });
-        if (sceneEl.canvas) attach(); else sceneEl.addEventListener('loaded', attach);
+        };
+        if (sceneEl.hasLoaded && sceneEl.canvas) setup();
+        else sceneEl.addEventListener('loaded', setup);
       },
       remove() {
-        const c = this.el.sceneEl.canvas;
-        if (c) c.removeEventListener('wheel', this.onWheel);
+        if (this.onResize) window.removeEventListener('resize', this.onResize);
+        if (this.onWheel && this.el.sceneEl.canvas) {
+          this.el.sceneEl.canvas.removeEventListener('wheel', this.onWheel);
+        }
       }
     });
   </script>
@@ -64,9 +93,7 @@
   </a>
 
   <a-scene background="color:black">
-    <a-entity id="orthoCam"
-      camera="active:true; orthographic:true; left:-3; right:3; top:3; bottom:-3"
-      ortho-zoom-controls position="0 0 5"></a-entity>
+    <a-entity id="orthoCam" camera ortho-camera position="0 0 5"></a-entity>
 
     <a-sphere id="al" position="-2  1.5 0" radius="0.03" color="#888"></a-sphere>
     <a-sphere id="ar" position=" 2  1.5 0" radius="0.03" color="#888"></a-sphere>
