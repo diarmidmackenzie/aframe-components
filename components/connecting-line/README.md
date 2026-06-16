@@ -107,7 +107,7 @@ renders as a small square, not a round dot.
 
 Developer test harnesses live in [`test/`](./test/): `width.html`,
 `length-factor.html`, `event-updates.html`, `start-end-disappear.html`,
-`dashed.html`, `units.html`, `legacy-compat.html`.
+`dashed.html`, `units-ortho.html`, `units-perspective.html`, `legacy-compat.html`.
 
 ## Building
 
