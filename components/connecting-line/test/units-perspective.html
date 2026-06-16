@@ -12,23 +12,19 @@
 
 <body>
   <div class="text-overlay">
-    <p>connecting-line2: dash units — <b>perspective approach</b></p>
-    <p>The camera moves toward and away from two lines that are angled in depth
-       (near end at the front, far end behind). Watch the dashes as it approaches:</p>
+    <p>connecting-line2: dash units — <b>perspective</b></p>
+    <p><b>Use WASD to move toward / away and the mouse to look around.</b> Both
+       lines face you at the same distance. As you walk up to them:</p>
     <ul>
       <li><b>top (cyan)</b> — <code>dashUnits:auto</code> (resolves to world units
-        under a perspective camera): dashes are world-anchored — stable, and they
-        foreshorten naturally with the line's depth. This is the comfortable
-        default for VR.</li>
+        under a perspective camera): a <em>fixed number</em> of dashes anchored in
+        the world. They grow on screen along with the line — stable and natural.
+        This is the comfortable VR default.</li>
       <li><b>bottom (red)</b> — <code>dashUnits</code> forced to <code>px</code>:
-        the dashes shrink/grow as the camera approaches — the disorienting effect
-        that <code>auto</code> deliberately avoids under perspective.</li>
+        each dash stays a <em>constant size on screen</em>, so as the line fills
+        more of your view <em>more dashes appear</em> — the disorienting effect
+        that <code>auto</code> avoids under perspective.</li>
     </ul>
-    <p><b>Note on the forced-px line:</b> world-per-pixel is approximated at the
-       line's <em>midpoint</em> depth, so the dash density is uniform along each
-       line at any instant (it does not drift near-vs-far within one line). What
-       changes is the overall density as the camera's distance to the midpoint
-       changes frame-to-frame.</p>
     <p>Orthographic / zoom behaviour is shown on
        <a href="units-ortho.html">units-ortho.html</a>.</p>
   </div>
@@ -38,17 +34,16 @@
   </a>
 
   <a-scene background="color:#001">
-    <a-entity id="approachCam" camera position="0 1.6 6"
-      animation="property:position; from:0 1.6 6; to:0 1.6 0.5; dir:alternate; loop:true; dur:5000"></a-entity>
+    <a-entity camera look-controls wasd-controls position="0 1.6 3"></a-entity>
 
-    <!-- Lines angled in depth: near end at z=0, far end at z=-4. -->
-    <a-sphere id="pa" position="-1.5 1.6  0" radius="0.05" color="#888"></a-sphere>
-    <a-sphere id="pb" position=" 1.5 1.6 -4" radius="0.05" color="#888"></a-sphere>
-    <a-sphere id="pc" position="-1.5 0.8  0" radius="0.05" color="#888"></a-sphere>
-    <a-sphere id="pd" position=" 1.5 0.8 -4" radius="0.05" color="#888"></a-sphere>
+    <!-- Both lines face the camera at constant depth (z = -3). -->
+    <a-sphere id="pa" position="-1.5 2.1 -3" radius="0.04" color="#888"></a-sphere>
+    <a-sphere id="pb" position=" 1.5 2.1 -3" radius="0.04" color="#888"></a-sphere>
+    <a-sphere id="pc" position="-1.5 1.3 -3" radius="0.04" color="#888"></a-sphere>
+    <a-sphere id="pd" position=" 1.5 1.3 -3" radius="0.04" color="#888"></a-sphere>
 
-    <a-text color="white" value="auto (=m, stable)"               position="-2 2.0 0" scale="0.5 0.5 0.5"></a-text>
-    <a-text color="white" value="FORCED px (shrinks on approach)" position="-2 1.2 0" scale="0.5 0.5 0.5"></a-text>
+    <a-text color="white" value="auto (=m): dashes anchored in the world"  position="-1.5 2.3 -3" scale="0.5 0.5 0.5"></a-text>
+    <a-text color="white" value="FORCED px: dashes fixed on screen"        position="-1.5 1.5 -3" scale="0.5 0.5 0.5"></a-text>
 
     <a-entity
       connecting-line2__pa="start:#pa; end:#pb; color:cyan; width:6; units:px; dash:0.3 0.2; dashUnits:auto"

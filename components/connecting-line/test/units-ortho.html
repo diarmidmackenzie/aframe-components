@@ -9,16 +9,29 @@
     .text-overlay { max-height: 38vh; max-width: 28rem; overflow-y: auto; }
   </style>
   <script>
-    // Animate camera.zoom up and down so you can watch px units stay
-    // screen-constant while m units scale with the world.
-    AFRAME.registerComponent('ortho-zoom', {
-      schema: { min: { default: 0.4 }, max: { default: 2.5 }, period: { default: 6000 } },
-      tick(t) {
-        const cam = this.el.getObject3D('camera');
-        if (!cam || !cam.isOrthographicCamera) return;
-        const phase = (Math.sin((t / this.data.period) * Math.PI * 2) + 1) / 2;
-        cam.zoom = this.data.min + phase * (this.data.max - this.data.min);
-        cam.updateProjectionMatrix();
+    // Mouse-wheel zoom for the orthographic camera, so you can drive the zoom
+    // yourself and watch px units stay screen-constant while m units scale with
+    // the world. Wheel is bound to the canvas so scrolling the description box
+    // still works.
+    AFRAME.registerComponent('ortho-zoom-controls', {
+      schema: { min: { default: 0.3 }, max: { default: 4 }, step: { default: 1.1 } },
+      init() {
+        this.onWheel = (e) => {
+          const cam = this.el.getObject3D('camera');
+          if (!cam || !cam.isOrthographicCamera) return;
+          e.preventDefault();
+          const factor = e.deltaY < 0 ? this.data.step : 1 / this.data.step;
+          cam.zoom = Math.min(this.data.max, Math.max(this.data.min, cam.zoom * factor));
+          cam.updateProjectionMatrix();
+        };
+        const sceneEl = this.el.sceneEl;
+        const attach = () => sceneEl.canvas &&
+          sceneEl.canvas.addEventListener('wheel', this.onWheel, { passive: false });
+        if (sceneEl.canvas) attach(); else sceneEl.addEventListener('loaded', attach);
+      },
+      remove() {
+        const c = this.el.sceneEl.canvas;
+        if (c) c.removeEventListener('wheel', this.onWheel);
       }
     });
   </script>
@@ -26,8 +39,9 @@
 
 <body>
   <div class="text-overlay">
-    <p>connecting-line2: width &amp; dash units — <b>orthographic, auto-zooming</b></p>
-    <p>The camera zoom cycles automatically. Watch how each line responds:</p>
+    <p>connecting-line2: width &amp; dash units — <b>orthographic</b></p>
+    <p><b>Scroll the mouse wheel over the scene to zoom in and out.</b> Watch how
+       each line responds:</p>
     <ul>
       <li><b>top (cyan)</b> — width in <code>px</code>, <code>dashUnits:auto</code>
         (resolves to px under an ortho camera): width <em>and</em> dashes stay
@@ -52,7 +66,7 @@
   <a-scene background="color:black">
     <a-entity id="orthoCam"
       camera="active:true; orthographic:true; left:-3; right:3; top:3; bottom:-3"
-      ortho-zoom position="0 0 5"></a-entity>
+      ortho-zoom-controls position="0 0 5"></a-entity>
 
     <a-sphere id="al" position="-2  1.5 0" radius="0.03" color="#888"></a-sphere>
     <a-sphere id="ar" position=" 2  1.5 0" radius="0.03" color="#888"></a-sphere>
