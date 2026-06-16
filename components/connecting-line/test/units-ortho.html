@@ -44,11 +44,27 @@
           };
           window.addEventListener('resize', this.onResize);
 
-          // Wheel zoom, bound to the canvas so the description box still scrolls.
+          // Wheel zoom centred on the cursor, bound to the canvas so the
+          // description box still scrolls.
           this.onWheel = (e) => {
             e.preventDefault();
+            const rect = sceneEl.canvas.getBoundingClientRect();
+            const ndcx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            const ndcy = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+            const zoomOld = cam.zoom;
             const f = e.deltaY < 0 ? this.data.step : 1 / this.data.step;
-            cam.zoom = Math.min(this.data.maxZoom, Math.max(this.data.minZoom, cam.zoom * f));
+            const zoomNew = Math.min(this.data.maxZoom, Math.max(this.data.minZoom, zoomOld * f));
+            if (zoomNew === zoomOld) return;
+            // Pan so the world point under the cursor stays put. Visible
+            // half-extent = frustum half-size / zoom; the camera has no rotation
+            // here, so its local x/y are world x/y.
+            const hwOld = (cam.right - cam.left) / (2 * zoomOld);
+            const hhOld = (cam.top - cam.bottom) / (2 * zoomOld);
+            const hwNew = (cam.right - cam.left) / (2 * zoomNew);
+            const hhNew = (cam.top - cam.bottom) / (2 * zoomNew);
+            this.el.object3D.position.x += ndcx * (hwOld - hwNew);
+            this.el.object3D.position.y += ndcy * (hhOld - hhNew);
+            cam.zoom = zoomNew;
             cam.updateProjectionMatrix();
           };
           sceneEl.canvas.addEventListener('wheel', this.onWheel, { passive: false });

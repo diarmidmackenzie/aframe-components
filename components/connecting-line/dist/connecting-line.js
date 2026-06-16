@@ -531,13 +531,17 @@ AFRAME.registerComponent('connecting-line2', {
 
     let dashScale = 1 / wpp;
 
-    // Clamp the on-screen period (dashScale * period, in px) to ~[0.5px,
-    // viewportHeightPx] so it never collapses below a pixel or blows up beyond
-    // a single screen-height dash.
+    // Bound the ON-SCREEN period — (period / dashScale) / wpp, in px — to
+    // ~[0.5px, viewportHeightPx], so extreme zoom degrades gracefully (toward
+    // solid at one rail, a single screen-tall dash at the other) instead of
+    // collapsing or overflowing. The bounds MUST include wpp: in the normal
+    // range this is then a no-op — a px dash's on-screen period is `period` px
+    // by construction, so dashScale stays at 1/wpp and the dashes track the
+    // camera (screen-constant) rather than being pinned to a fixed world size.
     const period = (0,_dash_pattern_js__WEBPACK_IMPORTED_MODULE_4__.getPeriod)(this.overlayParams);
     if (period > 0) {
-      const minScale = 0.5 / period;                  // low rail: collapse->solid
-      const maxScale = viewportHeightPx / period;     // high rail: single dash
+      const minScale = period / (viewportHeightPx * wpp); // on-screen period == viewport height
+      const maxScale = period / (0.5 * wpp);              // on-screen period == 0.5px
       if (dashScale < minScale) dashScale = minScale;
       if (dashScale > maxScale) dashScale = maxScale;
     }
