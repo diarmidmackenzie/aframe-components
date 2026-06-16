@@ -125,9 +125,8 @@ global `THREE` (the one A-Frame's renderer uses); only the
 > bundler consume the dist without a `three` module resolution — **provided
 > the host page exposes `THREE` as a global** (A-Frame does this
 > automatically by assigning `window.THREE`). A bundler consumer that does
-> **not** load A-Frame / does not set a global `THREE` must provide one. This
-> is an acceptance gate for the simple-draw Vite migration (TASK-140): verify
-> `globalThis.THREE` is populated before this component first renders.
+> **not** load A-Frame / does not set a global `THREE` must provide one —
+> verify `globalThis.THREE` is populated before this component first renders.
 
 > **Build coupling note.** The deep `three/examples/jsm/lines/…` import relies
 > on `super-three`'s `exports["./examples/jsm/*"]` wildcard. If a future

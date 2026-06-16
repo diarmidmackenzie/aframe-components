@@ -24,12 +24,12 @@ module.exports = {
   // super-three). This is load-bearing: bundling a second copy of core three
   // would break instanceof / raycast / rendering against the scene renderer.
   //
-  // externalsType: 'global' (MED-2) makes the external resolve to the bundle's
+  // externalsType: 'global' makes the external resolve to the bundle's
   // runtime global (the UMD wrapper's root — `self["THREE"]` in the emitted
   // bundle), NOT `require("THREE")`. This works for the two supported targets:
   // the CDN <script> path (global THREE on window/self) and bundlers like Vite
-  // (simple-draw / TASK-140) running in the browser, where `self` is defined and
-  // the consumer exposes THREE as a global. NOTE: because the lookup is the
+  // running in the browser, where `self` is defined and the consumer exposes
+  // THREE as a global. NOTE: because the lookup is the
   // wrapper root (`self`), a Node/SSR/worker consumer that lacks `self` must
   // shim it — out of scope here (this is a browser/A-Frame component). The deep
   // examples/jsm imports remain bundled and are unaffected by externalsType.
@@ -43,8 +43,8 @@ module.exports = {
     // super-three package (the same version A-Frame's renderer runs). NOTE:
     // this relies on super-three's `exports["./examples/jsm/*"]` wildcard in
     // its package.json; a future re-pin that drops that wildcard would break
-    // the deep import. The Step-0 grep assertion (LineMaterial shader source
-    // present in the bundle) guards against a silent regression.
+    // the deep import. Confirm the built bundle still contains the LineMaterial
+    // shader source after any super-three bump (guards against silent regression).
     alias: {
       three: 'super-three'
     }

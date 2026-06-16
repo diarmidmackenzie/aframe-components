@@ -19,23 +19,23 @@ return /******/ (() => { // webpackBootstrap
 
 /* global AFRAME */
 //
-// connecting-line — paper-thin BACKWARD-COMPATIBILITY wrapper (Decision 1).
+// connecting-line — paper-thin BACKWARD-COMPATIBILITY wrapper.
 //
 // Keeps the exact 0.3.3 schema. Renders NOTHING itself: it maps its schema
 // onto a `connecting-line2__<id>` on the same entity and lets that component
 // do all the work.
 //
-// Wrapper isolation (D6): this component touches ONLY `connecting-line2__<id>`
-// — never `line__...`, never any geometry or Line2/tube object directly. The
+// Wrapper isolation: this component touches ONLY `connecting-line2__<id>` —
+// never any geometry or Line2/tube object directly. The
 // `connecting-line2__<id>` instance name is RESERVED — consumers must not
 // collide on it.
 //
-// Mapping (D20):
+// Mapping:
 //   shared fields (start/end/offsets/color/opacity/visible/
 //     lengthAdjustment/lengthAdjustmentValue/updateEvent) -> passthrough
 //   width  -> connecting-line2 { width: 1, units: 'px',
 //                                tubeRadius: width > 0 ? width / 2 : 0 }
-//            width: 1 ALWAYS (D20) — the crisp 1px base Line2 reads as a faint
+//            width is ALWAYS 1 — the crisp 1px base Line2 reads as a faint
 //            centre-stripe when a tube is present; accepted as a minor AA
 //            upgrade (the old THREE.Line was drawn too, just 1px).
 //   segments / shader -> passthrough to the tube.
@@ -84,7 +84,7 @@ AFRAME.registerComponent('connecting-line', {
       lengthAdjustment: data.lengthAdjustment,
       lengthAdjustmentValue: data.lengthAdjustmentValue,
       updateEvent: data.updateEvent,
-      // width: 1 ALWAYS (D20); the legacy cylinder becomes the tube.
+      // width is ALWAYS 1; the legacy cylinder becomes the tube.
       width: 1,
       units: 'px',
       tubeRadius: data.width > 0 ? data.width / 2 : 0,
@@ -94,7 +94,7 @@ AFRAME.registerComponent('connecting-line', {
   },
 
   remove() {
-    // Remove ONLY our reserved child attribute (D6). The child
+    // Remove ONLY our reserved child attribute. The child
     // connecting-line2.remove() is idempotent (safe if already gone).
     if (this.el) {
       this.el.removeAttribute(this.childAttr());
@@ -118,6 +118,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var three_examples_jsm_lines_Line2_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! three/examples/jsm/lines/Line2.js */ "./node_modules/super-three/examples/jsm/lines/Line2.js");
 /* harmony import */ var three_examples_jsm_lines_LineGeometry_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! three/examples/jsm/lines/LineGeometry.js */ "./node_modules/super-three/examples/jsm/lines/LineGeometry.js");
 /* harmony import */ var three_examples_jsm_lines_LineMaterial_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! three/examples/jsm/lines/LineMaterial.js */ "./node_modules/super-three/examples/jsm/lines/LineMaterial.js");
+/* harmony import */ var _dash_pattern_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./dash-pattern.js */ "./dash-pattern.js");
+/* harmony import */ var _line_math_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./line-math.js */ "./line-math.js");
 /* global AFRAME */
 //
 // connecting-line2 — the Line2-based connecting line component.
@@ -140,9 +142,11 @@ __webpack_require__.r(__webpack_exports__);
 //  - dash shader discards where mod(dashScale*lineDistance + dashOffset,
 //    dashSize + gapSize) > dashSize  => drawn where the mod < dashSize.
 //  - LineSegments2.onBeforeRender(renderer) sets material.resolution from
-//    renderer.getViewport().z/.w (device px). We OVERRIDE that hook (D15) and
-//    use getViewport() as the SINGLE basis for both resolution and
-//    worldPerPixel.
+//    renderer.getViewport().z/.w (device px). We override that hook (see
+//    DESIGN-NOTES.md) and use getViewport() as the SINGLE basis for both
+//    resolution and worldPerPixel.
+
+
 
 
 
@@ -150,8 +154,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 // ---------------------------------------------------------------------------
-// Module-scoped scratch vectors (lifted from the legacy IIFE, converted from
-// `new THREE.Vector3()` to named imports per D23).
+// Module-scoped scratch vectors (reused across calls to avoid per-frame
+// allocation).
 // ---------------------------------------------------------------------------
 const _startVector = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3();
 const _endVector = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3();
@@ -159,95 +163,12 @@ const _lineVector = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3();
 const _posVector = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3();
 const _deltaVector = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3();
 const _lineDirectionVector = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3();
+const _midpointWorld = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3();
 const _up = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 1, 0);
 // getViewport(target) calls target.copy(_viewport) where _viewport is a
 // THREE.Vector4 — so the target must be a real Vector4. `three` is
 // externalized, so this import costs nothing in the bundle.
 const _viewport = new three__WEBPACK_IMPORTED_MODULE_0__.Vector4();
-
-// True mathematical modulo (JS % is sign-of-dividend) — used everywhere dash
-// offsets/periods are wrapped (D7).
-function mod(x, p) {
-  return ((x % p) + p) % p;
-}
-
-// ---------------------------------------------------------------------------
-// Dash decomposition (Decision 3 / spec Worked Examples E1–E8; D7/D26).
-//
-// Given a sanitised, even-length, finite dash array [d0,g0,d1,g1,...]:
-//   period = sum(dash)
-//   for each dash run d_k starting at cumulative position `pos`:
-//     - if d_k === 0: emit NO overlay (skip; invisible run) — D7.
-//     - else emit { dashSize: d_k, gapSize: period - d_k,
-//                   dashOffset: mod(period - pos, period) }
-// The public dashOffset (wrapped mod period) is added to each overlay's
-// offset. Returns [] for the solid case (caller renders one non-dashed line).
-// ---------------------------------------------------------------------------
-function decomposeDash(dash, publicDashOffset) {
-  const overlays = [];
-  let period = 0;
-  for (let i = 0; i < dash.length; i++) period += dash[i];
-  if (period <= 0) return overlays; // solid
-
-  const offsetExtra = mod(publicDashOffset, period);
-  let pos = 0;
-  for (let k = 0; k < dash.length; k += 2) {
-    const dashLen = dash[k];
-    if (dashLen > 0) {
-      overlays.push({
-        dashSize: dashLen,
-        gapSize: period - dashLen,
-        dashOffset: mod(period - pos, period) + offsetExtra
-      });
-    }
-    pos += dashLen;
-    if (k + 1 < dash.length) pos += dash[k + 1]; // advance past the gap
-  }
-  return overlays;
-}
-
-// Sanitise the raw `dash` schema array into either [] (solid) or a clean
-// even-length finite array (D7/D18). Order of checks is load-bearing:
-// non-finite FIRST (NaN slips past every numeric comparison).
-function sanitiseDash(raw, attrName) {
-  if (!Array.isArray(raw) || raw.length === 0) return [];
-
-  // D18 — non-finite guard FIRST.
-  if (!raw.every(Number.isFinite)) {
-    console.warn(`connecting-line2 (${attrName}): dash contains a non-finite value; rendering solid.`);
-    return [];
-  }
-
-  // Odd-length: drop the trailing element (warn).
-  let arr = raw;
-  if (arr.length % 2 === 1) {
-    console.warn(`connecting-line2 (${attrName}): dash has an odd number of elements; dropping the trailing element.`);
-    arr = arr.slice(0, arr.length - 1);
-  }
-  if (arr.length === 0) return [];
-
-  // Negative entries: reject whole array (do not silently clamp mid-pattern).
-  if (arr.some((v) => v < 0)) {
-    console.warn(`connecting-line2 (${attrName}): dash contains a negative value; rendering solid.`);
-    return [];
-  }
-
-  const period = arr.reduce((a, b) => a + b, 0);
-  if (period <= 0) return []; // all-zero array => solid (no warn; benign)
-
-  // All dash runs zero-length but period > 0 (e.g. [0,5,0,5]): every run is
-  // invisible yet the array is well-formed — warn + solid (D18).
-  let anyDash = false;
-  for (let k = 0; k < arr.length; k += 2) {
-    if (arr[k] > 0) { anyDash = true; break; }
-  }
-  if (!anyDash) {
-    console.warn(`connecting-line2 (${attrName}): dash has only zero-length dash runs; rendering solid.`);
-    return [];
-  }
-
-  return arr;
-}
 
 AFRAME.registerComponent('connecting-line2', {
 
@@ -279,23 +200,23 @@ AFRAME.registerComponent('connecting-line2', {
 
   init() {
     // Group holding all overlay Line2s.
-    this.group = new three__WEBPACK_IMPORTED_MODULE_0__.Group();
-    this.el.object3D.add(this.group);
+    this.overlayLineGroup = new three__WEBPACK_IMPORTED_MODULE_0__.Group();
+    this.el.object3D.add(this.overlayLineGroup);
 
-    // Single shared geometry (D5) — all overlays reference it; never per-overlay.
+    // Single shared geometry — all overlays reference it; never per-overlay.
     this.lineGeometry = new three_examples_jsm_lines_LineGeometry_js__WEBPACK_IMPORTED_MODULE_2__.LineGeometry();
 
     // overlays: [{ line: Line2, material: LineMaterial }]
     this.overlays = [];
 
     // The resolved overlay descriptors currently applied (for in-place mutation
-    // when the count is unchanged, D22).
+    // when the overlay count is unchanged).
     this.overlayParams = [];
 
     // Tube cylinder (legacy width path) — created lazily.
     this.cylinder = null;
 
-    // Endpoint guard (D5) — stored once on the component, not per-overlay.
+    // Endpoint guard — stored once on the component, not per-overlay.
     this._prevStart = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3(NaN, NaN, NaN);
     this._prevEnd = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3(NaN, NaN, NaN);
     this._degenerate = false;
@@ -311,40 +232,21 @@ AFRAME.registerComponent('connecting-line2', {
 
     // Lazily (re)create geometry / group / overlays if a prior teardown
     // (A-Frame remove(), or an older destructive invalid path) disposed them.
-    // This keeps a component that was torn down and re-updated rebuildable
-    // (HIGH-1).
+    // This keeps a component that was torn down and re-updated rebuildable.
     this.ensureScaffold();
 
     if (!data.start || !data.end) {
       // Transient invalid endpoints (e.g. a selector that resolves only after
       // load, or a runtime start/end swap that briefly clears one end). Do NOT
       // dispose geometry/group (that's remove()'s job, the teardown hook) —
-      // just hide everything and bail. A later valid update() rebuilds cleanly
-      // (HIGH-1).
+      // just hide everything and bail. A later valid update() rebuilds cleanly.
       this.hideAll();
       return;
     }
 
-    // Resolve dash -> overlay descriptors.
-    const sanitised = sanitiseDash(data.dash, this.attrName);
-    let publicOffset = data.dashOffset;
-    if (!Number.isFinite(publicOffset)) publicOffset = 0; // D18
-    const newParams = decomposeDash(sanitised, publicOffset);
-    // Solid => one non-dashed overlay.
-    const targetCount = newParams.length === 0 ? 1 : newParams.length;
-
-    // (D24) Geometry reposition happens in updateLinePosition (deferred below);
-    // here we (re)build/mutate overlays. The deferred updateLinePosition then
-    // sets positions + computeLineDistances on the shared geometry, so all
-    // overlays anchor to fresh line distances.
-
-    if (this.overlays.length !== targetCount) {
-      this.rebuildOverlays(targetCount);
-    }
-
-    // Apply per-overlay dash params (in place — no dispose, no recompile; D22).
-    this.applyOverlayParams(newParams);
-    this.overlayParams = newParams;
+    // Everything dash-related lives behind this single call, so a reader who
+    // doesn't care about dashes can skip straight past it.
+    this.resolveDashOverlays();
 
     // Width / units / color / opacity / visibility on every overlay material.
     this.applyMaterialStyle();
@@ -352,7 +254,7 @@ AFRAME.registerComponent('connecting-line2', {
     // Tube (legacy cylinder path), rendered in addition to the line.
     this.updateTube();
 
-    // Re-bind listeners if updateEvent OR start/end entity changed (D11).
+    // Re-bind listeners if updateEvent OR start/end entity changed.
     this.updateEventListeners();
 
     // Force a geometry refresh on the next position update (schema may have
@@ -365,15 +267,41 @@ AFRAME.registerComponent('connecting-line2', {
   },
 
   // -------------------------------------------------------------------------
-  // Scaffold (re)creation + non-destructive hide (HIGH-1).
+  // Dash resolution — the one entry point for all dash-pattern handling.
+  // -------------------------------------------------------------------------
+
+  // Resolve the schema `dash`/`dashOffset` into overlay descriptors and apply
+  // them. Geometry repositioning happens later in updateLinePosition (deferred
+  // from update()); that pass sets positions + computeLineDistances on the
+  // shared geometry so every overlay anchors to fresh line distances.
+  resolveDashOverlays() {
+    const data = this.data;
+
+    const sanitised = (0,_dash_pattern_js__WEBPACK_IMPORTED_MODULE_4__.sanitiseDash)(data.dash, this.attrName);
+    const userDashOffset = Number.isFinite(data.dashOffset) ? data.dashOffset : 0;
+    const newParams = (0,_dash_pattern_js__WEBPACK_IMPORTED_MODULE_4__.decomposeDash)(sanitised, userDashOffset);
+
+    // Solid => one non-dashed overlay.
+    const targetCount = newParams.length === 0 ? 1 : newParams.length;
+    if (this.overlays.length !== targetCount) {
+      this.rebuildOverlays(targetCount);
+    }
+
+    // Apply per-overlay dash params in place (no dispose, no shader recompile).
+    this.applyOverlayParams(newParams);
+    this.overlayParams = newParams;
+  },
+
+  // -------------------------------------------------------------------------
+  // Scaffold (re)creation + non-destructive hide.
   // -------------------------------------------------------------------------
 
   // (Re)create group + shared geometry if a prior remove() disposed them.
   // Idempotent: a no-op on the normal path where init() already built them.
   ensureScaffold() {
-    if (!this.group) {
-      this.group = new three__WEBPACK_IMPORTED_MODULE_0__.Group();
-      if (this.el && this.el.object3D) this.el.object3D.add(this.group);
+    if (!this.overlayLineGroup) {
+      this.overlayLineGroup = new three__WEBPACK_IMPORTED_MODULE_0__.Group();
+      if (this.el && this.el.object3D) this.el.object3D.add(this.overlayLineGroup);
     }
     if (!this.lineGeometry) {
       this.lineGeometry = new three_examples_jsm_lines_LineGeometry_js__WEBPACK_IMPORTED_MODULE_2__.LineGeometry();
@@ -388,7 +316,7 @@ AFRAME.registerComponent('connecting-line2', {
 
   // Non-destructive "transient invalid" path: hide every overlay line and the
   // tube. Disposes nothing — a later valid update() un-hides via
-  // applyMaterialStyle / updateTube (HIGH-1).
+  // applyMaterialStyle / updateTube.
   hideAll() {
     for (let i = 0; i < this.overlays.length; i++) {
       if (this.overlays[i].line) this.overlays[i].line.visible = false;
@@ -399,59 +327,57 @@ AFRAME.registerComponent('connecting-line2', {
   },
 
   // -------------------------------------------------------------------------
-  // Overlay lifecycle (D5/D22)
+  // Overlay lifecycle
   // -------------------------------------------------------------------------
 
   // Build exactly `count` overlay Line2s, disposing the previous set first.
-  // Only called when the overlay COUNT changes (D22).
+  // Only called when the overlay COUNT changes (param-only changes mutate in
+  // place via applyOverlayParams instead).
   rebuildOverlays(count) {
     // Dispose + remove every existing overlay.
     for (let i = 0; i < this.overlays.length; i++) {
       const o = this.overlays[i];
-      this.group.remove(o.line);
+      this.overlayLineGroup.remove(o.line);
       if (o.material) o.material.dispose();
     }
     this.overlays = [];
 
     for (let i = 0; i < count; i++) {
       const material = new three_examples_jsm_lines_LineMaterial_js__WEBPACK_IMPORTED_MODULE_3__.LineMaterial({
-        // Persistent dashed material — never toggle USE_DASH (D22). The solid
-        // case is driven by params (single full-length dash), not `dashed:false`.
+        // Always a dashed material — we never toggle the USE_DASH define (that
+        // forces a shader recompile). The solid case is driven by params (a
+        // single full-length dash), not by `dashed: false`.
         dashed: true,
-        // Multi-overlay z discipline (D10): disable depthWrite so co-located
-        // dashes on the shared geometry don't z-fight.
+        // Co-located overlays share one geometry; disable depthWrite so
+        // overlapping dash runs don't z-fight.
         depthWrite: false,
         transparent: true
       });
-      // Seed resolution from the live drawing buffer, NOT the default (1,1) —
-      // one-shot fallback overwritten by the first getViewport() sync (D4/D17).
-      this.seedResolution(material);
+
+      this.initResolutionUniform(material);
 
       const line = new three_examples_jsm_lines_Line2_js__WEBPACK_IMPORTED_MODULE_1__.Line2(this.lineGeometry, material);
-      // Wire the per-render sync override (D15). Line2 inherits a stock
-      // onBeforeRender from LineSegments2; we consciously override it.
+      // Override the stock LineSegments2 onBeforeRender so resolution and
+      // dashScale share a single getViewport() basis (see DESIGN-NOTES.md).
       line.onBeforeRender = this.onBeforeRender;
       // Stash a back-reference so the shared hook can find this overlay's
       // material + descriptor.
       line.userData.clOverlayIndex = i;
-      // Keep frustum culling ON (D21) — do not blanket-disable.
-      this.group.add(line);
+      // Keep frustum culling ON — do not blanket-disable.
+      this.overlayLineGroup.add(line);
       this.overlays.push({ line, material });
     }
   },
 
   // Apply the dash descriptors to the (already-correct-count) overlays in
-  // place (D22 — no dispose, no shader recompile).
+  // place — no dispose, no shader recompile.
   applyOverlayParams(params) {
     if (params.length === 0) {
-      // Solid: single overlay, single full-length "dash" => effectively solid
-      // without flipping USE_DASH. dashSize huge, gapSize 0 => mod(...) is
-      // always < dashSize => never discards.
+      // Solid: a dashed material with a huge dashSize and zero gap never
+      // discards (mod(lineDistance) < dashSize always holds), so it draws as a
+      // continuous solid line without flipping the USE_DASH define.
       const o = this.overlays[0];
       if (o) {
-        // Solid trick: a dashed material with a huge dashSize and zero gap
-        // never discards (mod(lineDistance) < dashSize always holds), so it
-        // draws as a continuous solid line without flipping USE_DASH (D22).
         o.material.dashSize = 1e9;
         o.material.gapSize = 0;
         o.material.dashOffset = 0;
@@ -471,10 +397,11 @@ AFRAME.registerComponent('connecting-line2', {
   applyMaterialStyle() {
     const data = this.data;
     const worldUnits = data.units === 'm';
-    // width: 0 => the Line2 stroke is invisible (D9) — NOT linewidth:0 (AA sliver).
+    // width: 0 => hide the stroke entirely. Do NOT set linewidth:0 (that leaves
+    // a sub-pixel antialiased sliver).
     const lineVisible = data.visible && data.width > 0;
 
-    // LOW-a: only a translucent line, or co-located overlays sharing geometry
+    // Only a translucent line, or co-located overlays sharing geometry
     // (multi-element dash patterns), need alpha blending + depthWrite off. A
     // solid single line stays opaque + depth-writing, matching the legacy
     // THREE.Line it replaces (avoids sort/transparency artefacts).
@@ -483,9 +410,9 @@ AFRAME.registerComponent('connecting-line2', {
     for (let i = 0; i < this.overlays.length; i++) {
       const m = this.overlays[i].material;
       m.color.set(data.color);
-      // worldUnits toggles a #define in the LineMaterial shader => recompile
-      // required, but ONLY when it actually changes (D22/MED-1). Plain uniform
-      // writes (color/linewidth/opacity) need no needsUpdate.
+      // worldUnits toggles a #define in the LineMaterial shader, so it needs a
+      // recompile — but ONLY when it actually changes. Plain uniform writes
+      // (color/linewidth/opacity) need no needsUpdate.
       if (m.worldUnits !== worldUnits) {
         m.worldUnits = worldUnits;
         m.needsUpdate = true;
@@ -494,7 +421,7 @@ AFRAME.registerComponent('connecting-line2', {
       m.opacity = data.opacity;
       m.transparent = needsBlend;
       m.depthWrite = !needsBlend;
-      // visibility is also gated by the degenerate (zero-length) guard (D25),
+      // visibility is also gated by the degenerate (zero-length) guard,
       // applied in updateLinePosition.
       this.overlays[i].line.visible = lineVisible && !this._degenerate;
     }
@@ -526,8 +453,9 @@ AFRAME.registerComponent('connecting-line2', {
   },
 
   // -------------------------------------------------------------------------
-  // Per-render sync — OVERRIDES Line2.onBeforeRender (D15).
-  // Single resolution basis = renderer.getViewport() (device px).
+  // Per-render sync — OVERRIDES Line2's stock onBeforeRender so resolution and
+  // dashScale share a single renderer.getViewport() basis (device px). See
+  // DESIGN-NOTES.md for why per-render-pass resolution sync is required.
   // -------------------------------------------------------------------------
   onBeforeRender(renderer, scene, camera, geometry, material /*, group */) {
     if (!material || !material.uniforms || !material.uniforms.resolution) return;
@@ -541,22 +469,21 @@ AFRAME.registerComponent('connecting-line2', {
       material.uniforms.resolution.value.set(viewportWidthPx, viewportHeightPx);
     }
 
-    // LOW-b: the solid case (no overlay params) renders via the dashSize:1e9
-    // solid trick — there is no real period to scale, so skip the
-    // worldPerPixel / dashScale computation entirely. dashScale:1 keeps the
-    // huge dashSize huge (never discards); we don't rely on the 1e9 sentinel
-    // surviving the clamp.
+    // The solid case (no overlay params) renders via the dashSize:1e9 solid
+    // trick — there is no real period to scale, so skip the worldPerPixel /
+    // dashScale computation entirely. dashScale:1 keeps the huge dashSize huge
+    // (never discards).
     if (!this.overlayParams || this.overlayParams.length === 0) {
       material.dashScale = 1;
       return;
     }
 
-    // dashUnits / dashScale resolution (D8). Recomputed per overlay each frame
-    // — no cache (D16). Cheap: a few float ops + getters.
+    // Resolve dashUnits -> dashScale, recomputed every frame (no cache: it's a
+    // few float ops, and the camera/viewport can change between passes).
     const data = this.data;
 
-    // WebXR ArrayCamera: never read zoom/top/bottom off it (D8) — use a
-    // representative sub-camera.
+    // WebXR ArrayCamera has no meaningful zoom/top/bottom of its own — use a
+    // representative sub-camera (per-eye) instead.
     let cam = camera;
     if (cam && cam.isArrayCamera && cam.cameras && cam.cameras.length) {
       cam = cam.cameras[0];
@@ -572,20 +499,28 @@ AFRAME.registerComponent('connecting-line2', {
       return;
     }
 
-    // effective === 'px' — need worldPerPixel.
-    const worldPerPixel = this.computeWorldPerPixel(cam, viewportHeightPx);
+    // effective === 'px' — convert the px period to world units via the
+    // viewport's world-per-pixel scale at the line midpoint.
+    if (cam.isPerspectiveCamera) cam.updateMatrixWorld();
+    // _prevStart/_prevEnd are the endpoints in the el's LOCAL space; the
+    // midpoint, brought to world space, is the depth the perspective
+    // approximation evaluates at.
+    _midpointWorld.addVectors(this._prevStart, this._prevEnd).multiplyScalar(0.5);
+    this.el.object3D.localToWorld(_midpointWorld);
+    const wpp = (0,_line_math_js__WEBPACK_IMPORTED_MODULE_5__.worldPerPixel)(cam, viewportHeightPx, _midpointWorld);
 
-    // Guards (D8/D17): require viewportHeightPx > 0 && worldPerPixel > 0 before
-    // syncing; otherwise skip and keep the previous value (never write NaN).
-    if (!(viewportHeightPx > 0) || !(worldPerPixel > 0) || !Number.isFinite(worldPerPixel)) {
+    // Require viewportHeightPx > 0 && wpp > 0 before syncing; otherwise skip
+    // and keep the previous value (never write NaN).
+    if (!(viewportHeightPx > 0) || !(wpp > 0) || !Number.isFinite(wpp)) {
       return;
     }
 
-    let dashScale = 1 / worldPerPixel;
+    let dashScale = 1 / wpp;
 
-    // Concrete dashScale clamp (D19): keep the on-screen period
-    // (dashScale * period, in px) within ~[0.5px, viewportHeightPx].
-    const period = this.currentPeriod();
+    // Clamp the on-screen period (dashScale * period, in px) to ~[0.5px,
+    // viewportHeightPx] so it never collapses below a pixel or blows up beyond
+    // a single screen-height dash.
+    const period = (0,_dash_pattern_js__WEBPACK_IMPORTED_MODULE_4__.getPeriod)(this.overlayParams);
     if (period > 0) {
       const minScale = 0.5 / period;                  // low rail: collapse->solid
       const maxScale = viewportHeightPx / period;     // high rail: single dash
@@ -596,42 +531,13 @@ AFRAME.registerComponent('connecting-line2', {
     material.dashScale = dashScale;
   },
 
-  // worldPerPixel: world units per device pixel of vertical viewport.
-  //  - orthographic (exact): ((top - bottom) / zoom) / viewportHeightPx
-  //  - perspective forced-px (D8, known limitation): approximate at the line
-  //    midpoint depth: (2 * tan(fov/2) * dist) / viewportHeightPx.
-  computeWorldPerPixel(cam, viewportHeightPx) {
-    if (cam.isOrthographicCamera) {
-      const worldHeight = (cam.top - cam.bottom) / (cam.zoom || 1);
-      return worldHeight / viewportHeightPx;
-    }
-    if (cam.isPerspectiveCamera) {
-      // Distance from the camera to the line midpoint (world space).
-      _posVector.addVectors(this._prevStart, this._prevEnd).multiplyScalar(0.5);
-      // _prevStart/_prevEnd are in the el's LOCAL space; bring to world.
-      this.el.object3D.localToWorld(_posVector);
-      cam.updateMatrixWorld();
-      _deltaVector.setFromMatrixPosition(cam.matrixWorld);
-      const dist = _posVector.distanceTo(_deltaVector);
-      const fovRad = (cam.fov * Math.PI) / 180;
-      const worldHeight = 2 * Math.tan(fovRad / 2) * dist;
-      return worldHeight / viewportHeightPx;
-    }
-    return 0;
-  },
-
-  // Sum of the currently-applied dash period (for the dashScale clamp). For the
-  // solid case the period is 0 (clamp skipped).
-  currentPeriod() {
-    const p = this.overlayParams;
-    if (!p || p.length === 0) return 0;
-    // Each overlay carries dashSize + gapSize == period.
-    return p[0].dashSize + p[0].gapSize;
-  },
-
-  // Seed material.resolution from the live drawing buffer (one-shot fallback,
-  // D4) — overwritten by the first getViewport() sync.
-  seedResolution(material) {
+  // Set the LineMaterial `resolution` uniform to the real drawing-buffer size
+  // once, at material creation. WHY: Line2 defaults resolution to (1,1) until
+  // its first onBeforeRender runs. A raycast or render that happens before that
+  // first pass would otherwise use (1,1) — breaking hit-testing and giving a
+  // wrong-width first frame. This is a one-shot fallback; the per-render
+  // getViewport() sync in onBeforeRender takes over from the first frame.
+  initResolutionUniform(material) {
     const renderer = this.el.sceneEl && this.el.sceneEl.renderer;
     if (renderer && material.uniforms && material.uniforms.resolution) {
       const size = renderer.getDrawingBufferSize(new three__WEBPACK_IMPORTED_MODULE_0__.Vector2());
@@ -642,7 +548,7 @@ AFRAME.registerComponent('connecting-line2', {
   },
 
   // -------------------------------------------------------------------------
-  // Event-listener machinery (lifted from legacy, with D11 fixes).
+  // Event-listener machinery (lifted from the legacy component).
   // -------------------------------------------------------------------------
   updateEventListeners() {
     const { data, listenerData } = this;
@@ -683,8 +589,6 @@ AFRAME.registerComponent('connecting-line2', {
       listenerData.start.removeEventListener(listenerData.event, this.updateLinePosition);
     }
     if (listenerData.end) {
-      // D11 fix: was `listenerData.start.removeEventListener` (copy-paste bug)
-      // so the end listener was never removed.
       listenerData.end.removeEventListener(listenerData.event, this.updateLinePosition);
     }
     if (this.el) {
@@ -695,13 +599,13 @@ AFRAME.registerComponent('connecting-line2', {
   },
 
   // -------------------------------------------------------------------------
-  // Teardown (D5) — idempotent, null-guarded.
+  // Teardown — idempotent, null-guarded.
   // -------------------------------------------------------------------------
   remove() {
     // Dispose all overlay materials + remove the Line2s.
     for (let i = 0; i < this.overlays.length; i++) {
       const o = this.overlays[i];
-      if (this.group) this.group.remove(o.line);
+      if (this.overlayLineGroup) this.overlayLineGroup.remove(o.line);
       if (o.material) o.material.dispose();
     }
     this.overlays = [];
@@ -712,10 +616,10 @@ AFRAME.registerComponent('connecting-line2', {
       this.lineGeometry = null;
     }
 
-    if (this.group && this.el && this.el.object3D) {
-      this.el.object3D.remove(this.group);
+    if (this.overlayLineGroup && this.el && this.el.object3D) {
+      this.el.object3D.remove(this.overlayLineGroup);
     }
-    this.group = null;
+    this.overlayLineGroup = null;
 
     if (this.cylinder && this.el) {
       // Guard: child may already be gone.
@@ -789,7 +693,7 @@ AFRAME.registerComponent('connecting-line2', {
     // Calls can be deferred; handle the case where the component was removed.
     if (!this.data) return;
     if (!this.data.start || !this.data.end) {
-      // Transient invalid (HIGH-1) — hide, don't dispose. A subsequent valid
+      // Transient invalid — hide, don't dispose. A subsequent valid
       // update()/updateLinePosition rebuilds + re-shows.
       this.hideAll();
       return;
@@ -812,11 +716,10 @@ AFRAME.registerComponent('connecting-line2', {
 
     this.adjustLength(start, end);
 
-    // Cheap endpoint-moved guard (D5) — compare against stored previous, NOT
-    // per-overlay.
+    // Cheap endpoint-moved guard — compare against the stored previous values.
     const moved = !start.equals(this._prevStart) || !end.equals(this._prevEnd);
 
-    // Zero-length (degenerate) guard (D25): if start == end, hide all overlays
+    // Zero-length (degenerate) guard: if start == end, hide all overlays
     // (do NOT just skip the rebuild — stale geometry would otherwise stay
     // visible). Un-hide on separation.
     const degenerate = start.distanceToSquared(end) === 0;
@@ -845,7 +748,7 @@ AFRAME.registerComponent('connecting-line2', {
     }
 
     if (moved) {
-      // Shared geometry rewrite (D5/D24): one geometry, all overlays reference it.
+      // Shared geometry rewrite: one geometry, all overlays reference it.
       this.lineGeometry.setPositions([start.x, start.y, start.z, end.x, end.y, end.z]);
       // Dashing requires computeLineDistances after any endpoint change.
       this.lineGeometry.computeLineDistances();
@@ -868,6 +771,185 @@ AFRAME.registerComponent('connecting-line2', {
     this.cylinder.setAttribute('height', _lineVector.length());
   }
 });
+
+
+/***/ },
+
+/***/ "./dash-pattern.js"
+/*!*************************!*\
+  !*** ./dash-pattern.js ***!
+  \*************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   decomposeDash: () => (/* binding */ decomposeDash),
+/* harmony export */   getPeriod: () => (/* binding */ getPeriod),
+/* harmony export */   mod: () => (/* binding */ mod),
+/* harmony export */   sanitiseDash: () => (/* binding */ sanitiseDash)
+/* harmony export */ });
+//
+// dash-pattern — pure helpers for sanitising and decomposing dash arrays.
+//
+// A single THREE LineMaterial can express only ONE dash/gap pair. To render
+// richer patterns (dash-dot, dash-dot-dot, …) we decompose the pattern into N
+// overlaid lines, one per dash "run", all sharing a single geometry. These
+// helpers are pure (no THREE, no component state) so they can be unit-tested in
+// isolation. See DESIGN-NOTES.md for the full rationale and worked examples.
+//
+
+// True mathematical modulo (JS `%` carries the sign of the dividend) — used
+// wherever dash offsets / periods are wrapped into [0, p).
+function mod(x, p) {
+  return ((x % p) + p) % p;
+}
+
+// Sanitise a raw `dash` schema array into either [] (render solid) or a clean,
+// even-length, finite, non-negative array.
+//
+// The order of checks is load-bearing: the non-finite guard must run FIRST,
+// because NaN slips past every numeric comparison that follows.
+function sanitiseDash(raw, attrName) {
+  if (!Array.isArray(raw) || raw.length === 0) return [];
+
+  // Non-finite guard FIRST (NaN/Infinity would corrupt every later check).
+  if (!raw.every(Number.isFinite)) {
+    console.warn(`connecting-line2 (${attrName}): dash contains a non-finite value; rendering solid.`);
+    return [];
+  }
+
+  // Odd-length: drop the trailing element (a dash with no following gap).
+  let arr = raw;
+  if (arr.length % 2 === 1) {
+    console.warn(`connecting-line2 (${attrName}): dash has an odd number of elements; dropping the trailing element.`);
+    arr = arr.slice(0, arr.length - 1);
+  }
+  if (arr.length === 0) return [];
+
+  // Negative entries: reject the whole array rather than silently clamping
+  // mid-pattern (which would produce a confusing partial pattern).
+  if (arr.some((v) => v < 0)) {
+    console.warn(`connecting-line2 (${attrName}): dash contains a negative value; rendering solid.`);
+    return [];
+  }
+
+  const period = arr.reduce((a, b) => a + b, 0);
+  if (period <= 0) return []; // all-zero array => solid (no warn; benign)
+
+  // All dash runs zero-length but period > 0 (e.g. [0,5,0,5]): every run is
+  // invisible yet the array is well-formed — warn and fall back to solid.
+  let anyDash = false;
+  for (let k = 0; k < arr.length; k += 2) {
+    if (arr[k] > 0) { anyDash = true; break; }
+  }
+  if (!anyDash) {
+    console.warn(`connecting-line2 (${attrName}): dash has only zero-length dash runs; rendering solid.`);
+    return [];
+  }
+
+  return arr;
+}
+
+// Decompose a sanitised dash array [d0,g0,d1,g1,…] into one overlay descriptor
+// per (non-zero) dash run.
+//
+//   period = sum(dash)
+//   for each dash run d_k starting at cumulative position `pos`:
+//     - if d_k === 0: emit NO overlay (an invisible run is skipped).
+//     - else emit { dashSize: d_k, gapSize: period - d_k,
+//                   dashOffset: mod(period - pos, period) }
+//
+// The caller's public dashOffset (wrapped mod period) is added to every
+// overlay's offset so the whole pattern shifts in phase together. Returns [] for
+// the solid case (the caller renders a single non-dashed line).
+function decomposeDash(dash, dashOffset) {
+  const overlays = [];
+  let period = 0;
+  for (let i = 0; i < dash.length; i++) period += dash[i];
+  if (period <= 0) return overlays; // solid
+
+  const offsetExtra = mod(dashOffset, period);
+  let pos = 0;
+  for (let k = 0; k < dash.length; k += 2) {
+    const dashLen = dash[k];
+    if (dashLen > 0) {
+      overlays.push({
+        dashSize: dashLen,
+        gapSize: period - dashLen,
+        dashOffset: mod(period - pos, period) + offsetExtra
+      });
+    }
+    pos += dashLen;
+    if (k + 1 < dash.length) pos += dash[k + 1]; // advance past the gap
+  }
+  return overlays;
+}
+
+// Sum of the dash period for a resolved set of overlay descriptors (used by the
+// dashScale clamp). Every overlay carries dashSize + gapSize == period, so the
+// first overlay suffices. Returns 0 for the solid case (clamp skipped).
+function getPeriod(overlayParams) {
+  if (!overlayParams || overlayParams.length === 0) return 0;
+  return overlayParams[0].dashSize + overlayParams[0].gapSize;
+}
+
+
+/***/ },
+
+/***/ "./line-math.js"
+/*!**********************!*\
+  !*** ./line-math.js ***!
+  \**********************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   worldPerPixel: () => (/* binding */ worldPerPixel)
+/* harmony export */ });
+//
+// line-math — pure camera/viewport math helpers for connecting-line2.
+//
+// Kept free of component state and THREE object construction so they can be
+// unit-tested standalone. Callers pass in everything the function needs.
+//
+
+// World units per device pixel of vertical viewport, at the given world-space
+// point. Used to convert a px-specified dash period into world units so the
+// dash renders at a constant on-screen size.
+//
+//  - orthographic (exact): the world height spanned by the viewport is
+//    (top - bottom) / zoom, independent of depth.
+//  - perspective (approximation): the world height spanned by the viewport
+//    grows with distance from the camera as 2 * tan(fov/2) * dist. We evaluate
+//    it at `midpointWorld` (the line's midpoint in world space) — a single
+//    representative depth. This is exact only for a line lying in a plane
+//    parallel to the image plane; for a line angled in depth the dash spacing
+//    drifts slightly along its length. See DESIGN-NOTES.md.
+//
+// Returns 0 for an unrecognised camera type. `camera` for a perspective camera
+// must have an up-to-date matrixWorld (the caller is responsible for calling
+// updateMatrixWorld()).
+function worldPerPixel(camera, viewportHeightPx, midpointWorld) {
+  if (camera.isOrthographicCamera) {
+    const worldHeight = (camera.top - camera.bottom) / (camera.zoom || 1);
+    return worldHeight / viewportHeightPx;
+  }
+  if (camera.isPerspectiveCamera) {
+    const camWorldX = camera.matrixWorld.elements[12];
+    const camWorldY = camera.matrixWorld.elements[13];
+    const camWorldZ = camera.matrixWorld.elements[14];
+    const dx = midpointWorld.x - camWorldX;
+    const dy = midpointWorld.y - camWorldY;
+    const dz = midpointWorld.z - camWorldZ;
+    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const fovRad = (camera.fov * Math.PI) / 180;
+    const worldHeight = 2 * Math.tan(fovRad / 2) * dist;
+    return worldHeight / viewportHeightPx;
+  }
+  return 0;
+}
 
 
 /***/ },
