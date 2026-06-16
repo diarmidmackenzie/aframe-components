@@ -24,7 +24,7 @@
 
 <body>
   <div class="text-overlay">
-    <p>connecting-line2: width &amp; dash units (spec items 1, 2, 3, 4)</p>
+    <p>connecting-line2: width &amp; dash units</p>
     <p><b>Scene A (orthographic, auto-zooming):</b> top line width px / dashUnits
        auto (=px, screen-constant); middle width m / dashUnits auto (=m, scales
        with zoom); bottom width px but dashUnits forced m. Watch how each
@@ -72,7 +72,7 @@
   </a-scene>
 
   <!-- ============ Scene B: perspective approach ============ -->
-  <!-- Demonstrates the D8 forced-px midpoint-depth limitation: under a
+  <!-- Demonstrates the forced-px midpoint-depth limitation: under a
        perspective camera approaching a line, dashUnits:auto picks world dashes
        (stable, foreshortening) while forced dashUnits:px shows the
        shrink-on-approach-over-time drift. NOTE: because worldPerPixel is

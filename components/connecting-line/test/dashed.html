@@ -6,7 +6,7 @@
   <script src="../dist/connecting-line.js"></script>
   <link rel="stylesheet" href="../../../styles.css">
   <script>
-    // ---- MED-4a: falsifiable D17 no-flash assertion --------------------
+    // ---- No-flash assertion ---------------------------------------------
     // On the first renderstart (then again on the first rAF, belt-and-braces),
     // log + console.assert that a base overlay material's dashScale and
     // resolution are FINITE and NON-DEFAULT — i.e. the seedResolution +
@@ -35,7 +35,7 @@
       }
     });
 
-    // ---- MED-4b: screenshot export pass (spec item 5 + D4) -------------
+    // ---- Screenshot export pass -----------------------------------------
     // A-Frame ships a `screenshot` component on the scene. We patch one
     // overlay's onBeforeRender to log when it fires, then trigger a screenshot
     // so it is observable that the per-render sync hook runs during the
@@ -59,10 +59,10 @@
       scene.components.screenshot.capture('perspective');
     }
 
-    // ---- MED-4c: create/destroy + dash-change leak loop (D5) -----------
+    // ---- Create/destroy + dash-change leak loop -------------------------
     // Repeatedly add then remove a line, and flip its dash pattern, logging
-    // renderer.info.memory.{geometries,textures} + programs.length so the D5
-    // "no leak across create/destroy" claim is runnable: the counts should
+    // renderer.info.memory.{geometries,textures} + programs.length so the
+    // "no leak across create/destroy" behaviour is runnable: the counts should
     // return to baseline after each destroy, not climb monotonically.
     function leakLoop() {
       const scene = document.querySelector('a-scene');
@@ -99,7 +99,7 @@
 
 <body>
   <div class="text-overlay">
-    <p>connecting-line2: dash patterns (spec items 6 & 8) + D7/D18 sanitisation</p>
+    <p>connecting-line2: dash patterns + dash-array sanitisation</p>
     <p>Top-to-bottom: solid, simple dashed [4,4], dotted [1,3], dash-dot [6,2,1,2],
        dash-dot-dot [6,2,1,2,1,2], repeated [4,4,4,4] (distinct disjoint dashes,
        no doubled alpha). Endpoints animate to show dashes stay anchored.</p>
@@ -108,14 +108,14 @@
        [0,0]->solid, [0,5,0,5]->warn+solid, [4,0,2,4]->skips the zero run.</p>
     <p>The "dotted" pattern renders as butt-capped squares (no round caps — a
        LineMaterial limitation).</p>
-    <p><b>D10 seam / tube + opacity:</b> the bottom-centre cyan line is
+    <p><b>Seam / tube + opacity:</b> the bottom-centre cyan line is
        semi-transparent (opacity:0.5) with a tube. The lower magenta line is a
        semi-transparent dash-dot-dot (3 overlay runs) — inspect its dash
        junctions for z-fighting / doubled-alpha seams where overlay runs meet.</p>
     <p><b>Buttons (right):</b> "Export screenshot" runs A-Frame's screenshot
-       pass (watch console: onBeforeRender must fire during it — D4/spec 5).
+       pass (watch console: onBeforeRender must fire during it).
        "Leak loop" does 10 create/destroy + dash-change cycles, logging
-       renderer.info memory before/after (D5 — counts must return to baseline).
+       renderer.info memory before/after (counts must return to baseline).
        Open the console for all instrumentation output.</p>
   </div>
   <a class="code-link" target="_blank"
@@ -124,8 +124,8 @@
   </a>
 
   <div class="buttons">
-    <button onClick="exportScreenshot()">Export screenshot (D4/spec5)</button>
-    <button onClick="leakLoop()">Leak loop (D5)</button>
+    <button onClick="exportScreenshot()">Export screenshot</button>
+    <button onClick="leakLoop()">Leak loop</button>
   </div>
 
   <a-scene background="color:black" screenshot>
@@ -133,7 +133,7 @@
     <a-mixin id="animate-left" animation="property:position; from: 0 0 0; to: -0.5 0 0; dir: alternate; loop: true"></a-mixin>
     <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
 
-    <!-- Left column: worked patterns E1-E5 + [4,4,4,4]. -->
+    <!-- Left column: the dash patterns described above + [4,4,4,4]. -->
     <a-entity id="container" position="-2.5 1.5 -4">
       <a-entity mixin="animate-left">
         <a-sphere id="l0" position="-1  1.0 0" radius="0.04" color="#888"></a-sphere>
@@ -187,14 +187,14 @@
       connecting-line2__e5="start:#e5l; end:#e5r; color:lime;   width:3; dash:4 0 2 4">
     </a-entity>
 
-    <!-- D10: dashed + semi-transparent + tube (draw-order check). -->
+    <!-- Dashed + semi-transparent + tube (draw-order check). -->
     <a-sphere id="t0" position="-1.5 -0.5 -3" radius="0.04" color="#0ff"></a-sphere>
     <a-sphere id="t1" position=" 1.5 -0.5 -3" radius="0.04" color="#0ff"></a-sphere>
     <a-entity id="leakHost"
               connecting-line2__tube="start:#t0; end:#t1; color:cyan; width:6;
                                       opacity:0.5; dash:8 4 2 4; tubeRadius:0.03"></a-entity>
 
-    <!-- LOW-c: semi-transparent 3-run dash-dot-dot — clear D10 dash-junction
+    <!-- Semi-transparent 3-run dash-dot-dot — a clear dash-junction
          seam subject (multiple overlays sharing geometry, with alpha). -->
     <a-sphere id="s0" position="-1.5 -1.1 -3" radius="0.04" color="#f0f"></a-sphere>
     <a-sphere id="s1" position=" 1.5 -1.1 -3" radius="0.04" color="#f0f"></a-sphere>
