@@ -5,6 +5,10 @@
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
   <script src="../dist/connecting-line.js"></script>
   <link rel="stylesheet" href="../../../styles.css">
+  <style>
+    /* Keep the description box from covering the demo: cap height + scroll. */
+    .text-overlay { max-height: 38vh; max-width: 28rem; overflow-y: auto; }
+  </style>
   <script>
     // ---- No-flash assertion ---------------------------------------------
     // On the first renderstart (then again on the first rAF, belt-and-braces),
@@ -79,7 +83,7 @@
         i++;
         // create
         host.setAttribute('connecting-line2__leak',
-          `start:#t0; end:#t1; color:magenta; width:5; dash:${i % 2 ? '6 2 1 2 1 2' : '4 4'}; opacity:0.5`);
+          `start:#t0; end:#t1; color:magenta; width:5; dash:${i % 2 ? '0.3 0.1 0.05 0.1 0.05 0.1' : '0.2 0.2'}; opacity:0.5`);
         // and destroy on the next tick
         setTimeout(() => host.removeAttribute('connecting-line2__leak'), 200);
         if (i >= 10) {
@@ -99,24 +103,19 @@
 
 <body>
   <div class="text-overlay">
-    <p>connecting-line2: dash patterns + dash-array sanitisation</p>
-    <p>Top-to-bottom: solid, simple dashed [4,4], dotted [1,3], dash-dot [6,2,1,2],
-       dash-dot-dot [6,2,1,2,1,2], repeated [4,4,4,4] (distinct disjoint dashes,
-       no doubled alpha). Endpoints animate to show dashes stay anchored.</p>
-    <p>Right column — edge/sanitisation cases (watch the console for warnings):
-       [5]->solid, [1,1,1]->[1,1], "4,foo,2"->warn+solid, [-2,4]->warn+solid,
-       [0,0]->solid, [0,5,0,5]->warn+solid, [4,0,2,4]->skips the zero run.</p>
-    <p>The "dotted" pattern renders as butt-capped squares (no round caps — a
-       LineMaterial limitation).</p>
-    <p><b>Seam / tube + opacity:</b> the bottom-centre cyan line is
-       semi-transparent (opacity:0.5) with a tube. The lower magenta line is a
-       semi-transparent dash-dot-dot (3 overlay runs) — inspect its dash
-       junctions for z-fighting / doubled-alpha seams where overlay runs meet.</p>
-    <p><b>Buttons (right):</b> "Export screenshot" runs A-Frame's screenshot
-       pass (watch console: onBeforeRender must fire during it).
-       "Leak loop" does 10 create/destroy + dash-change cycles, logging
-       renderer.info memory before/after (counts must return to baseline).
-       Open the console for all instrumentation output.</p>
+    <p>connecting-line2: dash patterns + sanitisation</p>
+    <p>Dash values are <b>world metres</b> (this is a perspective scene, so
+       <code>dashUnits:auto</code> resolves to world units), sized for the ~2&nbsp;m
+       lines. Left, top-to-bottom: solid, dashed, dotted, dash-dot, dash-dot-dot,
+       repeated. Endpoints animate to show dashes stay anchored. "Dotted" is
+       butt-capped squares (LineMaterial has no round caps).</p>
+    <p>Right column — sanitisation edge cases (watch the console for warnings):
+       odd-length, non-finite, negative, all-zero-runs, zero-run-skip.</p>
+    <p>Bottom: a semi-transparent dashed line + tube, and a semi-transparent
+       dash-dot-dot (3 overlay runs) — inspect its junctions for seams.</p>
+    <p><b>Buttons:</b> "Export screenshot" (console: onBeforeRender must fire
+       during the pass); "Leak loop" (10 create/destroy cycles; renderer.info
+       counts must return to baseline). Open the console for output.</p>
   </div>
   <a class="code-link" target="_blank"
     href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/dashed.html">
@@ -155,11 +154,11 @@
 
     <a-entity assert-no-flash
       connecting-line2__a="start:#l0; end:#r0; color:white;  width:4; dash:"
-      connecting-line2__1="start:#l1; end:#r1; color:cyan;   width:4; dash:4 4"
-      connecting-line2__2="start:#l2; end:#r2; color:yellow; width:4; dash:1 3"
-      connecting-line2__3="start:#l3; end:#r3; color:red;    width:4; dash:6 2 1 2"
-      connecting-line2__4="start:#l4; end:#r4; color:lime;   width:4; dash:6 2 1 2 1 2"
-      connecting-line2__5="start:#l5; end:#r5; color:orange; width:4; dash:4 4 4 4">
+      connecting-line2__1="start:#l1; end:#r1; color:cyan;   width:4; dash:0.2 0.2"
+      connecting-line2__2="start:#l2; end:#r2; color:yellow; width:4; dash:0.05 0.15"
+      connecting-line2__3="start:#l3; end:#r3; color:red;    width:4; dash:0.3 0.1 0.05 0.1"
+      connecting-line2__4="start:#l4; end:#r4; color:lime;   width:4; dash:0.3 0.1 0.05 0.1 0.05 0.1"
+      connecting-line2__5="start:#l5; end:#r5; color:orange; width:4; dash:0.2 0.2 0.2 0.2">
     </a-entity>
 
     <!-- Right column: sanitisation / edge cases. -->
@@ -179,12 +178,12 @@
     </a-entity>
 
     <a-entity
-      connecting-line2__e0="start:#e0l; end:#e0r; color:white;  width:3; dash:5"
-      connecting-line2__e1="start:#e1l; end:#e1r; color:cyan;   width:3; dash:1 1 1"
-      connecting-line2__e2="start:#e2l; end:#e2r; color:yellow; width:3; dash:4,foo,2"
-      connecting-line2__e3="start:#e3l; end:#e3r; color:red;    width:3; dash:-2 4"
-      connecting-line2__e4="start:#e4l; end:#e4r; color:magenta;width:3; dash:0 5 0 5"
-      connecting-line2__e5="start:#e5l; end:#e5r; color:lime;   width:3; dash:4 0 2 4">
+      connecting-line2__e0="start:#e0l; end:#e0r; color:white;  width:3; dash:0.25"
+      connecting-line2__e1="start:#e1l; end:#e1r; color:cyan;   width:3; dash:0.1 0.1 0.1"
+      connecting-line2__e2="start:#e2l; end:#e2r; color:yellow; width:3; dash:0.2, foo, 0.1"
+      connecting-line2__e3="start:#e3l; end:#e3r; color:red;    width:3; dash:-0.2 0.4"
+      connecting-line2__e4="start:#e4l; end:#e4r; color:magenta;width:3; dash:0 0.25 0 0.25"
+      connecting-line2__e5="start:#e5l; end:#e5r; color:lime;   width:3; dash:0.2 0 0.1 0.2">
     </a-entity>
 
     <!-- Dashed + semi-transparent + tube (draw-order check). -->
@@ -192,14 +191,14 @@
     <a-sphere id="t1" position=" 1.5 -0.5 -3" radius="0.04" color="#0ff"></a-sphere>
     <a-entity id="leakHost"
               connecting-line2__tube="start:#t0; end:#t1; color:cyan; width:6;
-                                      opacity:0.5; dash:8 4 2 4; tubeRadius:0.03"></a-entity>
+                                      opacity:0.5; dash:0.4 0.2 0.1 0.2; tubeRadius:0.03"></a-entity>
 
     <!-- Semi-transparent 3-run dash-dot-dot — a clear dash-junction
          seam subject (multiple overlays sharing geometry, with alpha). -->
     <a-sphere id="s0" position="-1.5 -1.1 -3" radius="0.04" color="#f0f"></a-sphere>
     <a-sphere id="s1" position=" 1.5 -1.1 -3" radius="0.04" color="#f0f"></a-sphere>
     <a-entity connecting-line2__seam="start:#s0; end:#s1; color:magenta; width:6;
-                                      opacity:0.5; dash:6 2 1 2 1 2"></a-entity>
+                                      opacity:0.5; dash:0.3 0.1 0.05 0.1 0.05 0.1"></a-entity>
   </a-scene>
 </body>
 
