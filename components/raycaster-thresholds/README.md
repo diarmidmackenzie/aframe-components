@@ -43,6 +43,8 @@ The unit is fundamentally an **input-device** property: a mouse selection wants 
 
 `raycaster-thresholds` is **the** abstraction for these params. Run **one instance per raycaster**, and drive it (including dynamic values via `setAttribute`) rather than writing `raycaster.params.*` directly. A consumer that needs more should remove this component and manage the params itself — not write alongside it. `remove()` uses compare-before-restore (it restores its `Line2` baseline only if nothing has overwritten its value since) as defensive hygiene, but two concurrent writers on one raycaster is unsupported.
 
+> **Keep a single raycaster's `Line2` targets homogeneous in detection unit.** `params.Line2.threshold` is **one value** per raycaster, so all `Line2` targets it tests must detect in the *same* unit (all px, or all metres). Mixing an `m`-detecting and a `px`-detecting `Line2` on one raycaster means one of them reads the threshold in the wrong unit. See [`connecting-line2`'s "One raycaster, one detection model" note](../connecting-line/#raycast-detection--independent-of-render-width).
+
 
 
 ## Installation
@@ -93,7 +95,7 @@ A px-detecting `Line2` target (a 2D / orthographic scene — e.g. SimpleDraw) ne
 
 ```js
 if (!raycaster.params.Line2) raycaster.params.Line2 = {};
-raycaster.params.Line2.threshold = 8; // or use the raycaster-thresholds component
+raycaster.params.Line2.threshold = 8; // px for worldUnits:false; metres for worldUnits:true
 ```
 
 The unit follows the target's `material.worldUnits`: **pixels** when `worldUnits: false`, **metres** when `worldUnits: true`. (Stock `LineSegments2.raycast` welds the detection space to the render width this way; `connecting-line2`'s custom `m`-detect raycast is the value-add that decouples them.)

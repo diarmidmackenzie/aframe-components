@@ -24,22 +24,37 @@
       schema: {
         attr: { type: 'string' },
         base: { type: 'color', default: 'cyan' },
-        tint: { type: 'color', default: 'yellow' }
+        tint: { type: 'color', default: 'yellow' },
+        // id surfaced in the live status readout on hover.
+        label: { type: 'string', default: '' }
       },
       init() {
         const el = this.el;
-        el.addEventListener('mouseenter', () => el.setAttribute(this.data.attr, 'color', this.data.tint));
-        el.addEventListener('mouseleave', () => el.setAttribute(this.data.attr, 'color', this.data.base));
+        el.addEventListener('mouseenter', () => {
+          el.setAttribute(this.data.attr, 'color', this.data.tint);
+          setStatus('HIT: ' + (this.data.label || this.data.attr));
+        });
+        el.addEventListener('mouseleave', () => {
+          el.setAttribute(this.data.attr, 'color', this.data.base);
+          setStatus('—');
+        });
       }
     });
+
+    // Live, runtime-verifiable picking signal: a non-tinting line is then
+    // unambiguously "not hovering" rather than "broken".
+    function setStatus(text) {
+      const el = document.getElementById('status');
+      if (el) el.textContent = text;
+    }
   </script>
 </head>
 
 <body>
   <div class="text-overlay">
     <p>connecting-line2: <b>VR ray — m-distance raycast</b> (perspective camera)</p>
-    <p><b>Move the mouse over each line; WASD to walk toward / away.</b> Both are
-       <code>width:1 units:px</code> 1px strokes (a controller-ray primitive).
+    <p><b>Move the mouse over the line; WASD to walk toward / away.</b> It is a
+       <code>width:1 units:px</code> 1px stroke (a controller-ray primitive).
        The cursor carries <code>raycaster-thresholds="line:0.05"</code>, so
        <code>params.Line2.threshold = 0.05m</code> (via the default
        <code>matchLine</code> mode).</p>
@@ -47,13 +62,17 @@
       <li><b>cyan</b> — <code>raycastUnits:m</code>: a fixed <em>world</em> pick
         band (~5cm). Grabbable at near <em>and</em> far depth; the tolerance does
         not shrink as you back away. This is the headline VR-ray proof.</li>
-      <li><b>red</b> — <code>raycastUnits:px</code> (stock screen-space): the 1px
-        stroke's pick band is screen-space; at distance it stays ~1px on screen
-        but the world tolerance shrinks with depth. Compare grab feel to cyan.</li>
     </ul>
-    <p>Hover tints the line yellow. Walk up close to the far ends and back away to
-       feel the difference between a world-constant (cyan) and screen-space (red)
-       pick band on an identical thin stroke.</p>
+    <p><b>px is not shown here.</b> A single raycaster carries one
+       <code>params.Line2.threshold</code> (0.05 from <code>line:0.05</code>),
+       which a <code>raycastUnits:px</code> line would read as 0.05 <em>pixels</em>
+       — unpickable at every depth, and it can't share this m-cursor anyway. The
+       px path needs its own px-threshold cursor; see
+       <code>raycast-screen.html</code>.</p>
+    <p>Hover tints the line yellow and updates the status line below. Walk up close
+       to the far end and back away — the world-constant (cyan) band stays
+       grabbable the whole way.</p>
+    <p>Status: <b id="status">—</b></p>
   </div>
   <a class="code-link" target="_blank"
     href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/raycast-vr-ray.html">
@@ -69,22 +88,16 @@
                 raycaster-thresholds="line:0.05"></a-entity>
     </a-entity>
 
-    <!-- Lines run AWAY from the camera in depth so near vs far grabbing is
+    <!-- The line runs AWAY from the camera in depth so near vs far grabbing is
          exercised along a single stroke. -->
-    <a-sphere id="ma" position="-1 1.6  1" radius="0.03" color="#888"></a-sphere>
-    <a-sphere id="mb" position="-1 1.6 -8" radius="0.03" color="#888"></a-sphere>
-    <a-sphere id="pa" position=" 1 1.6  1" radius="0.03" color="#888"></a-sphere>
-    <a-sphere id="pb" position=" 1 1.6 -8" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="ma" position="0 1.6  1" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="mb" position="0 1.6 -8" radius="0.03" color="#888"></a-sphere>
 
-    <a-text color="white" value="raycastUnits:m (world band)"   position="-1.4 1.9  1" scale="0.5 0.5 0.5"></a-text>
-    <a-text color="white" value="raycastUnits:px (screen band)" position=" 0.6 1.9  1" scale="0.5 0.5 0.5"></a-text>
+    <a-text color="white" value="raycastUnits:m (world band)" position="-0.4 1.9  1" scale="0.5 0.5 0.5"></a-text>
 
     <a-entity class="pickable"
       connecting-line2__m="start:#ma; end:#mb; color:cyan; width:1; units:px; raycastUnits:m"
-      hover-tint="attr:connecting-line2__m; base:cyan; tint:yellow"></a-entity>
-    <a-entity class="pickable"
-      connecting-line2__p="start:#pa; end:#pb; color:red; width:1; units:px; raycastUnits:px"
-      hover-tint="attr:connecting-line2__p; base:red; tint:yellow"></a-entity>
+      hover-tint="attr:connecting-line2__m; base:cyan; tint:yellow; label:m-line"></a-entity>
   </a-scene>
 </body>
 

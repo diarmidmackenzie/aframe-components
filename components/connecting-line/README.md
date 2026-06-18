@@ -159,13 +159,32 @@ dedicated pick line with a custom `.raycast`:
   perspective.
 
 The pick band itself is `raycaster.params.Line2.threshold` — set it with
-[`raycaster-thresholds`](../raycaster-thresholds/). With no threshold set, picking
-falls back to an exact on-line test (effectively unpickable for a thin line).
+[`raycaster-thresholds`](../raycaster-thresholds/). **You must set a threshold to
+pick:** with none set the band is zero-width — only an *exact* on-line hit
+registers, which is effectively unpickable for a thin stroke. (`connecting-line2`
+`console.warn`s once if an `m`-detect pick runs with no threshold, so this
+dead-zone isn't silent.)
+
+**The host entity must be raycastable.** `connecting-line2` exposes a pick
+object, but picking only happens if the **host entity matches the raycaster's
+`objects` selector** — e.g. give it a class the cursor targets:
+
+```html
+<a-entity class="raycast-target"
+  connecting-line2="start:#a; end:#b; raycastUnits:m"></a-entity>
+<a-entity cursor="rayOrigin:mouse" raycaster="objects:.raycast-target"
+          raycaster-thresholds="line:0.05"></a-entity>
+```
+
+The library makes the line raycast-*able*; the consumer makes the entity
+raycast-*ed* (mirrors simple-draw's line-hover pattern).
 
 **One raycaster, one detection model.** `params.Line2.threshold` is a single
 value per raycaster, so keep a given raycaster's targets homogeneous (a VR
 controller's targets should all be `m`-detecting). Dashed lines pick as **one**
 hit (the N dash overlays are render-only; raycasting targets a single pick line).
+Hits return the standard `{ point, distance, object }` shape (with `object.el`
+back-referencing the host entity), just like the stock `Line2` raycast path.
 
 ### Length adjustment
 

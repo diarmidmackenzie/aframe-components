@@ -42,19 +42,31 @@
       remove() { if (this.onResize) window.removeEventListener('resize', this.onResize); }
     });
 
-    // Hover tint (same as raycast-vr-ray.html).
+    // Hover tint + live status readout (same as raycast-vr-ray.html).
     AFRAME.registerComponent('hover-tint', {
       schema: {
         attr: { type: 'string' },
         base: { type: 'color', default: 'cyan' },
-        tint: { type: 'color', default: 'yellow' }
+        tint: { type: 'color', default: 'yellow' },
+        label: { type: 'string', default: '' }
       },
       init() {
         const el = this.el;
-        el.addEventListener('mouseenter', () => el.setAttribute(this.data.attr, 'color', this.data.tint));
-        el.addEventListener('mouseleave', () => el.setAttribute(this.data.attr, 'color', this.data.base));
+        el.addEventListener('mouseenter', () => {
+          el.setAttribute(this.data.attr, 'color', this.data.tint);
+          setStatus('HIT: ' + (this.data.label || this.data.attr));
+        });
+        el.addEventListener('mouseleave', () => {
+          el.setAttribute(this.data.attr, 'color', this.data.base);
+          setStatus('—');
+        });
       }
     });
+
+    function setStatus(text) {
+      const el = document.getElementById('status');
+      if (el) el.textContent = text;
+    }
   </script>
 </head>
 
@@ -72,8 +84,10 @@
       <li><b>red</b> — <code>raycastUnits:auto</code>: resolves to <code>px</code>
         under this orthographic camera — should behave identically to cyan.</li>
     </ul>
-    <p>Hover tints the line yellow. Both should pick from a few px away from the
-       1px stroke (the 8px band), matching stock Line2 screen-space behaviour.</p>
+    <p>Hover tints the line yellow and updates the status line below. Both should
+       pick from a few px away from the 1px stroke (the 8px band), matching stock
+       Line2 screen-space behaviour.</p>
+    <p>Status: <b id="status">—</b></p>
   </div>
   <a class="code-link" target="_blank"
     href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/raycast-screen.html">
@@ -97,10 +111,10 @@
 
     <a-entity class="pickable"
       connecting-line2__a="start:#al; end:#ar; color:cyan; width:1; units:px; raycastUnits:px"
-      hover-tint="attr:connecting-line2__a; base:cyan; tint:yellow"></a-entity>
+      hover-tint="attr:connecting-line2__a; base:cyan; tint:yellow; label:px-line"></a-entity>
     <a-entity class="pickable"
       connecting-line2__b="start:#bl; end:#br; color:red; width:1; units:px; raycastUnits:auto"
-      hover-tint="attr:connecting-line2__b; base:red; tint:yellow"></a-entity>
+      hover-tint="attr:connecting-line2__b; base:red; tint:yellow; label:auto-line"></a-entity>
   </a-scene>
 </body>
 
