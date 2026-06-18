@@ -96,11 +96,18 @@ AFRAME.registerComponent('raycaster-thresholds', {
         } else { // 'none'
             // Do not write. If a prior apply wrote it, unwind to the captured
             // baseline so a matchLine/set -> none transition leaves no stale
-            // value. Does NOT touch a value set by anyone else.
-            if (this.wroteLine2) {
+            // value. Compare-before-restore (mirroring remove()): only unwind if
+            // params.Line2.threshold still holds the value WE last wrote — else
+            // a concurrent writer owns it now and we must leave it alone.
+            if (this.wroteLine2 &&
+                raycaster.params.Line2 &&
+                raycaster.params.Line2.threshold === this.lastWrote) {
                 this.restoreLine2Baseline(raycaster);
-                this.wroteLine2 = false;
             }
+            // Clear bookkeeping regardless: we are no longer the writer. Keep
+            // wroteLine2 and lastWrote in lock-step so they can't drift.
+            this.wroteLine2 = false;
+            this.lastWrote = undefined;
         }
     },
 
