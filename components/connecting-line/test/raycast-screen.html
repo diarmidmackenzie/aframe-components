@@ -67,6 +67,25 @@
       const el = document.getElementById('status');
       if (el) el.textContent = text;
     }
+
+    // One-time diagnostic: prove the raycaster is actually holding the ortho
+    // camera, so `raycastUnits:auto` resolves to px (not silently falling back
+    // to m and reading the 8 as 8 metres). Logs once after the scene loads.
+    document.addEventListener('DOMContentLoaded', () => {
+      const scene = document.querySelector('a-scene');
+      scene.addEventListener('loaded', () => {
+        const cursor = document.querySelector('[raycaster]');
+        const cam = cursor && cursor.components.raycaster &&
+          cursor.components.raycaster.data.camera;
+        const isOrtho = !!(cam && cam.isOrthographicCamera) ||
+          !!(scene.camera && scene.camera.isOrthographicCamera);
+        const resolved = isOrtho ? 'px' : 'm (auto MIS-RESOLVED!)';
+        console.log('[raycast-screen] auto resolves to:', resolved,
+          '| raycaster.camera.isOrthographicCamera =',
+          cam ? !!cam.isOrthographicCamera : '(no raycaster camera) — scene.camera ortho =',
+          scene.camera ? !!scene.camera.isOrthographicCamera : 'n/a');
+      });
+    });
   </script>
 </head>
 
