@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- VERSION-FLOOR NOTE (manual): the Line2 raycast threshold mechanism
+       (params.Line2.threshold) works on A-Frame >= 1.5.0 (three r158+). To
+       prove the floor rather than just the installed r183, swap the A-Frame
+       src below for https://aframe.io/releases/1.5.0/aframe.min.js and confirm
+       the thin line is still grabbable. -->
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="../dist/connecting-line.js"></script>
+  <script src="../../raycaster-thresholds/index.js"></script>
+  <link rel="stylesheet" href="../../../styles.css">
+  <style>
+    .text-overlay { max-height: 42vh; max-width: 30rem; overflow-y: auto; }
+  </style>
+  <script>
+    // Tint the line on hover so the m-distance pick band is visible without a
+    // real grab interaction. A-Frame's cursor emits mouseenter / mouseleave on
+    // the intersected entity (the entity carrying the connecting-line2). `base`
+    // and `tint` are the colours to swap between; `attr` names the
+    // connecting-line2 instance to recolour.
+    AFRAME.registerComponent('hover-tint', {
+      schema: {
+        attr: { type: 'string' },
+        base: { type: 'color', default: 'cyan' },
+        tint: { type: 'color', default: 'yellow' }
+      },
+      init() {
+        const el = this.el;
+        el.addEventListener('mouseenter', () => el.setAttribute(this.data.attr, 'color', this.data.tint));
+        el.addEventListener('mouseleave', () => el.setAttribute(this.data.attr, 'color', this.data.base));
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <div class="text-overlay">
+    <p>connecting-line2: <b>VR ray — m-distance raycast</b> (perspective camera)</p>
+    <p><b>Move the mouse over each line; WASD to walk toward / away.</b> Both are
+       <code>width:1 units:px</code> 1px strokes (a controller-ray primitive).
+       The cursor carries <code>raycaster-thresholds="line:0.05"</code>, so
+       <code>params.Line2.threshold = 0.05m</code> (via the default
+       <code>matchLine</code> mode).</p>
+    <ul>
+      <li><b>cyan</b> — <code>raycastUnits:m</code>: a fixed <em>world</em> pick
+        band (~5cm). Grabbable at near <em>and</em> far depth; the tolerance does
+        not shrink as you back away. This is the headline VR-ray proof.</li>
+      <li><b>red</b> — <code>raycastUnits:px</code> (stock screen-space): the 1px
+        stroke's pick band is screen-space; at distance it stays ~1px on screen
+        but the world tolerance shrinks with depth. Compare grab feel to cyan.</li>
+    </ul>
+    <p>Hover tints the line yellow. Walk up close to the far ends and back away to
+       feel the difference between a world-constant (cyan) and screen-space (red)
+       pick band on an identical thin stroke.</p>
+  </div>
+  <a class="code-link" target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/raycast-vr-ray.html">
+    view code
+  </a>
+
+  <a-scene background="color:#001">
+    <a-entity camera look-controls wasd-controls position="0 1.6 4">
+      <!-- Mouse-driven cursor. raycaster-thresholds sets params.Line/Line2 to
+           5cm so the thin lines have a real pick band. -->
+      <a-entity cursor="rayOrigin:mouse"
+                raycaster="objects:.pickable; far:50"
+                raycaster-thresholds="line:0.05"></a-entity>
+    </a-entity>
+
+    <!-- Lines run AWAY from the camera in depth so near vs far grabbing is
+         exercised along a single stroke. -->
+    <a-sphere id="ma" position="-1 1.6  1" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="mb" position="-1 1.6 -8" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="pa" position=" 1 1.6  1" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="pb" position=" 1 1.6 -8" radius="0.03" color="#888"></a-sphere>
+
+    <a-text color="white" value="raycastUnits:m (world band)"   position="-1.4 1.9  1" scale="0.5 0.5 0.5"></a-text>
+    <a-text color="white" value="raycastUnits:px (screen band)" position=" 0.6 1.9  1" scale="0.5 0.5 0.5"></a-text>
+
+    <a-entity class="pickable"
+      connecting-line2__m="start:#ma; end:#mb; color:cyan; width:1; units:px; raycastUnits:m"
+      hover-tint="attr:connecting-line2__m; base:cyan; tint:yellow"></a-entity>
+    <a-entity class="pickable"
+      connecting-line2__p="start:#pa; end:#pb; color:red; width:1; units:px; raycastUnits:px"
+      hover-tint="attr:connecting-line2__p; base:red; tint:yellow"></a-entity>
+  </a-scene>
+</body>
+
+</html>

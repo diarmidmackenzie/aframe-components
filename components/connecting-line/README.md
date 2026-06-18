@@ -99,6 +99,7 @@ on the new `connecting-line2` component (schema below). New work should use
 | **units**             | px / m          | **px**    | Unit for the **width**. `px` = screen-constant; `m` = world units (scales with zoom). |
 | **dash**              | array of number | **[]**    | Dash pattern `[dashA, gapA, dashB, gapB, …]` in `dashUnits`. Empty ⇒ solid. An odd-length array drops its trailing element (`[1,1,1]`→`[1,1]`; `[5]`→solid). Multi-element arrays produce dash-dot / dash-dot-dot patterns (decomposed into overlaid lines internally). |
 | **dashUnits**         | auto / px / m   | **auto**  | Unit for the **dash** pattern. `auto` matches `units` — except under a perspective camera, where a `px` width's dash upgrades to world units (avoids disorienting shrink-on-approach in VR). Net: `auto` → `px` only when `units: px` **and** an orthographic camera, else `m`. Resolved per render from the active camera. |
+| **raycastUnits**      | px / m / auto   | **auto**  | Unit for **raycast (hover/click) detection** — **independent of render `units`** (see below). `px` = stock screen-space pick (2D mouse). `m` = a custom world-distance pick, exact and depth-correct under perspective (the VR controller-ray case). `auto` mirrors `dashUnits: auto`: `px` under an orthographic camera, `m` under perspective. The threshold (pick band) comes from `raycaster.params.Line2.threshold` — set it via [`raycaster-thresholds`](../raycaster-thresholds/). |
 | **dashOffset**        | number          | **0**     | Phase offset into the pattern, in `dashUnits`. |
 | **tubeRadius**        | number          | **0**     | Optional solid cylinder radius (world units), rendered **in addition to** the line. `0` = no tube. Always solid; never dashes. |
 | **segments**          | int             | **4**     | Tube radial segments (only used when `tubeRadius > 0`). |
@@ -129,6 +130,43 @@ with more than one (dash-dot, dash-dot-dot) are decomposed into **N overlaid
 \* Dashes are butt-capped (`LineMaterial` has no cap option), so a "dot"
 renders as a small square, not a round dot.
 
+### Raycast detection — independent of render width
+
+`raycastUnits` controls how the line is **picked** (hover / click), and it is
+**orthogonal to render `units`**. THREE's stock `Line2` raycast welds the two —
+it picks the screen-space (`px`) or world-space (`m`) path off
+`material.worldUnits`, a *render* setting — so a `px`-width line is forced into
+`px` detection. `connecting-line2` decouples them by raycasting against a single
+dedicated pick line with a custom `.raycast`:
+
+- `raycastUnits: m` runs an exact **world-distance** test (`THREE.Line`-style: the
+  render width contributes nothing to the pick band). This makes a **1px stroke
+  picked by world distance** — a thin ray visible into the far distance but not
+  bloated up close, picked by a fixed physical tolerance — a legal, exact
+  combination. This is the common VR controller-ray primitive:
+
+  ```html
+  <!-- 1px ray, picked by a fixed ~5cm world band, exact at any depth -->
+  <a-entity connecting-line2="start:#a; end:#b; width:1; units:px; raycastUnits:m"></a-entity>
+  <!-- the cursor's raycaster needs a metres Line2 threshold: -->
+  <a-entity cursor="rayOrigin:mouse" raycaster="objects:.line"
+            raycaster-thresholds="line:0.05"></a-entity>
+  ```
+
+- `raycastUnits: px` delegates to THREE's stock screen-space raycast (2D mouse;
+  the threshold is in pixels — set `raycaster-thresholds="line2Mode:set; line2:8"`).
+- `raycastUnits: auto` resolves to `px` under an orthographic camera, `m` under
+  perspective.
+
+The pick band itself is `raycaster.params.Line2.threshold` — set it with
+[`raycaster-thresholds`](../raycaster-thresholds/). With no threshold set, picking
+falls back to an exact on-line test (effectively unpickable for a thin line).
+
+**One raycaster, one detection model.** `params.Line2.threshold` is a single
+value per raycaster, so keep a given raycaster's targets homogeneous (a VR
+controller's targets should all be `m`-detecting). Dashed lines pick as **one**
+hit (the N dash overlays are render-only; raycasting targets a single pick line).
+
 ### Length adjustment
 
 `lengthAdjustment` (with `lengthAdjustmentValue`):
@@ -146,7 +184,11 @@ renders as a small square, not a round dot.
 
 Developer test harnesses live in [`test/`](./test/): `width.html`,
 `length-factor.html`, `event-updates.html`, `start-end-disappear.html`,
-`dashed.html`, `units-ortho.html`, `units-perspective.html`, `legacy-compat.html`.
+`dashed.html`, `units-ortho.html`, `units-perspective.html`, `legacy-compat.html`,
+`raycast-vr-ray.html` (perspective, `raycastUnits:m` 1px ray — grabbable at any
+depth), `raycast-screen.html` (orthographic, `raycastUnits:px`/`auto`). The two
+raycast harnesses carry a version-floor note: swap the A-Frame `<script>` to
+`1.5.0` to confirm `params.Line2.threshold` picking at the supported floor.
 
 ## Building
 
@@ -181,6 +223,29 @@ npm run dist:prod   # minified build only
 ```
 
 ## Changelog
+
+### Unreleased
+
+- **New `raycastUnits: px | m | auto`** — controls hover/click **detection**,
+  **independent of render `units`**. `m` runs a custom exact world-distance
+  raycast (depth-correct under perspective; the 1px VR-ray case), `px` delegates
+  to stock screen-space, `auto` mirrors `dashUnits: auto` (px under ortho, m
+  under perspective). Raycasting now targets a single dedicated pick line, so a
+  dashed line registers one hit, not one per dash overlay. The pick band comes
+  from `raycaster.params.Line2.threshold` (set via `raycaster-thresholds`).
+- **`raycaster-thresholds`** (sibling component) now drives
+  `params.Line2.threshold`: its `line` (m) sets **both** `params.Line` and
+  `params.Line2` under the new default `matchLine` mode, plus `line2Mode` /
+  `line2` for px targets. THREE's `Raycaster` doesn't define `Line2`, so this is
+  what makes `connecting-line2` lines pickable at all. **Bump both components
+  together** — pinning an old `raycaster-thresholds` silently loses Line2
+  picking.
+- Minimum A-Frame unchanged: works on **A-Frame ≥ 1.5.0** (three r158+);
+  `params.Line2.threshold` is honoured across the 1.5.0 → 1.7.0 window.
+
+> Versioning note: these entries are written now; the **npm publish** of the
+> bundle is a later, post-integration step. simple-draw consumes the
+> `aframe-components` branch directly during integration.
 
 ### 0.4.0
 
