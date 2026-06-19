@@ -319,17 +319,23 @@ AFRAME.registerComponent('connecting-line2', {
       // valid endpoints (transient-invalid) or zero-length (degenerate). This
       // keeps the invisible pick line from being grabbable in those states.
       if (!self.data || !self.data.start || !self.data.end || self._degenerate) return;
-      const unit = self.resolveRaycastUnit(raycaster.camera);
+      // A-Frame's raycaster builds a bare `new THREE.Raycaster()` and NEVER
+      // sets `.camera` (it's for mesh picking, which doesn't need one). But the
+      // stock Line2 screen-space (px) raycast REQUIRES a camera, and our `auto`
+      // resolution needs one to tell ortho from perspective. Source it from the
+      // active scene camera instead of the always-null raycaster.camera.
+      const camera = self.el.sceneEl && self.el.sceneEl.camera;
+      const unit = self.resolveRaycastUnit(camera);
       if (unit === 'm') {
         self.raycastWorldDistance(this, raycaster, intersects);
       } else {
-        // px — THREE's stock screen-space raycast. Reads the same
-        // params.Line2.threshold; tolerates it being undefined (-> 0).
-        // The pick line never renders, so its material.resolution would
-        // otherwise be stale (the seed from createPickLine, pre-resize/zoom).
-        // The per-pick sync here is the only guaranteed-fresh point for an
-        // unrendered object — set it from the current drawing-buffer size
-        // before delegating to the stock raycast (and its bounding margins).
+        // px — THREE's stock screen-space raycast. It reads raycaster.camera
+        // and material.resolution. Inject the scene camera (harmless for the
+        // mesh targets in the same pass — they ignore raycaster.camera). The
+        // pick line never renders, so onBeforeRender never refreshes its
+        // (1,1)-default resolution; re-sync it from the drawing-buffer size
+        // before delegating (the stock raycast + its bounding margins read it).
+        if (camera) raycaster.camera = camera;
         self.syncPickResolution(this.material);
         _stockRaycast.call(this, raycaster, intersects);
       }
@@ -358,15 +364,15 @@ AFRAME.registerComponent('connecting-line2', {
   },
 
   // Resolve raycastUnits -> 'px' | 'm'. `auto` mirrors dashUnits:auto's
-  // camera-awareness (px under ortho, m under perspective).
+  // camera-awareness (px under ortho, m under perspective). Caller must pass the
+  // active SCENE camera (this.el.sceneEl.camera) — NOT raycaster.camera, which
+  // A-Frame leaves null.
   resolveRaycastUnit(camera) {
     const mode = this.data.raycastUnits;
     if (mode === 'px' || mode === 'm') return mode;
-    // auto: px under ortho, m under perspective.
-    // Contract: when camera is null/undefined (A-Frame normally sets
-    // raycaster.camera, so this is an edge case), fall through to 'm' — the
-    // world-distance path needs no camera, whereas the px path's screen-space
-    // projection would throw without one.
+    // auto: px under ortho, m under perspective. If the scene camera is somehow
+    // unavailable, fall through to 'm' — the world-distance path needs no
+    // camera, whereas the px screen-space projection would throw without one.
     return (camera && camera.isOrthographicCamera) ? 'px' : 'm';
   },
 
