@@ -8,7 +8,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/diarmidmackenzie/aframe-components/tree/main/components/cursor-tracker"
+    "url": "git+https://github.com/diarmidmackenzie/aframe-components.git",
+    "directory": "components/cursor-tracker"
   },
   "keywords": [
     "A-Frame",

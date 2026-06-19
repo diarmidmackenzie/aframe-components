@@ -11,5 +11,10 @@
     "A-Frame"
   ],
   "author": "Diarmid Mackenzie",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diarmidmackenzie/aframe-components.git",
+    "directory": "components/desktop-xr-plane"
+  }
 }
