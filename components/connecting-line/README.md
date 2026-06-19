@@ -12,8 +12,8 @@ This package registers **two** A-Frame components:
 - **`connecting-line`** — a **backward-compatibility wrapper** that offers the
   previous (`0.3.x`) schema and maps it onto `connecting-line2`. Existing
   consumers keep working unchanged; new consumers should use
-  `connecting-line2`. Its schema is documented in
-  [`connecting-line-legacy.md`](./connecting-line-legacy.md).
+  `connecting-line2`. Its schema is in the
+  [appendix](#appendix-connecting-line-schema) below.
 
 ## Requirements
 
@@ -95,7 +95,7 @@ The component `connecting-line` preserves the v0.3.x schema.
 | width             | number      | 1     | Line width, in `units`. Decimals allowed. `0` = invisible (no floor); sub-1px `px` widths render as faint antialiased hairlines. |
 | units             | px / m      | px    | Unit for the width. `px` = screen-constant; `m` = world units (scales with zoom). |
 | dash              | array of number | []    | Dash pattern `[dashA, gapA, dashB, gapB, …]` in `dashUnits`. Empty ⇒ solid. An odd-length array drops its trailing element (`[1,1,1]`→`[1,1]`; `[5]`→solid). Multi-element arrays produce dash-dot / dash-dot-dot patterns (decomposed into overlaid lines internally). |
-| dashUnits         | auto / px / m | auto  | Unit for the dash pattern. `auto` matches `units` — except under a perspective camera, where a `px` width's dash upgrades to world units (avoids disorienting shrink-on-approach in VR). Net: `auto` → `px` only when `units: px` and an orthographic camera, else `m`. Resolved per render from the active camera. |
+| dashUnits         | auto / px / m | auto  | Unit for the dash pattern.<br />`auto` → `px` only when `units` set to px, and camera is orthographic, otherwise `m`. |
 | dashOffset        | number      | 0     | Phase offset into the pattern, in `dashUnits`. |
 | tubeRadius        | number      | 0     | Optional solid cylinder radius (world units), rendered in addition to the line. `0` = no tube. Always solid; never dashes. |
 | segments          | int         | 4     | Tube radial segments (only used when `tubeRadius > 0`). |
