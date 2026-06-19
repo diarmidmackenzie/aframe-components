@@ -187,6 +187,13 @@ AFRAME.registerComponent('connecting-line2', {
     position.setXYZ(0, start.x, start.y, start.z);
     position.setXYZ(1, end.x, end.y, end.z);
     position.needsUpdate = true;
+    // THREE.Line.raycast caches geometry.boundingSphere (computes it once, lazily)
+    // and uses it as a broad-phase reject — it never re-derives it. Invalidate it
+    // so moved endpoints are reflected; otherwise, after the first raycast, a line
+    // whose endpoints have since moved is rejected at the sphere stage and goes
+    // silently un-pickable. connecting-line tracks moving entities, so this fires
+    // routinely, not as an edge case.
+    this.pickLine.geometry.boundingSphere = null;
   },
 
   // Remove + dispose the pick proxy. It owns its own (2-vertex) geometry and
@@ -522,10 +529,10 @@ AFRAME.registerComponent('connecting-line2', {
 
   // Set the LineMaterial `resolution` uniform to the real drawing-buffer size
   // once, at material creation. WHY: Line2 defaults resolution to (1,1) until
-  // its first onBeforeRender runs. A raycast or render that happens before that
-  // first pass would otherwise use (1,1) — breaking hit-testing and giving a
-  // wrong-width first frame. This is a one-shot fallback; the per-render
-  // getViewport() sync in onBeforeRender takes over from the first frame.
+  // its first onBeforeRender runs. A render that happens before that first pass
+  // would otherwise use (1,1) — a wrong-width first frame. (Picking is unaffected:
+  // it runs against the THREE.Line proxy, not LineMaterial.) This is a one-shot
+  // fallback; the per-render getViewport() sync in onBeforeRender takes over.
   initResolutionUniform(material) {
     const renderer = this.el.sceneEl && this.el.sceneEl.renderer;
     if (renderer && material.uniforms && material.uniforms.resolution) {

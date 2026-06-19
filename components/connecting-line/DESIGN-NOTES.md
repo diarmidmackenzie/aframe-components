@@ -58,10 +58,10 @@ VR.)
 `initResolutionUniform()` sets the resolution uniform once at material
 creation from the renderer's current drawing-buffer size. Without it, a
 `LineMaterial` starts with the default `(1, 1)` resolution until its first
-`onBeforeRender` fires. A raycast or a render that happens before that first
-pass would use `(1, 1)` — breaking hit-testing and producing a wrong-width
-first frame. The seed is a fallback; the per-pass sync takes over from the
-first frame onward.
+`onBeforeRender` fires. A render that happens before that first pass would use
+`(1, 1)` — a wrong-width first frame. (Picking is independent: it runs against
+the invisible `THREE.Line` pick proxy, not the `LineMaterial`.) The seed is a
+fallback; the per-pass sync takes over from the first frame onward.
 
 ## Build / THREE setup
 
