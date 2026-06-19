@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- VERSION-FLOOR NOTE (manual): connecting-line2 needs A-Frame >= 1.5.0
+       (three r158+) to render its Line2 stroke. The pick proxy is a plain
+       THREE.Line, picked by raycaster.params.Line.threshold, which works on any
+       A-Frame. To prove the render floor rather than just the installed r183,
+       swap the A-Frame src below for
+       https://aframe.io/releases/1.5.0/aframe.min.js and confirm the thin line
+       still renders AND is grabbable. -->
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="../dist/connecting-line.js"></script>
+  <script src="../../raycaster-thresholds/index.js"></script>
+  <link rel="stylesheet" href="../../../styles.css">
+  <script>
+    // Tint the line on hover so the world-distance pick band is visible without
+    // a real grab interaction. A-Frame's cursor emits mouseenter / mouseleave on
+    // the intersected entity (the entity carrying the connecting-line2). `base`
+    // and `tint` are the colours to swap between; `attr` names the
+    // connecting-line2 instance to recolour.
+    AFRAME.registerComponent('hover-tint', {
+      schema: {
+        attr: { type: 'string' },
+        base: { type: 'color', default: 'cyan' },
+        tint: { type: 'color', default: 'yellow' },
+        // id surfaced in the live status readout on hover.
+        label: { type: 'string', default: '' }
+      },
+      init() {
+        const el = this.el;
+        el.addEventListener('mouseenter', () => {
+          el.setAttribute(this.data.attr, 'color', this.data.tint);
+          setStatus('HIT: ' + (this.data.label || this.data.attr));
+        });
+        el.addEventListener('mouseleave', () => {
+          el.setAttribute(this.data.attr, 'color', this.data.base);
+          setStatus('—');
+        });
+      }
+    });
+
+    // Live, runtime-verifiable picking signal: a non-tinting line is then
+    // unambiguously "not hovering" rather than "broken".
+    function setStatus(text) {
+      const el = document.getElementById('status');
+      if (el) el.textContent = text;
+    }
+  </script>
+</head>
+
+<body>
+  <!-- DETAIL (kept out of the on-screen text). connecting-line2 maintains an
+       invisible THREE.Line pick proxy whose 2 vertices track the rendered
+       endpoints. Picking uses the stock THREE.Line.raycast — world-distance, no
+       camera, no resolution sync — with the pick band read from
+       raycaster.params.Line.threshold (WORLD units). The cursor carries
+       raycaster-thresholds="line:0.05", so params.Line.threshold = 0.05 m. The
+       cyan stroke renders at width:1 units:px (a 1px controller-ray primitive),
+       but its pick band is the fixed 0.05 m WORLD distance — it does NOT shrink
+       as you back away, and works under any camera. Use WASD to walk toward /
+       away from the far end. -->
+  <div class="text-overlay">
+    <p><b>connecting-line2 — world-distance picking (THREE.Line proxy)</b></p>
+    <p>Hover the thin cyan line: it turns <b>yellow</b> when picked (watch Status).
+       The pick band is set by <code>raycaster-thresholds="line:0.05"</code>
+       (0.05 m). It stays grabbable at <b>both</b> the near and far ends — even
+       where it shrinks to a hairline in the distance.</p>
+    <p>Status: <b id="status">—</b></p>
+  </div>
+  <a class="code-link" target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/raycast.html">
+    view code
+  </a>
+
+  <a-scene background="color:#001">
+    <a-entity camera look-controls wasd-controls position="0 1.6 2">
+      <!-- Mouse-driven cursor. raycaster-thresholds sets params.Line to 5cm so
+           the thin pick proxy has a real world-distance pick band. -->
+      <a-entity cursor="rayOrigin:mouse"
+                raycaster="objects:.pickable; far:60"
+                raycaster-thresholds="line:0.05"></a-entity>
+    </a-entity>
+
+    <!-- The cyan line recedes DIAGONALLY (near-left → far-right) so it reads
+         clearly as a line from the default camera — a line running straight down
+         the view axis would foreshorten to a dot — while still exercising
+         near-vs-far grabbing along one 1px stroke. -->
+    <a-sphere id="ma" position="-1.5 1.6 -1"  radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="mb" position=" 2.5 1.6 -18" radius="0.06" color="#888"></a-sphere>
+
+    <a-text color="#0ff" value="near" position="-1.9 1.45 -1"  scale="0.4 0.4 0.4"></a-text>
+    <a-text color="#0ff" value="far"  position=" 2.5 1.95 -18" scale="1.4 1.4 1.4"></a-text>
+
+    <a-entity class="pickable"
+      connecting-line2__m="start:#ma; end:#mb; color:cyan; width:1; units:px"
+      hover-tint="attr:connecting-line2__m; base:cyan; tint:yellow; label:proxy-line"></a-entity>
+  </a-scene>
+</body>
+
+</html>

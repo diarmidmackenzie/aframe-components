@@ -24,7 +24,7 @@
 //    DESIGN-NOTES.md) and use getViewport() as the SINGLE basis for both
 //    resolution and worldPerPixel.
 
-import { Group, Vector2, Vector3, Vector4 } from 'three';
+import { BufferGeometry, BufferAttribute, Group, Line, LineBasicMaterial, Vector2, Vector3, Vector4 } from 'three';
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
@@ -95,11 +95,20 @@ AFRAME.registerComponent('connecting-line2', {
     this.overlayLineGroup = new Group();
     this.el.object3D.add(this.overlayLineGroup);
 
-    // Single shared geometry — all overlays reference it; never per-overlay.
+    // Single shared geometry — all render overlays reference it; never
+    // per-overlay.
     this.lineGeometry = new LineGeometry();
 
     // overlays: [{ line: Line2, material: LineMaterial }]
     this.overlays = [];
+
+    // Dedicated single invisible THREE.Line pick proxy. The visible stroke is N
+    // render-only overlay Line2s; raycasting targets exactly ONE invisible
+    // THREE.Line whose 2 vertices track the endpoints. THREE.Line.raycast is
+    // built-in (no custom code), camera-independent, and uses
+    // raycaster.params.Line.threshold (world units) as the pick band. See
+    // createPickLine().
+    this.pickLine = null;
 
     // The resolved overlay descriptors currently applied (for in-place mutation
     // when the overlay count is unchanged).
@@ -117,6 +126,87 @@ AFRAME.registerComponent('connecting-line2', {
 
     this.updateLinePosition = this.updateLinePosition.bind(this);
     this.onBeforeRender = this.onBeforeRender.bind(this);
+
+    this.createPickLine();
+  },
+
+  // -------------------------------------------------------------------------
+  // Pick proxy — the single raycast target: an invisible THREE.Line.
+  // -------------------------------------------------------------------------
+
+  // The setObject3D name for this instance's pick proxy. connecting-line2 is
+  // `multiple: true`, so two instances on one entity would evict each other if
+  // they shared a name — namespace it per instance via attrName.
+  pickObjectName() {
+    return 'clPick__' + this.attrName;
+  },
+
+  // Create the invisible single THREE.Line used for raycasting. Its 2 vertices
+  // track the endpoints (kept in lockstep via updateLinePosition). Picking uses
+  // the stock THREE.Line.raycast — no override — which needs no camera and no
+  // resolution, and tests against raycaster.params.Line.threshold (world units,
+  // camera-independent). Set that band via raycaster-thresholds ("line" prop).
+  //
+  // CRITICAL: the pick proxy is registered via this.el.setObject3D(name, ...),
+  // NOT object3D.add(). A-Frame's raycaster builds its target set ONLY from
+  // entities' object3DMap (objects registered via setObject3D) — an object
+  // merely .add()'d to el.object3D is never tested. setObject3D also sets the
+  // object's `.el` back-reference for us (so intersections survive A-Frame's
+  // `if (intersection.object.el)` filter); no manual `.el =` needed.
+  //
+  // NOTE FOR CONSUMERS: registering the pick object makes the line raycastABLE,
+  // but the host entity must also MATCH the raycaster's `objects` selector
+  // (e.g. give it a `raycast-target` class) for any picking to occur. The
+  // library exposes the pick object; the consumer makes the entity raycastable.
+  // (Mirrors simple-draw's line-hover pattern.)
+  createPickLine() {
+    if (this.pickLine) return;
+    // A 2-vertex BufferGeometry whose positions track the endpoints. Seeded to
+    // the origin; updatePickGeometry() rewrites them on every endpoint move.
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position',
+      new BufferAttribute(new Float32Array(6), 3));
+    // Never rendered (line.visible = false), but THREE.Line requires a material.
+    const material = new LineBasicMaterial();
+    const pickLine = new Line(geometry, material);
+    pickLine.visible = false;          // pick-only; never drawn.
+    pickLine.userData.clPickLine = true;
+
+    this.pickLine = pickLine;
+    // Register via setObject3D (NOT object3D.add) so A-Frame's raycaster, which
+    // builds its target set from object3DMap, actually tests this object.
+    if (this.el) this.el.setObject3D(this.pickObjectName(), pickLine);
+  },
+
+  // Rewrite the pick proxy's 2 vertices from the current (local-space)
+  // endpoints, keeping it in lockstep with the render line. Called wherever the
+  // shared render geometry is repositioned.
+  updatePickGeometry(start, end) {
+    if (!this.pickLine) return;
+    const position = this.pickLine.geometry.attributes.position;
+    position.setXYZ(0, start.x, start.y, start.z);
+    position.setXYZ(1, end.x, end.y, end.z);
+    position.needsUpdate = true;
+    // THREE.Line.raycast caches geometry.boundingSphere (computes it once, lazily)
+    // and uses it as a broad-phase reject — it never re-derives it. Invalidate it
+    // so moved endpoints are reflected; otherwise, after the first raycast, a line
+    // whose endpoints have since moved is rejected at the sphere stage and goes
+    // silently un-pickable. connecting-line tracks moving entities, so this fires
+    // routinely, not as an edge case.
+    this.pickLine.geometry.boundingSphere = null;
+  },
+
+  // Remove + dispose the pick proxy. It owns its own (2-vertex) geometry and
+  // material — dispose both. Do NOT touch the shared Line2 lineGeometry (owned
+  // and disposed elsewhere).
+  disposePickLine() {
+    if (!this.pickLine) return;
+    // Mirror createPickLine's setObject3D registration. removeObject3D detaches
+    // it from object3DMap (so the raycaster stops testing it) and clears `.el`.
+    if (this.el) this.el.removeObject3D(this.pickObjectName());
+    if (this.pickLine.geometry) this.pickLine.geometry.dispose();
+    if (this.pickLine.material) this.pickLine.material.dispose();
+    this.pickLine = null;
   },
 
   update(oldData) {
@@ -204,6 +294,12 @@ AFRAME.registerComponent('connecting-line2', {
       this._prevStart.set(NaN, NaN, NaN);
       this._prevEnd.set(NaN, NaN, NaN);
     }
+    // (Re)create the pick proxy if a prior remove() disposed it. The proxy owns
+    // its own geometry (independent of the shared render geometry rebuilt
+    // above), so it only needs recreating after a full teardown.
+    if (!this.pickLine) {
+      this.createPickLine();
+    }
   },
 
   // Non-destructive "transient invalid" path: hide every overlay line and the
@@ -249,6 +345,10 @@ AFRAME.registerComponent('connecting-line2', {
       this.initResolutionUniform(material);
 
       const line = new Line2(this.lineGeometry, material);
+      // Overlays are render-only. They're added via object3D.add (below), not
+      // setObject3D, so A-Frame's raycaster — which builds its target set from
+      // object3DMap — never tests them; raycasting targets the single pick proxy
+      // (see createPickLine). No .raycast override is needed.
       // Override the stock LineSegments2 onBeforeRender so resolution and
       // dashScale share a single getViewport() basis (see DESIGN-NOTES.md).
       line.onBeforeRender = this.onBeforeRender;
@@ -429,10 +529,10 @@ AFRAME.registerComponent('connecting-line2', {
 
   // Set the LineMaterial `resolution` uniform to the real drawing-buffer size
   // once, at material creation. WHY: Line2 defaults resolution to (1,1) until
-  // its first onBeforeRender runs. A raycast or render that happens before that
-  // first pass would otherwise use (1,1) — breaking hit-testing and giving a
-  // wrong-width first frame. This is a one-shot fallback; the per-render
-  // getViewport() sync in onBeforeRender takes over from the first frame.
+  // its first onBeforeRender runs. A render that happens before that first pass
+  // would otherwise use (1,1) — a wrong-width first frame. (Picking is unaffected:
+  // it runs against the THREE.Line proxy, not LineMaterial.) This is a one-shot
+  // fallback; the per-render getViewport() sync in onBeforeRender takes over.
   initResolutionUniform(material) {
     const renderer = this.el.sceneEl && this.el.sceneEl.renderer;
     if (renderer && material.uniforms && material.uniforms.resolution) {
@@ -505,6 +605,9 @@ AFRAME.registerComponent('connecting-line2', {
       if (o.material) o.material.dispose();
     }
     this.overlays = [];
+
+    // Remove the pick line (shares the geometry; disposes only its own material).
+    this.disposePickLine();
 
     // Dispose the single shared geometry exactly once.
     if (this.lineGeometry) {
@@ -627,7 +730,11 @@ AFRAME.registerComponent('connecting-line2', {
           this.overlays[i].line.visible = false;
         }
       }
-      // Skip geometry rewrite while degenerate.
+      // Skip the shared render-geometry rewrite while degenerate, but collapse
+      // the pick proxy's two vertices to the coincident endpoint so it can't
+      // present a stale, grabbable segment (mirrors the prior degenerate guard
+      // that suppressed pick hits in this state).
+      this.updatePickGeometry(start, end);
       this._prevStart.copy(start);
       this._prevEnd.copy(end);
       this.updateTubeTransform(start, end); // tube also hidden via length 0
@@ -653,6 +760,9 @@ AFRAME.registerComponent('connecting-line2', {
       // every overlay shares this one geometry, calling it on a single overlay
       // updates the distances for all of them.
       if (this.overlays.length > 0) this.overlays[0].line.computeLineDistances();
+      // Keep the invisible pick proxy in lockstep with the render line so the
+      // pick band never drifts from what's drawn.
+      this.updatePickGeometry(start, end);
       this._prevStart.copy(start);
       this._prevEnd.copy(end);
     }

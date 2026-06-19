@@ -9,28 +9,20 @@ This package registers **two** A-Frame components:
 
 - **`connecting-line2`** — the component you should use. A `THREE.Line2`
   stroke with width control, rich dash patterns, and an optional solid tube.
-- **`connecting-line`** — a **backward-compatibility wrapper** that keeps the
-  original (`0.3.x`) schema and maps it onto `connecting-line2`. Existing
+- **`connecting-line`** — a **backward-compatibility wrapper** that offers the
+  previous (`0.3.x`) schema and maps it onto `connecting-line2`. Existing
   consumers keep working unchanged; new consumers should use
-  `connecting-line2`. Its schema is documented in
-  [`connecting-line-legacy.md`](./connecting-line-legacy.md).
+  `connecting-line2`. Its schema is in the
+  [appendix](#appendix-connecting-line-schema) below.
 
 ## Requirements
 
-**A-Frame ≥ 1.5.0.** `connecting-line2` renders with `THREE.Line2`
-(`three/examples/jsm/lines`), which needs the version of `THREE` that A-Frame
-1.5.0+ ships — it does **not** render on A-Frame ≤ 1.4.0. (The `0.3.x` releases
-used `THREE.Line` from core and ran on any A-Frame version; this minimum is new
-in `0.4.0` — see [Upgrading from 0.3.x](#upgrading-from-03x).)
+**A-Frame ≥ 1.5.0.** both `connecting-line` and`connecting-line2` render with `THREE.Line2`
+(`three/examples/jsm/lines`), which needs A-Frame 1.5.0+.
+
+For A-Frame <= 1.4.0, use 0.3.x, which uses `THREE.Line`.
 
 ## Installation
-
-> **⚠ Breaking packaging change in 0.4.0.** This package now ships a built
-> bundle under `dist/`. The raw entry point is no longer `index.js`. If you
-> were including the source directly with
-> `<script src=".../connecting-line/index.js">`, switch to the bundle path
-> below. Schema and render behaviour are otherwise backward-compatible (via
-> the `connecting-line` wrapper) — only the include path changed.
 
 ```html
 <!-- via CDN (development build) -->
@@ -50,36 +42,41 @@ npm install aframe-connecting-line
 import 'aframe-connecting-line'; // registers both components
 ```
 
-## Upgrading from 0.3.x
 
-The `connecting-line` schema is **unchanged**, so existing configurations keep
-working without edits. Three things need action on upgrade:
 
-1. **Change the include path.** The package now ships a built bundle, not raw
-   source. Update
-   `<script src=".../connecting-line/index.js">` →
-   `<script src=".../connecting-line/dist/connecting-line.js">` (or `.min.js`).
-   npm / bundler consumers: `main` and `module` already point at the bundle —
-   just ensure `THREE` is exposed as a global (A-Frame sets `window.THREE`
-   automatically).
+### Installing v0.3.x and earlier
 
-2. **Check your A-Frame version: 1.5.0 is now the minimum.** The base stroke is
-   now `THREE.Line2`, which needs the `THREE` A-Frame 1.5.0+ ships; on A-Frame
-   ≤ 1.4.0 the lines will not render. If you can't upgrade A-Frame, stay on a
-   `0.3.x` release.
+```
+<!-- via CDN (development build) -->
+<script src="https://cdn.jsdelivr.net/npm/aframe-connecting-line@0.3.3/connecting-line/index.js"></script>
 
-3. **Be aware of two minor behaviour changes** (no config change needed):
-   - The base stroke is a `THREE.Line2` instead of a 1px `THREE.Line` — it is
-     antialiased, and the too-thin-on-high-resolution-export hairline is fixed.
-     Its raycast / hover hit threshold differs slightly from the old thin line.
-   - `updateEvent` listeners are now cleaned up / rebound correctly: the
-     end-entity listener is removed on teardown (previously leaked), and
-     listeners rebind when the `start` / `end` **entity** is swapped at runtime
-     (previously they stayed on the old entity).
+<!-- via CDN (minified build) -->
+<script src="https://cdn.jsdelivr.net/npm/aframe-connecting-line@0.3.3/connecting-line/index.min.js"></script>
+```
 
-**New capabilities** — width, units, dash patterns, and the optional tube — are
-on the new `connecting-line2` component (schema below). New work should use
-`connecting-line2`; the `connecting-line` wrapper exists only for back-compat.
+
+
+
+
+## Upgrading from 0.3.x to 0.4.x
+
+If you are upgrading from 0.3.x to 0.4.x, you should note the following changes:
+
+### A-Frame Version Compatibility
+
+0.4.X is only compatible with A-Frame 1.5.0+
+
+### Installation path changed
+
+See "Installation" above - you will need to update the path from `connecting-line/index.js` to `dist/connecting-line.js`
+
+### Schema change
+
+v0.4.0 delivers a new component `connecting-line2` with a revised schema, and additional functionality: dash patterns, width configurable in metres or pixels, and different semantics (width = 0 now makes the line invisible; in v0.3.0 it rendered the line at 1px width).
+
+The component `connecting-line` preserves the v0.3.x schema.
+
+
 
 ## `connecting-line2` schema
 
@@ -95,14 +92,14 @@ on the new `connecting-line2` component (schema below). New work should use
 | lengthAdjustment      | none/scale/extend/absolute | none | How to adjust the rendered length relative to the start–end distance (see below). |
 | lengthAdjustmentValue | number          | 0         | Value used by `lengthAdjustment` (meaning depends on the mode). |
 | updateEvent           | string          | ""        | If set, per-`tick()` auto-update is suspended; the line only updates when this event fires on the start entity, end entity, or this entity. Useful for static or rarely-moving lines. |
-| **width**             | number          | **1**     | Line **width**, in `units`. Decimals allowed. `0` = invisible (no floor); sub-1px `px` widths render as faint antialiased hairlines. |
-| **units**             | px / m          | **px**    | Unit for the **width**. `px` = screen-constant; `m` = world units (scales with zoom). |
-| **dash**              | array of number | **[]**    | Dash pattern `[dashA, gapA, dashB, gapB, …]` in `dashUnits`. Empty ⇒ solid. An odd-length array drops its trailing element (`[1,1,1]`→`[1,1]`; `[5]`→solid). Multi-element arrays produce dash-dot / dash-dot-dot patterns (decomposed into overlaid lines internally). |
-| **dashUnits**         | auto / px / m   | **auto**  | Unit for the **dash** pattern. `auto` matches `units` — except under a perspective camera, where a `px` width's dash upgrades to world units (avoids disorienting shrink-on-approach in VR). Net: `auto` → `px` only when `units: px` **and** an orthographic camera, else `m`. Resolved per render from the active camera. |
-| **dashOffset**        | number          | **0**     | Phase offset into the pattern, in `dashUnits`. |
-| **tubeRadius**        | number          | **0**     | Optional solid cylinder radius (world units), rendered **in addition to** the line. `0` = no tube. Always solid; never dashes. |
-| **segments**          | int             | **4**     | Tube radial segments (only used when `tubeRadius > 0`). |
-| **shader**            | string          | **flat**  | Tube material shader (only used when `tubeRadius > 0`). |
+| width             | number      | 1     | Line width, in `units`. Decimals allowed. `0` = invisible (no floor); sub-1px `px` widths render as faint antialiased hairlines. |
+| units             | px / m      | px    | Unit for the width. `px` = screen-constant; `m` = world units (scales with zoom). |
+| dash              | array of number | []    | Dash pattern `[dashA, gapA, dashB, gapB, …]` in `dashUnits`. Empty ⇒ solid. An odd-length array drops its trailing element (`[1,1,1]`→`[1,1]`; `[5]`→solid). Multi-element arrays produce dash-dot / dash-dot-dot patterns (decomposed into overlaid lines internally). |
+| dashUnits         | auto / px / m | auto  | Unit for the dash pattern.<br />`auto` → `px` only when `units` set to px, and camera is orthographic, otherwise `m`. |
+| dashOffset        | number      | 0     | Phase offset into the pattern, in `dashUnits`. |
+| tubeRadius        | number      | 0     | Optional solid cylinder radius (world units), rendered in addition to the line. `0` = no tube. Always solid; never dashes. |
+| segments          | int         | 4     | Tube radial segments (only used when `tubeRadius > 0`). |
+| shader            | string      | flat  | Tube material shader (only used when `tubeRadius > 0`). |
 
 ### Width vs dash units
 
@@ -129,6 +126,16 @@ with more than one (dash-dot, dash-dot-dot) are decomposed into **N overlaid
 \* Dashes are butt-capped (`LineMaterial` has no cap option), so a "dot"
 renders as a small square, not a round dot.
 
+### Raycasting — world-distance, via an invisible pick proxy
+
+Raycasting against lines uses a configurable threshold distance, so that an exact match is not required for a raycaster to register a hit against a thin line.
+
+This is configured on the THREE raycaster's [`params.Line` property](https://threejs.org/docs/?q=raycaster#Raycaster.params).
+
+When working with A-Frame, we recommend configuring this using the [`raycaster-thresholds`](../raycaster-thresholds/) component to configure this property.  The THREE.js default value of 1m is larger than is typically appropriate for A-Frame applications.
+
+Note that even when a line is rendered wider than this threshold (either via `width` or `tubeRadius`, raycasting occurs based solely on this threshold, not the wider shape of the rendered line.
+
 ### Length adjustment
 
 `lengthAdjustment` (with `lengthAdjustmentValue`):
@@ -138,40 +145,17 @@ renders as a small square, not a round dot.
 - **extend** — value is an absolute length to extend by (negative trims short).
 - **absolute** — value is an absolute target length, ignoring the actual distance.
 
+
+
 ## Examples
 
 - [connecting-line2 pattern gallery](https://diarmidmackenzie.github.io/aframe-components/component-usage/connecting-line/connecting-line2-styles.html)
 - [connecting-line2 interactive (dat-gui)](https://diarmidmackenzie.github.io/aframe-components/component-usage/connecting-line/connecting-line2-interactive.html)
 - [legacy connecting-line usage](https://diarmidmackenzie.github.io/aframe-components/component-usage/connecting-line.html)
 
-Developer test harnesses live in [`test/`](./test/): `width.html`,
-`length-factor.html`, `event-updates.html`, `start-end-disappear.html`,
-`dashed.html`, `units-ortho.html`, `units-perspective.html`, `legacy-compat.html`.
+
 
 ## Building
-
-The bundle is built with webpack. `three` is externalized to the page's
-global `THREE` (the one A-Frame's renderer uses); only the
-`three/examples/jsm/lines/…` sources are bundled (resolved out of the
-`super-three` dev-dependency, pinned to the version A-Frame ships —
-`super-three@0.173.5`).
-
-> **Consuming from a bundler (Vite / Webpack / Rollup).** The `three`
-> external is configured with `externalsType: 'global'`, so the built UMD
-> reads `THREE` from the runtime global (`self["THREE"]`) in **every** module
-> branch — including the CommonJS branch (it emits `self["THREE"]`, **not**
-> `require("THREE")`). This keeps the CDN `<script>` path working and lets a
-> bundler consume the dist without a `three` module resolution — **provided
-> the host page exposes `THREE` as a global** (A-Frame does this
-> automatically by assigning `window.THREE`). A bundler consumer that does
-> **not** load A-Frame / does not set a global `THREE` must provide one —
-> verify `globalThis.THREE` is populated before this component first renders.
-
-> **Build coupling note.** The deep `three/examples/jsm/lines/…` import relies
-> on `super-three`'s `exports["./examples/jsm/*"]` wildcard. If a future
-> A-Frame bumps its `super-three`, re-pin the `super-three` dev-dependency to
-> match, and re-confirm the bundle still contains the `LineMaterial` shader
-> source.
 
 ```
 npm install
@@ -180,37 +164,31 @@ npm run dist:dev    # dev build only
 npm run dist:prod   # minified build only
 ```
 
-## Changelog
 
-### 0.4.0
-
-- **New component `connecting-line2`** — `THREE.Line2` stroke with width
-  control (px/world), dash patterns (incl. multi-element dash-dot), and an
-  optional solid tube.
-- **`connecting-line` is now a backward-compatibility wrapper** over
-  `connecting-line2`. Its `0.3.x` schema is preserved.
-- **⚠ Breaking packaging change:** the package now ships a built bundle.
-  Raw `<script src=".../connecting-line/index.js">` includes must change to
-  `.../connecting-line/dist/connecting-line.js`. Schema/render behaviour is
-  otherwise backward-compatible.
-- **⚠ Minimum A-Frame version is now 1.5.0** (was: any). `connecting-line2`'s
-  `THREE.Line2` stroke needs the `THREE` A-Frame 1.5.0+ ships; it does not
-  render on A-Frame ≤ 1.4.0.
-- **Behaviour changes for legacy `connecting-line` consumers:**
-  - The base stroke is now a `THREE.Line2` instead of a 1px `THREE.Line`
-    (antialiased; fixes the too-thin hairline on high-resolution export). Its
-    raycast / hover hit threshold differs slightly from the old thin line. For
-    `width > 0` (cylinder) configs the base line is still drawn in addition to
-    the cylinder, exactly as in 0.3.x: up close an opaque cylinder covers it,
-    but it keeps the line visible once the cylinder's rendered diameter falls
-    below ~1px (far away or zoomed out) — which is its original purpose.
-  - The `updateEvent` end-entity listener is now correctly removed on teardown
-    (was previously leaked).
-  - `updateEvent` listeners now rebind when the `start` / `end` **entity**
-    changes at runtime, not only when the event **name** changes (previously
-    a swapped target entity left the line listening to the old one).
 
 ## Code
 
 - [connecting-line2.js](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/connecting-line2.js)
 - [connecting-line.js (legacy wrapper)](https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/connecting-line.js)
+
+
+
+## Appendix: `connecting-line` schema
+
+The `connecting-line` component provides back compatibility with v0.3.x
+
+| Property              | Description | Default |
+| --------------------- | ----------- | ------- |
+| start                 | selector for entity to draw line from | |
+| startOffset           | offset of the start of the line in the start entity's coordinate space | 0 0 0 |
+| end                   | selector for entity to draw line to | |
+| endOffset             | offset of the end of the line in the end entity's coordinate space | 0 0 0 |
+| color                 | line colour | #74BEC1 |
+| opacity               | line opacity | 1 |
+| visible               | line visibility | true |
+| lengthAdjustment      | one of: none, scale, extend, absolute | none |
+| lengthAdjustmentValue | value used in adjusting the line length (meaning depends on `lengthAdjustment`) | 0 |
+| width                 | Optional line width. If `> 0`, a cylinder of radius `width/2` is rendered **in addition to** the line, giving a more substantial appearance when inspected closely. | 0 |
+| segments              | Only used if `width > 0`. Radial segments for the cylinder. Default 4 (square cross-section). | 4 |
+| shader                | Cylinder material shader: "flat", "standard", or a custom registered shader. | flat |
+| updateEvent           | If set, auto-update each `tick()` is suspended; the line updates only when this event fires on the start entity, end entity, or this entity. | "" |
