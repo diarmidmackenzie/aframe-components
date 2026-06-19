@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="../dist/connecting-line.js"></script>
+  <link rel="stylesheet" href="../../../styles.css">
+  <style>
+    .text-overlay { max-height: 38vh; max-width: 28rem; overflow-y: auto; }
+  </style>
+  <script>
+    // A-Frame's built-in `camera` component is ALWAYS a PerspectiveCamera (it
+    // has no orthographic option), so this demo supplies its own
+    // THREE.OrthographicCamera and swaps it in as the scene's render camera
+    // (setObject3D + sceneEl.camera + components.camera.camera), with mouse-wheel
+    // zoom + resize handling. Put this alongside the built-in `camera` component
+    // so A-Frame doesn't inject a default camera.
+    AFRAME.registerComponent('ortho-camera', {
+      schema: {
+        height: { default: 6 },     // world height visible at zoom 1
+        near: { default: 0.1 }, far: { default: 100 },
+        minZoom: { default: 0.3 }, maxZoom: { default: 5 }, step: { default: 1.1 }
+      },
+      init() {
+        const sceneEl = this.el.sceneEl;
+        const setup = () => {
+          const h = this.data.height / 2;
+          const aspect = () => window.innerWidth / window.innerHeight;
+          const cam = this.cam = new THREE.OrthographicCamera(
+            -h * aspect(), h * aspect(), h, -h, this.data.near, this.data.far);
+          cam.updateProjectionMatrix();
+
+          // Swap our ortho camera in for the perspective one the `camera`
+          // component created, both as the entity's object3D (inherits the
+          // entity transform) and as the scene's active render camera.
+          this.el.setObject3D('camera', cam);
+          sceneEl.camera = cam;
+          if (this.el.components.camera) this.el.components.camera.camera = cam;
+
+          this.onResize = () => {
+            cam.left = -h * aspect(); cam.right = h * aspect();
+            cam.top = h; cam.bottom = -h;
+            cam.updateProjectionMatrix();
+          };
+          window.addEventListener('resize', this.onResize);
+
+          // Wheel zoom centred on the cursor, bound to the canvas so the
+          // description box still scrolls.
+          this.onWheel = (e) => {
+            e.preventDefault();
+            const rect = sceneEl.canvas.getBoundingClientRect();
+            const ndcx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            const ndcy = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+            const zoomOld = cam.zoom;
+            const f = e.deltaY < 0 ? this.data.step : 1 / this.data.step;
+            const zoomNew = Math.min(this.data.maxZoom, Math.max(this.data.minZoom, zoomOld * f));
+            if (zoomNew === zoomOld) return;
+            // Pan so the world point under the cursor stays put. Visible
+            // half-extent = frustum half-size / zoom; the camera has no rotation
+            // here, so its local x/y are world x/y.
+            const hwOld = (cam.right - cam.left) / (2 * zoomOld);
+            const hhOld = (cam.top - cam.bottom) / (2 * zoomOld);
+            const hwNew = (cam.right - cam.left) / (2 * zoomNew);
+            const hhNew = (cam.top - cam.bottom) / (2 * zoomNew);
+            this.el.object3D.position.x += ndcx * (hwOld - hwNew);
+            this.el.object3D.position.y += ndcy * (hhOld - hhNew);
+            cam.zoom = zoomNew;
+            cam.updateProjectionMatrix();
+          };
+          sceneEl.canvas.addEventListener('wheel', this.onWheel, { passive: false });
+        };
+        if (sceneEl.hasLoaded && sceneEl.canvas) setup();
+        else sceneEl.addEventListener('loaded', setup);
+      },
+      remove() {
+        if (this.onResize) window.removeEventListener('resize', this.onResize);
+        if (this.onWheel && this.el.sceneEl.canvas) {
+          this.el.sceneEl.canvas.removeEventListener('wheel', this.onWheel);
+        }
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <div class="text-overlay">
+    <p>connecting-line2: width &amp; dash units — <b>orthographic</b></p>
+    <p><b>Scroll the mouse wheel over the scene to zoom in and out.</b> Watch how
+       each line responds:</p>
+    <ul>
+      <li><b>top (cyan)</b> — width in <code>px</code>, <code>dashUnits:auto</code>
+        (resolves to px under an ortho camera): width <em>and</em> dashes stay
+        screen-constant as you zoom.</li>
+      <li><b>middle (yellow)</b> — width in <code>m</code>, <code>dashUnits:auto</code>
+        (resolves to m): width and dashes scale with the world — they grow as you
+        zoom in.</li>
+      <li><b>bottom (red)</b> — width in <code>px</code> but <code>dashUnits</code>
+        forced to <code>m</code>: screen-constant width, world-scaling dashes.</li>
+    </ul>
+    <p><b>High-DPR hairline:</b> the white <code>width:1 px</code> line stays a
+       clean ~1px line; the <code>width:0.5 px</code> one renders fainter, not
+       absent.</p>
+    <p>Perspective behaviour is shown on
+       <a href="units-perspective.html">units-perspective.html</a>.</p>
+  </div>
+  <a class="code-link" target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/units-ortho.html">
+    view code
+  </a>
+
+  <a-scene background="color:black">
+    <a-entity id="orthoCam" camera ortho-camera position="0 0 5"></a-entity>
+
+    <a-sphere id="al" position="-2  1.5 0" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="ar" position=" 2  1.5 0" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="bl" position="-2  0.5 0" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="br" position=" 2  0.5 0" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="cl" position="-2 -0.5 0" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="cr" position=" 2 -0.5 0" radius="0.03" color="#888"></a-sphere>
+
+    <a-text color="white" value="px width / auto dash (=px)"   position="-2.8  1.7 0" scale="0.4 0.4 0.4"></a-text>
+    <a-text color="white" value="m width / auto dash (=m)"     position="-2.8  0.7 0" scale="0.4 0.4 0.4"></a-text>
+    <a-text color="white" value="px width / FORCED m dash"     position="-2.8 -0.3 0" scale="0.4 0.4 0.4"></a-text>
+
+    <a-entity
+      connecting-line2__a="start:#al; end:#ar; color:cyan;   width:6; units:px; dash:18 12; dashUnits:auto"
+      connecting-line2__b="start:#bl; end:#br; color:yellow; width:0.06; units:m; dash:0.18 0.12; dashUnits:auto"
+      connecting-line2__c="start:#cl; end:#cr; color:red;    width:6; units:px; dash:0.18 0.12; dashUnits:m"></a-entity>
+
+    <!-- High-DPR hairline check. -->
+    <a-sphere id="hl" position="-2 -1.4 0" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="hr" position=" 2 -1.4 0" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="hl2" position="-2 -1.9 0" radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="hr2" position=" 2 -1.9 0" radius="0.03" color="#888"></a-sphere>
+    <a-entity
+      connecting-line2__h1="start:#hl;  end:#hr;  color:white; width:1;   units:px"
+      connecting-line2__h2="start:#hl2; end:#hr2; color:white; width:0.5; units:px"></a-entity>
+  </a-scene>
+</body>
+
+</html>

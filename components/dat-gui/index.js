@@ -128,18 +128,49 @@ AFRAME.registerComponent('dat-gui', {
     }
 
     switch (type) {
-      case 'int':
-        addProp(componentData, prop, NaN, NaN, 1)
+      case 'int': {
+        const min = Number.isFinite(schemaData.min) ? schemaData.min : NaN
+        const max = Number.isFinite(schemaData.max) ? schemaData.max : NaN
+        addProp(componentData, prop, min, max, 1)
         break
+      }
 
-      case 'number':
-        addProp(componentData, prop, NaN, NaN, undefined)
+      case 'number': {
+        // Pass through schema min/max/step when present, so a bounded numeric
+        // (e.g. opacity 0..1) renders as a slider. Unbounded numbers keep NaN
+        // bounds, which dat.GUI shows as a drag-to-change number field.
+        const min = Number.isFinite(schemaData.min) ? schemaData.min : NaN
+        const max = Number.isFinite(schemaData.max) ? schemaData.max : NaN
+        const step = Number.isFinite(schemaData.step) ? schemaData.step : undefined
+        addProp(componentData, prop, min, max, step)
         break
+      }
 
       case 'string':
       case 'boolean':
         addProp(componentData, prop)
         break
+
+      case 'array': {
+        // dat.GUI has no native array control. Render a text input seeded with
+        // the current array joined by spaces; on change, parse space/comma-
+        // separated numbers and set the property to the parsed array (empty
+        // input => []). Lets array props (e.g. connecting-line2 `dash`) be
+        // edited live.
+        const arrayRecords = this.arrayRecords || (this.arrayRecords = {})
+        const current = componentData[prop]
+        arrayRecords[prop] = Array.isArray(current) ? current.join(' ') : ''
+        const arrayController = folder.add(arrayRecords, prop)
+        arrayController.onFinishChange(() => {
+          const raw = arrayRecords[prop]
+          const parsed = (raw || '')
+            .split(/[\s,]+/)
+            .filter(s => s.length > 0)
+            .map(Number)
+          this.el.setAttribute(componentName, prop, parsed)
+        })
+        break
+      }
 
       case 'color':
         this.colorRecords[prop] = {r: 0, g: 0, b: 0}
@@ -182,7 +213,11 @@ AFRAME.registerComponent('dat-gui', {
         break
 
       case 'selector':
-        this.selectorRecords[prop] = componentData[prop] ? componentData[prop].id : ""
+        // Seed with a valid id selector ("#id"), not the bare id — otherwise
+        // committing the field (blur) fails selector validation and goes red.
+        this.selectorRecords[prop] = componentData[prop] && componentData[prop].id
+          ? '#' + componentData[prop].id
+          : ""
         const controller = folder.add(this.selectorRecords, prop)
 
         const isSelectorValid = (selector) => {

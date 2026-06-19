@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="../../components/connecting-line/dist/connecting-line.js"></script>
+  <link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body>
+  <div class="text-overlay">
+    <p>connecting-line2: static pattern gallery.</p>
+    <p>Each row is a different dash pattern, shown at two widths (left = 6px,
+       right = 3px). Dash values are <b>world metres</b> (this is a perspective
+       scene, so <code>dashUnits:auto</code> resolves to world units), sized for
+       the ~2&nbsp;m lines.</p>
+  </div>
+  <a class="code-link" target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/component-usage/connecting-line/connecting-line2-styles.html">
+    view code
+  </a>
+
+  <a-scene background="color:black">
+    <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+    <a-entity id="gallery" position="0 1.6 -4">
+      <!-- markers: left/right columns at 6 rows -->
+      <a-sphere id="s0a" position="-2  1.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s0b" position=" 0  1.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s0c" position=" 0.3 1.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s0d" position=" 2  1.25 0" radius="0.03" color="#555"></a-sphere>
+
+      <a-sphere id="s1a" position="-2  0.75 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s1b" position=" 0  0.75 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s1c" position=" 0.3 0.75 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s1d" position=" 2  0.75 0" radius="0.03" color="#555"></a-sphere>
+
+      <a-sphere id="s2a" position="-2  0.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s2b" position=" 0  0.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s2c" position=" 0.3 0.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s2d" position=" 2  0.25 0" radius="0.03" color="#555"></a-sphere>
+
+      <a-sphere id="s3a" position="-2 -0.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s3b" position=" 0 -0.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s3c" position=" 0.3 -0.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s3d" position=" 2 -0.25 0" radius="0.03" color="#555"></a-sphere>
+
+      <a-sphere id="s4a" position="-2 -0.75 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s4b" position=" 0 -0.75 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s4c" position=" 0.3 -0.75 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s4d" position=" 2 -0.75 0" radius="0.03" color="#555"></a-sphere>
+
+      <a-sphere id="s5a" position="-2 -1.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s5b" position=" 0 -1.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s5c" position=" 0.3 -1.25 0" radius="0.03" color="#555"></a-sphere>
+      <a-sphere id="s5d" position=" 2 -1.25 0" radius="0.03" color="#555"></a-sphere>
+
+      <a-text color="white" value="solid"                        position="-2.6  1.25 0" align="right" scale="0.4 0.4 0.4"></a-text>
+      <a-text color="white" value="dashed [0.2 0.12]"            position="-2.6  0.75 0" align="right" scale="0.4 0.4 0.4"></a-text>
+      <a-text color="white" value="dotted [0.05 0.15]"           position="-2.6  0.25 0" align="right" scale="0.4 0.4 0.4"></a-text>
+      <a-text color="white" value="dash-dot [0.3 0.1 0.05 0.1]"  position="-2.6 -0.25 0" align="right" scale="0.4 0.4 0.4"></a-text>
+      <a-text color="white" value="dash-dot-dot"                 position="-2.6 -0.75 0" align="right" scale="0.4 0.4 0.4"></a-text>
+      <a-text color="white" value="long-dash [0.5 0.2]"          position="-2.6 -1.25 0" align="right" scale="0.4 0.4 0.4"></a-text>
+    </a-entity>
+
+    <a-entity
+      connecting-line2__0w="start:#s0a; end:#s0b; color:cyan; width:6; dash:"
+      connecting-line2__0n="start:#s0c; end:#s0d; color:cyan; width:3; dash:"
+      connecting-line2__1w="start:#s1a; end:#s1b; color:yellow; width:6; dash:0.2 0.12"
+      connecting-line2__1n="start:#s1c; end:#s1d; color:yellow; width:3; dash:0.2 0.12"
+      connecting-line2__2w="start:#s2a; end:#s2b; color:lime; width:6; dash:0.05 0.15"
+      connecting-line2__2n="start:#s2c; end:#s2d; color:lime; width:3; dash:0.05 0.15"
+      connecting-line2__3w="start:#s3a; end:#s3b; color:orange; width:6; dash:0.3 0.1 0.05 0.1"
+      connecting-line2__3n="start:#s3c; end:#s3d; color:orange; width:3; dash:0.3 0.1 0.05 0.1"
+      connecting-line2__4w="start:#s4a; end:#s4b; color:red; width:6; dash:0.3 0.1 0.05 0.1 0.05 0.1"
+      connecting-line2__4n="start:#s4c; end:#s4d; color:red; width:3; dash:0.3 0.1 0.05 0.1 0.05 0.1"
+      connecting-line2__5w="start:#s5a; end:#s5b; color:white; width:6; dash:0.5 0.2"
+      connecting-line2__5n="start:#s5c; end:#s5d; color:white; width:3; dash:0.5 0.2"></a-entity>
+  </a-scene>
+</body>
+
+</html>

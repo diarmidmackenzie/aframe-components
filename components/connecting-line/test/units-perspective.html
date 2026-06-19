@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="../dist/connecting-line.js"></script>
+  <link rel="stylesheet" href="../../../styles.css">
+  <style>
+    .text-overlay { max-height: 38vh; max-width: 28rem; overflow-y: auto; }
+  </style>
+</head>
+
+<body>
+  <div class="text-overlay">
+    <p>connecting-line2: dash units — <b>perspective</b></p>
+    <p><b>Use WASD to move toward / away and the mouse to look around.</b> Both
+       lines face you at the same distance. As you walk up to them:</p>
+    <ul>
+      <li><b>top (cyan)</b> — <code>dashUnits:auto</code> (resolves to world units
+        under a perspective camera): a <em>fixed number</em> of dashes anchored in
+        the world. They grow on screen along with the line — stable and natural.
+        This is the comfortable VR default.</li>
+      <li><b>bottom (red)</b> — <code>dashUnits</code> forced to <code>px</code>:
+        each dash stays a <em>constant size on screen</em>, so as the line fills
+        more of your view <em>more dashes appear</em> — the disorienting effect
+        that <code>auto</code> avoids under perspective.</li>
+    </ul>
+    <p>Orthographic / zoom behaviour is shown on
+       <a href="units-ortho.html">units-ortho.html</a>.</p>
+  </div>
+  <a class="code-link" target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/units-perspective.html">
+    view code
+  </a>
+
+  <a-scene background="color:#001">
+    <a-entity camera look-controls wasd-controls position="0 1.6 3"></a-entity>
+
+    <!-- Both lines face the camera at constant depth (z = -3). -->
+    <a-sphere id="pa" position="-1.5 2.1 -3" radius="0.04" color="#888"></a-sphere>
+    <a-sphere id="pb" position=" 1.5 2.1 -3" radius="0.04" color="#888"></a-sphere>
+    <a-sphere id="pc" position="-1.5 1.3 -3" radius="0.04" color="#888"></a-sphere>
+    <a-sphere id="pd" position=" 1.5 1.3 -3" radius="0.04" color="#888"></a-sphere>
+
+    <a-text color="white" value="auto (=m): dashes anchored in the world"  position="-1.5 2.3 -3" scale="0.5 0.5 0.5"></a-text>
+    <a-text color="white" value="FORCED px: dashes fixed on screen"        position="-1.5 1.5 -3" scale="0.5 0.5 0.5"></a-text>
+
+    <a-entity
+      connecting-line2__pa="start:#pa; end:#pb; color:cyan; width:6; units:px; dash:0.3 0.2; dashUnits:auto"
+      connecting-line2__pb="start:#pc; end:#pd; color:red;  width:6; units:px; dash:18 12;  dashUnits:px"></a-entity>
+  </a-scene>
+</body>
+
+</html>

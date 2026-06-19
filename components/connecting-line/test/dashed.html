@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="../dist/connecting-line.js"></script>
+  <link rel="stylesheet" href="../../../styles.css">
+  <style>
+    /* Keep the description box from covering the demo: cap height + scroll. */
+    .text-overlay { max-height: 38vh; max-width: 28rem; overflow-y: auto; }
+  </style>
+  <script>
+    // ---- No-flash assertion ---------------------------------------------
+    // On the first renderstart (then again on the first rAF, belt-and-braces),
+    // log + console.assert that a base overlay material's dashScale and
+    // resolution are FINITE and NON-DEFAULT — i.e. the seedResolution +
+    // first onBeforeRender sync ran before any frame the user could see, so
+    // there is no one-frame default-(1,1)-resolution flash.
+    AFRAME.registerComponent('assert-no-flash', {
+      init() {
+        const check = (when) => {
+          const cl = this.el.components['connecting-line2__a'];
+          if (!cl || !cl.overlays || !cl.overlays.length) {
+            console.warn(`[assert-no-flash:${when}] no overlays yet`);
+            return;
+          }
+          const m = cl.overlays[0].material;
+          const res = m.uniforms && m.uniforms.resolution && m.uniforms.resolution.value;
+          const dashScale = m.dashScale;
+          console.log(`[assert-no-flash:${when}] dashScale=`, dashScale,
+                      ' resolution=', res && res.x, res && res.y);
+          console.assert(Number.isFinite(dashScale), `[${when}] dashScale not finite`);
+          console.assert(res && res.x > 1 && res.y > 1,
+            `[${when}] resolution still default-ish (${res && res.x},${res && res.y}) — possible flash`);
+        };
+        this.el.sceneEl.renderer.domElement &&
+          this.el.sceneEl.addEventListener('renderstart', () => check('renderstart'), { once: true });
+        requestAnimationFrame(() => check('rAF'));
+      }
+    });
+
+    // ---- Screenshot export pass -----------------------------------------
+    // A-Frame ships a `screenshot` component on the scene. We patch one
+    // overlay's onBeforeRender to log when it fires, then trigger a screenshot
+    // so it is observable that the per-render sync hook runs during the
+    // offscreen screenshot render pass (not only the live pass).
+    function exportScreenshot() {
+      const lineEl = document.querySelector('[connecting-line2__a]');
+      const cl = lineEl && lineEl.components['connecting-line2__a'];
+      if (cl && cl.overlays && cl.overlays.length && !cl._obrPatched) {
+        cl._obrPatched = true;
+        const orig = cl.onBeforeRender;
+        let logged = 0;
+        cl.onBeforeRender = function (...args) {
+          if (logged < 3) { console.log('[screenshot] onBeforeRender fired during render pass'); logged++; }
+          return orig.apply(this, args);
+        };
+        // re-point each overlay line at the patched hook
+        cl.overlays.forEach(o => { o.line.onBeforeRender = cl.onBeforeRender; });
+      }
+      const scene = document.querySelector('a-scene');
+      console.log('[screenshot] triggering screenshot capture pass...');
+      scene.components.screenshot.capture('perspective');
+    }
+
+    // ---- Create/destroy + dash-change leak loop -------------------------
+    // Repeatedly add then remove a line, and flip its dash pattern, logging
+    // renderer.info.memory.{geometries,textures} + programs.length so the
+    // "no leak across create/destroy" behaviour is runnable: the counts should
+    // return to baseline after each destroy, not climb monotonically.
+    function leakLoop() {
+      const scene = document.querySelector('a-scene');
+      const info = scene.renderer.info;
+      const base = {
+        geometries: info.memory.geometries,
+        textures: info.memory.textures,
+        programs: info.programs ? info.programs.length : -1
+      };
+      console.log('[leak] baseline', base);
+      let i = 0;
+      const host = document.getElementById('leakHost');
+      const id = setInterval(() => {
+        i++;
+        // create
+        host.setAttribute('connecting-line2__leak',
+          `start:#t0; end:#t1; color:magenta; width:5; dash:${i % 2 ? '0.3 0.1 0.05 0.1 0.05 0.1' : '0.2 0.2'}; opacity:0.5`);
+        // and destroy on the next tick
+        setTimeout(() => host.removeAttribute('connecting-line2__leak'), 200);
+        if (i >= 10) {
+          clearInterval(id);
+          setTimeout(() => {
+            console.log('[leak] after 10 create/destroy cycles', {
+              geometries: info.memory.geometries,
+              textures: info.memory.textures,
+              programs: info.programs ? info.programs.length : -1
+            }, ' (compare to baseline; should not climb)');
+          }, 500);
+        }
+      }, 400);
+    }
+  </script>
+</head>
+
+<body>
+  <div class="text-overlay">
+    <p>connecting-line2: dash patterns + sanitisation</p>
+    <p>Dash values are <b>world metres</b> (this is a perspective scene, so
+       <code>dashUnits:auto</code> resolves to world units), sized for the ~2&nbsp;m
+       lines. Left, top-to-bottom: solid, dashed, dotted, dash-dot, dash-dot-dot,
+       repeated. Endpoints animate to show dashes stay anchored. "Dotted" is
+       butt-capped squares (LineMaterial has no round caps).</p>
+    <p>Right column — sanitisation edge cases (watch the console for warnings):
+       odd-length, non-finite, negative, all-zero-runs, zero-run-skip.</p>
+    <p>Bottom: a semi-transparent dashed line + tube, and a semi-transparent
+       dash-dot-dot (3 overlay runs) — inspect its junctions for seams.</p>
+    <p><b>Buttons:</b> "Export screenshot" (console: onBeforeRender must fire
+       during the pass); "Leak loop" (10 create/destroy cycles; renderer.info
+       counts must return to baseline). Open the console for output.</p>
+  </div>
+  <a class="code-link" target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/dashed.html">
+    view code
+  </a>
+
+  <div class="buttons">
+    <button onClick="exportScreenshot()">Export screenshot</button>
+    <button onClick="leakLoop()">Leak loop</button>
+  </div>
+
+  <a-scene background="color:black" screenshot>
+    <a-mixin id="animate-right" animation="property:position; from: 0 0 0; to: 0.5 0 0; dir: alternate; loop: true"></a-mixin>
+    <a-mixin id="animate-left" animation="property:position; from: 0 0 0; to: -0.5 0 0; dir: alternate; loop: true"></a-mixin>
+    <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+
+    <!-- Left column: the dash patterns described above + [4,4,4,4]. -->
+    <a-entity id="container" position="-2.5 1.5 -4">
+      <a-entity mixin="animate-left">
+        <a-sphere id="l0" position="-1  1.0 0" radius="0.04" color="#888"></a-sphere>
+        <a-sphere id="l1" position="-1  0.4 0" radius="0.04" color="#888"></a-sphere>
+        <a-sphere id="l2" position="-1 -0.2 0" radius="0.04" color="#888"></a-sphere>
+        <a-sphere id="l3" position="-1 -0.8 0" radius="0.04" color="#888"></a-sphere>
+        <a-sphere id="l4" position="-1 -1.4 0" radius="0.04" color="#888"></a-sphere>
+        <a-sphere id="l5" position="-1 -2.0 0" radius="0.04" color="#888"></a-sphere>
+      </a-entity>
+      <a-entity mixin="animate-right">
+        <a-sphere id="r0" position="1  1.0 0" radius="0.04" color="#888"></a-sphere>
+        <a-sphere id="r1" position="1  0.4 0" radius="0.04" color="#888"></a-sphere>
+        <a-sphere id="r2" position="1 -0.2 0" radius="0.04" color="#888"></a-sphere>
+        <a-sphere id="r3" position="1 -0.8 0" radius="0.04" color="#888"></a-sphere>
+        <a-sphere id="r4" position="1 -1.4 0" radius="0.04" color="#888"></a-sphere>
+        <a-sphere id="r5" position="1 -2.0 0" radius="0.04" color="#888"></a-sphere>
+      </a-entity>
+    </a-entity>
+
+    <a-entity assert-no-flash
+      connecting-line2__a="start:#l0; end:#r0; color:white;  width:4; dash:"
+      connecting-line2__1="start:#l1; end:#r1; color:cyan;   width:4; dash:0.2 0.2"
+      connecting-line2__2="start:#l2; end:#r2; color:yellow; width:4; dash:0.05 0.15"
+      connecting-line2__3="start:#l3; end:#r3; color:red;    width:4; dash:0.3 0.1 0.05 0.1"
+      connecting-line2__4="start:#l4; end:#r4; color:lime;   width:4; dash:0.3 0.1 0.05 0.1 0.05 0.1"
+      connecting-line2__5="start:#l5; end:#r5; color:orange; width:4; dash:0.2 0.2 0.2 0.2">
+    </a-entity>
+
+    <!-- Right column: sanitisation / edge cases. -->
+    <a-entity id="container2" position="2.5 1.5 -4">
+      <a-sphere id="e0l" position="-1  1.0 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e0r" position=" 1  1.0 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e1l" position="-1  0.4 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e1r" position=" 1  0.4 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e2l" position="-1 -0.2 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e2r" position=" 1 -0.2 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e3l" position="-1 -0.8 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e3r" position=" 1 -0.8 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e4l" position="-1 -1.4 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e4r" position=" 1 -1.4 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e5l" position="-1 -2.0 0" radius="0.04" color="#444"></a-sphere>
+      <a-sphere id="e5r" position=" 1 -2.0 0" radius="0.04" color="#444"></a-sphere>
+    </a-entity>
+
+    <a-entity
+      connecting-line2__e0="start:#e0l; end:#e0r; color:white;  width:3; dash:0.25"
+      connecting-line2__e1="start:#e1l; end:#e1r; color:cyan;   width:3; dash:0.1 0.1 0.1"
+      connecting-line2__e2="start:#e2l; end:#e2r; color:yellow; width:3; dash:0.2, foo, 0.1"
+      connecting-line2__e3="start:#e3l; end:#e3r; color:red;    width:3; dash:-0.2 0.4"
+      connecting-line2__e4="start:#e4l; end:#e4r; color:magenta;width:3; dash:0 0.25 0 0.25"
+      connecting-line2__e5="start:#e5l; end:#e5r; color:lime;   width:3; dash:0.2 0 0.1 0.2">
+    </a-entity>
+
+    <!-- Dashed + semi-transparent + tube (draw-order check). -->
+    <a-sphere id="t0" position="-1.5 -0.5 -3" radius="0.04" color="#0ff"></a-sphere>
+    <a-sphere id="t1" position=" 1.5 -0.5 -3" radius="0.04" color="#0ff"></a-sphere>
+    <a-entity id="leakHost"
+              connecting-line2__tube="start:#t0; end:#t1; color:cyan; width:6;
+                                      opacity:0.5; dash:0.4 0.2 0.1 0.2; tubeRadius:0.03"></a-entity>
+
+    <!-- Semi-transparent 3-run dash-dot-dot — a clear dash-junction
+         seam subject (multiple overlays sharing geometry, with alpha). -->
+    <a-sphere id="s0" position="-1.5 -1.1 -3" radius="0.04" color="#f0f"></a-sphere>
+    <a-sphere id="s1" position=" 1.5 -1.1 -3" radius="0.04" color="#f0f"></a-sphere>
+    <a-entity connecting-line2__seam="start:#s0; end:#s1; color:magenta; width:6;
+                                      opacity:0.5; dash:0.3 0.1 0.05 0.1 0.05 0.1"></a-entity>
+  </a-scene>
+</body>
+
+</html>

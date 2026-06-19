@@ -1,12 +1,16 @@
 {
   "name": "aframe-connecting-line",
-  "version": "0.3.3",
-  "description": "Uses the A-Frame \"line\" component to draw a line between points on two entities.",
-  "main": "index.js",
+  "version": "0.4.0",
+  "description": "Draws a line (with width and dash control) between points on two entities, using THREE.Line2.",
+  "main": "dist/connecting-line.js",
+  "module": "dist/connecting-line.js",
   "directories": {
     "example": "examples"
   },
   "scripts": {
+    "dist": "npm run dist:dev && npm run dist:prod",
+    "dist:dev": "webpack --config webpack.config.js",
+    "dist:prod": "webpack --config webpack.prod.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,12 +20,23 @@
   },
   "keywords": [
     "A-Frame",
-    "line"
+    "line",
+    "dashed",
+    "Line2"
   ],
   "bugs": {
     "url": "https://github.com/diarmidmackenzie/aframe-components/issues"
   },
   "homepage": "https://diarmidmackenzie.github.io/aframe-components/components/connecting-line#readme",
   "author": "Diarmid Mackenzie",
-  "license": "MIT"
+  "license": "MIT",
+  "peerDependencies": {
+    "aframe": ">=1.5.0"
+  },
+  "devDependencies": {
+    "super-three": "0.173.5",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-merge": "^5.8.0"
+  }
 }
