@@ -24,9 +24,8 @@
 //    DESIGN-NOTES.md) and use getViewport() as the SINGLE basis for both
 //    resolution and worldPerPixel.
 
-import { Group, Line3, Vector2, Vector3, Vector4 } from 'three';
+import { BufferGeometry, BufferAttribute, Group, Line, LineBasicMaterial, Vector2, Vector3, Vector4 } from 'three';
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
-import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { sanitiseDash, decomposeDash, getPeriod } from './dash-pattern.js';
@@ -48,16 +47,6 @@ const _up = new Vector3(0, 1, 0);
 // THREE.Vector4 — so the target must be a real Vector4. `three` is
 // externalized, so this import costs nothing in the bundle.
 const _viewport = new Vector4();
-
-// Scratch for the custom m-distance raycast (Part B). Reused per call.
-const _rcLine = new Line3();
-const _rcPoint = new Vector3();
-const _rcPointOnLine = new Vector3();
-// Scratch for per-pick resolution sync of the (never-rendered) pick material.
-const _pickSize = new Vector2();
-
-// Stock LineSegments2 raycast — delegated to for the `px` (screen-space) path.
-const _stockRaycast = LineSegments2.prototype.raycast;
 
 AFRAME.registerComponent('connecting-line2', {
 
@@ -93,13 +82,6 @@ AFRAME.registerComponent('connecting-line2', {
       stringify: (value) => (Array.isArray(value) ? value.join(' ') : '')
     },
     dashUnits: { default: 'auto', oneOf: ['auto', 'px', 'm'] },
-    // Detection (raycast) unit, ORTHOGONAL to render `units`. `px` => THREE's
-    // stock screen-space raycast (2D mouse). `m` => a custom world-distance
-    // raycast (exact, depth-correct under perspective — the 1px controller-ray case).
-    // `auto` mirrors dashUnits:auto's camera-awareness: px under an
-    // orthographic camera, m under perspective. The m threshold is read from
-    // raycaster.params.Line2.threshold (set via raycaster-thresholds).
-    raycastUnits: { default: 'auto', oneOf: ['px', 'm', 'auto'] },
     dashOffset: { type: 'number', default: 0 },
     tubeRadius: { type: 'number', default: 0 },
     segments: { type: 'number', default: 4 },
@@ -113,19 +95,19 @@ AFRAME.registerComponent('connecting-line2', {
     this.overlayLineGroup = new Group();
     this.el.object3D.add(this.overlayLineGroup);
 
-    // Single shared geometry — all overlays AND the pick line reference it;
-    // never per-overlay.
+    // Single shared geometry — all render overlays reference it; never
+    // per-overlay.
     this.lineGeometry = new LineGeometry();
 
     // overlays: [{ line: Line2, material: LineMaterial }]
     this.overlays = [];
 
-    // Dedicated single pick line (Part B). The visible stroke is N overlay
-    // Line2s sharing this.lineGeometry; raycasting against all of them would
-    // produce duplicate hits (and the m-distance override can't ride on a
-    // variable overlay count). Instead we raycast against exactly ONE invisible
-    // Line2 that shares the geometry, with a custom .raycast; the overlays are
-    // made non-raycastable. See createPickLine().
+    // Dedicated single invisible THREE.Line pick proxy. The visible stroke is N
+    // render-only overlay Line2s; raycasting targets exactly ONE invisible
+    // THREE.Line whose 2 vertices track the endpoints. THREE.Line.raycast is
+    // built-in (no custom code), camera-independent, and uses
+    // raycaster.params.Line.threshold (world units) as the pick band. See
+    // createPickLine().
     this.pickLine = null;
 
     // The resolved overlay descriptors currently applied (for in-place mutation
@@ -149,20 +131,23 @@ AFRAME.registerComponent('connecting-line2', {
   },
 
   // -------------------------------------------------------------------------
-  // Pick line (Part B) — the single raycast target.
+  // Pick proxy — the single raycast target: an invisible THREE.Line.
   // -------------------------------------------------------------------------
 
-  // The setObject3D name for this instance's pick line. connecting-line2 is
+  // The setObject3D name for this instance's pick proxy. connecting-line2 is
   // `multiple: true`, so two instances on one entity would evict each other if
   // they shared a name — namespace it per instance via attrName.
   pickObjectName() {
     return 'clPick__' + this.attrName;
   },
 
-  // Create the invisible single Line2 used for raycasting, sharing the shared
-  // geometry, and attach the custom .raycast.
+  // Create the invisible single THREE.Line used for raycasting. Its 2 vertices
+  // track the endpoints (kept in lockstep via updateLinePosition). Picking uses
+  // the stock THREE.Line.raycast — no override — which needs no camera and no
+  // resolution, and tests against raycaster.params.Line.threshold (world units,
+  // camera-independent). Set that band via raycaster-thresholds ("line" prop).
   //
-  // CRITICAL: the pick line is registered via this.el.setObject3D(name, ...),
+  // CRITICAL: the pick proxy is registered via this.el.setObject3D(name, ...),
   // NOT object3D.add(). A-Frame's raycaster builds its target set ONLY from
   // entities' object3DMap (objects registered via setObject3D) — an object
   // merely .add()'d to el.object3D is never tested. setObject3D also sets the
@@ -176,47 +161,16 @@ AFRAME.registerComponent('connecting-line2', {
   // (Mirrors simple-draw's line-hover pattern.)
   createPickLine() {
     if (this.pickLine) return;
-    // A minimal material: never rendered (line.visible = false), but Line2
-    // requires one. Reuse a LineMaterial so material.linewidth/worldUnits are
-    // readable if the stock px path ever inspects them.
-    const material = new LineMaterial({ linewidth: 1 });
-    // The pick line is never rendered, so its onBeforeRender never runs and the
-    // material.resolution uniform would stay at Line2's (1,1) default — which the
-    // stock screen-space (px) raycast and its bounding-volume margins read. Seed
-    // it now; the px branch of the .raycast wrapper re-syncs it per pick so it
-    // survives resize / zoom.
-    this.initResolutionUniform(material);
-    const pickLine = new Line2(this.lineGeometry, material);
+    // A 2-vertex BufferGeometry whose positions track the endpoints. Seeded to
+    // the origin; updatePickGeometry() rewrites them on every endpoint move.
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position',
+      new BufferAttribute(new Float32Array(6), 3));
+    // Never rendered (line.visible = false), but THREE.Line requires a material.
+    const material = new LineBasicMaterial();
+    const pickLine = new Line(geometry, material);
     pickLine.visible = false;          // pick-only; never drawn.
     pickLine.userData.clPickLine = true;
-
-    const self = this;
-    pickLine.raycast = function (raycaster, intersects) {
-      // Don't register hits when the visible stroke isn't really there: no
-      // valid endpoints (transient-invalid) or zero-length (degenerate). This
-      // keeps the invisible pick line from being grabbable in those states.
-      if (!self.data || !self.data.start || !self.data.end || self._degenerate) return;
-      // A-Frame's raycaster builds a bare `new THREE.Raycaster()` and NEVER
-      // sets `.camera` (it's for mesh picking, which doesn't need one). But the
-      // stock Line2 screen-space (px) raycast REQUIRES a camera, and our `auto`
-      // resolution needs one to tell ortho from perspective. Source it from the
-      // active scene camera instead of the always-null raycaster.camera.
-      const camera = self.el.sceneEl && self.el.sceneEl.camera;
-      const unit = self.resolveRaycastUnit(camera);
-      if (unit === 'm') {
-        self.raycastWorldDistance(this, raycaster, intersects);
-      } else {
-        // px — THREE's stock screen-space raycast. It reads raycaster.camera
-        // and material.resolution. Inject the scene camera (harmless for the
-        // mesh targets in the same pass — they ignore raycaster.camera). The
-        // pick line never renders, so onBeforeRender never refreshes its
-        // (1,1)-default resolution; re-sync it from the drawing-buffer size
-        // before delegating (the stock raycast + its bounding margins read it).
-        if (camera) raycaster.camera = camera;
-        self.syncPickResolution(this.material);
-        _stockRaycast.call(this, raycaster, intersects);
-      }
-    };
 
     this.pickLine = pickLine;
     // Register via setObject3D (NOT object3D.add) so A-Frame's raycaster, which
@@ -224,109 +178,26 @@ AFRAME.registerComponent('connecting-line2', {
     if (this.el) this.el.setObject3D(this.pickObjectName(), pickLine);
   },
 
-  // Sync a pick material's resolution uniform from the current drawing-buffer
-  // size. The pick line is never rendered, so onBeforeRender never refreshes it;
-  // call this immediately before any px (screen-space) raycast.
-  syncPickResolution(material) {
-    const renderer = this.el.sceneEl && this.el.sceneEl.renderer;
-    if (renderer && material && material.uniforms && material.uniforms.resolution) {
-      const size = renderer.getDrawingBufferSize(_pickSize);
-      if (size.x > 0 && size.y > 0) {
-        material.uniforms.resolution.value.set(size.x, size.y);
-        // material.resolution is read by the bounding-volume margins in the
-        // stock raycast; keep it in step with the uniform.
-        if (material.resolution) material.resolution.set(size.x, size.y);
-      }
-    }
+  // Rewrite the pick proxy's 2 vertices from the current (local-space)
+  // endpoints, keeping it in lockstep with the render line. Called wherever the
+  // shared render geometry is repositioned.
+  updatePickGeometry(start, end) {
+    if (!this.pickLine) return;
+    const position = this.pickLine.geometry.attributes.position;
+    position.setXYZ(0, start.x, start.y, start.z);
+    position.setXYZ(1, end.x, end.y, end.z);
+    position.needsUpdate = true;
   },
 
-  // Resolve raycastUnits -> 'px' | 'm'. `auto` mirrors dashUnits:auto's
-  // camera-awareness (px under ortho, m under perspective). Caller must pass the
-  // active SCENE camera (this.el.sceneEl.camera) — NOT raycaster.camera, which
-  // A-Frame leaves null.
-  resolveRaycastUnit(camera) {
-    const mode = this.data.raycastUnits;
-    if (mode === 'px' || mode === 'm') return mode;
-    // auto: px under ortho, m under perspective. If the scene camera is somehow
-    // unavailable, fall through to 'm' — the world-distance path needs no
-    // camera, whereas the px screen-space projection would throw without one.
-    return (camera && camera.isOrthographicCamera) ? 'px' : 'm';
-  },
-
-  // Custom world-distance raycast: raycastWorldUnits' logic MINUS the linewidth
-  // term. The pick band is purely params.Line2.threshold (m); the render width
-  // (a px stroke) must NOT inflate it — matching THREE.Line semantics. Exact and
-  // depth-correct under a perspective camera (never projects to pixels).
-  raycastWorldDistance(line, raycaster, intersects) {
-    const geometry = line.geometry;
-    const instanceStart = geometry.attributes.instanceStart;
-    const instanceEnd = geometry.attributes.instanceEnd;
-    if (!instanceStart || !instanceEnd) return;
-
-    // Tolerate params.Line2 undefined -> threshold 0 (exact-on-line picking; a
-    // consumer wanting a band sets it, e.g. via raycaster-thresholds).
-    const hasThreshold = !!(raycaster.params.Line2 &&
-      Number.isFinite(raycaster.params.Line2.threshold) &&
-      raycaster.params.Line2.threshold > 0);
-    const threshold = hasThreshold ? raycaster.params.Line2.threshold : 0;
-
-    // A 0 threshold means only an EXACT on-line hit (dist 0) can match — the
-    // band collapses to a zero-width line, effectively unpickable. Warn ONCE so
-    // this dead-zone isn't silent; the fix is to set params.Line2.threshold
-    // (e.g. via raycaster-thresholds). The `<=` compare below then admits the
-    // exact-hit edge if a consumer genuinely wants 0.
-    if (!hasThreshold && !this._warnedNoThreshold) {
-      this._warnedNoThreshold = true;
-      console.warn(
-        'connecting-line2: m-distance raycast ran with no ' +
-        'raycaster.params.Line2.threshold set — the pick band is zero-width ' +
-        '(effectively unpickable). Set a threshold via raycaster-thresholds ' +
-        '(e.g. raycaster-thresholds="line:0.05").');
-    }
-
-    const matrixWorld = line.matrixWorld;
-    const ray = raycaster.ray;
-    // LineGeometry.setPositions sets instanceCount, but the pick line is never
-    // rendered/updated through the usual path; fall back to the attribute count
-    // if instanceCount is unset (NaN/undefined) so we don't iterate zero
-    // segments.
-    const segmentCount = Number.isFinite(geometry.instanceCount)
-      ? Math.min(geometry.instanceCount, instanceStart.count)
-      : instanceStart.count;
-
-    for (let i = 0; i < segmentCount; i++) {
-      _rcLine.start.fromBufferAttribute(instanceStart, i);
-      _rcLine.end.fromBufferAttribute(instanceEnd, i);
-      _rcLine.applyMatrix4(matrixWorld);
-
-      ray.distanceSqToSegment(_rcLine.start, _rcLine.end, _rcPoint, _rcPointOnLine);
-      // `<=` (not `<`) so an exact on-line hit (dist 0) registers even at
-      // threshold 0 — without it, threshold 0 is a silent dead-zone.
-      if (_rcPoint.distanceTo(_rcPointOnLine) <= threshold) {
-        const point = _rcPoint.clone();
-        const pointOnLine = _rcPointOnLine.clone();
-        intersects.push({
-          point,
-          pointOnLine,
-          distance: ray.origin.distanceTo(point),
-          object: line,
-          face: null,
-          faceIndex: i,
-          uv: null,
-          uv1: null
-        });
-      }
-    }
-  },
-
-  // Remove + dispose the pick line. Its geometry is the SHARED geometry, owned
-  // and disposed elsewhere — do NOT dispose it here. Dispose only the pick
-  // line's own (throwaway) material.
+  // Remove + dispose the pick proxy. It owns its own (2-vertex) geometry and
+  // material — dispose both. Do NOT touch the shared Line2 lineGeometry (owned
+  // and disposed elsewhere).
   disposePickLine() {
     if (!this.pickLine) return;
     // Mirror createPickLine's setObject3D registration. removeObject3D detaches
     // it from object3DMap (so the raycaster stops testing it) and clears `.el`.
     if (this.el) this.el.removeObject3D(this.pickObjectName());
+    if (this.pickLine.geometry) this.pickLine.geometry.dispose();
     if (this.pickLine.material) this.pickLine.material.dispose();
     this.pickLine = null;
   },
@@ -415,12 +286,10 @@ AFRAME.registerComponent('connecting-line2', {
       this.overlayParams = [];
       this._prevStart.set(NaN, NaN, NaN);
       this._prevEnd.set(NaN, NaN, NaN);
-      // The pick line also referenced the disposed geometry — drop it so it is
-      // recreated against the fresh geometry below.
-      this.disposePickLine();
     }
-    // (Re)create the pick line if a prior remove() disposed it, or geometry was
-    // just rebuilt above.
+    // (Re)create the pick proxy if a prior remove() disposed it. The proxy owns
+    // its own geometry (independent of the shared render geometry rebuilt
+    // above), so it only needs recreating after a full teardown.
     if (!this.pickLine) {
       this.createPickLine();
     }
@@ -469,10 +338,10 @@ AFRAME.registerComponent('connecting-line2', {
       this.initResolutionUniform(material);
 
       const line = new Line2(this.lineGeometry, material);
-      // Overlays are render-only — raycasting happens against the single
-      // dedicated pick line (see createPickLine). A no-op .raycast keeps the N
-      // dash overlays from producing N duplicate hits.
-      line.raycast = function () {};
+      // Overlays are render-only. They're added via object3D.add (below), not
+      // setObject3D, so A-Frame's raycaster — which builds its target set from
+      // object3DMap — never tests them; raycasting targets the single pick proxy
+      // (see createPickLine). No .raycast override is needed.
       // Override the stock LineSegments2 onBeforeRender so resolution and
       // dashScale share a single getViewport() basis (see DESIGN-NOTES.md).
       line.onBeforeRender = this.onBeforeRender;
@@ -854,7 +723,11 @@ AFRAME.registerComponent('connecting-line2', {
           this.overlays[i].line.visible = false;
         }
       }
-      // Skip geometry rewrite while degenerate.
+      // Skip the shared render-geometry rewrite while degenerate, but collapse
+      // the pick proxy's two vertices to the coincident endpoint so it can't
+      // present a stale, grabbable segment (mirrors the prior degenerate guard
+      // that suppressed pick hits in this state).
+      this.updatePickGeometry(start, end);
       this._prevStart.copy(start);
       this._prevEnd.copy(end);
       this.updateTubeTransform(start, end); // tube also hidden via length 0
@@ -880,6 +753,9 @@ AFRAME.registerComponent('connecting-line2', {
       // every overlay shares this one geometry, calling it on a single overlay
       // updates the distances for all of them.
       if (this.overlays.length > 0) this.overlays[0].line.computeLineDistances();
+      // Keep the invisible pick proxy in lockstep with the render line so the
+      // pick band never drifts from what's drawn.
+      this.updatePickGeometry(start, end);
       this._prevStart.copy(start);
       this._prevEnd.copy(end);
     }
