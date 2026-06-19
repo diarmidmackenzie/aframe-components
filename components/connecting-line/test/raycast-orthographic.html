@@ -10,7 +10,7 @@
   <script src="../../raycaster-thresholds/index.js"></script>
   <link rel="stylesheet" href="../../../styles.css">
   <style>
-    .text-overlay { max-height: 42vh; max-width: 30rem; overflow-y: auto; }
+    .text-overlay { max-width: 46rem; }
   </style>
   <script>
     // Minimal orthographic camera (A-Frame's `camera` is always perspective).
@@ -42,7 +42,7 @@
       remove() { if (this.onResize) window.removeEventListener('resize', this.onResize); }
     });
 
-    // Hover tint + live status readout (same as raycast-vr-ray.html).
+    // Hover tint + live status readout (same as raycast-perspective.html).
     AFRAME.registerComponent('hover-tint', {
       schema: {
         attr: { type: 'string' },
@@ -68,48 +68,38 @@
       if (el) el.textContent = text;
     }
 
-    // One-time diagnostic: prove the raycaster is actually holding the ortho
-    // camera, so `raycastUnits:auto` resolves to px (not silently falling back
-    // to m and reading the 8 as 8 metres). Logs once after the scene loads.
+    // One-time diagnostic: confirm raycastUnits:auto resolves to px here.
+    // Production resolves it from the active SCENE camera (sceneEl.camera) — A-Frame
+    // never sets raycaster.camera — so we check the same source.
     document.addEventListener('DOMContentLoaded', () => {
       const scene = document.querySelector('a-scene');
       scene.addEventListener('loaded', () => {
-        const cursor = document.querySelector('[raycaster]');
-        const cam = cursor && cursor.components.raycaster &&
-          cursor.components.raycaster.data.camera;
-        const isOrtho = !!(cam && cam.isOrthographicCamera) ||
-          !!(scene.camera && scene.camera.isOrthographicCamera);
-        const resolved = isOrtho ? 'px' : 'm (auto MIS-RESOLVED!)';
-        console.log('[raycast-screen] auto resolves to:', resolved,
-          '| raycaster.camera.isOrthographicCamera =',
-          cam ? !!cam.isOrthographicCamera : '(no raycaster camera) — scene.camera ortho =',
-          scene.camera ? !!scene.camera.isOrthographicCamera : 'n/a');
+        const isOrtho = !!(scene.camera && scene.camera.isOrthographicCamera);
+        console.log('[raycast-orthographic] sceneEl.camera.isOrthographicCamera =',
+          isOrtho, '-> raycastUnits:auto resolves to', isOrtho ? 'px' : 'm (MIS-RESOLVED!)');
       });
     });
   </script>
 </head>
 
 <body>
+  <!-- DETAIL (kept off-screen). simple-draw's 2D case: an orthographic camera +
+       screen-space (px) detection. The cursor carries
+       raycaster-thresholds="line2Mode:set; line2:8", so params.Line2.threshold =
+       8 PIXELS (px because these targets detect in screen space; matchLine's
+       metres would be unpickable here — which is why px targets use line2Mode:set
+       rather than the matchLine default). cyan = raycastUnits:px (stock
+       screen-space); red = raycastUnits:auto, which resolves to px under this
+       orthographic camera (see the console diagnostic). -->
   <div class="text-overlay">
-    <p>connecting-line2: <b>screen pick — px raycast</b> (orthographic camera)</p>
-    <p><b>Move the mouse over each line.</b> This is simple-draw's 2D case. The
-       cursor carries <code>raycaster-thresholds="line2Mode:set; line2:8"</code>,
-       so <code>params.Line2.threshold = 8px</code> (px because these targets
-       detect in screen space — <code>matchLine</code>'s metres would be unpickable
-       here, which is exactly why px targets use <code>line2Mode:set</code>).</p>
-    <ul>
-      <li><b>cyan</b> — <code>raycastUnits:px</code>: stock screen-space raycast,
-        ~8px grab band around the stroke.</li>
-      <li><b>red</b> — <code>raycastUnits:auto</code>: resolves to <code>px</code>
-        under this orthographic camera — should behave identically to cyan.</li>
-    </ul>
-    <p>Hover tints the line yellow and updates the status line below. Both should
-       pick from a few px away from the 1px stroke (the 8px band), matching stock
-       Line2 screen-space behaviour.</p>
+    <p><b>connecting-line2 — px raycast (orthographic camera)</b></p>
+    <p>Hover either line: it turns <b>yellow</b> when picked (watch Status). Both
+       have an ~8px grab band, so they pick from a few pixels away from the 1px
+       stroke.</p>
     <p>Status: <b id="status">—</b></p>
   </div>
   <a class="code-link" target="_blank"
-    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/raycast-screen.html">
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/raycast-orthographic.html">
     view code
   </a>
 

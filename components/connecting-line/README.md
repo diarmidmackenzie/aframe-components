@@ -179,6 +179,17 @@ object, but picking only happens if the **host entity matches the raycaster's
 The library makes the line raycast-*able*; the consumer makes the entity
 raycast-*ed* (mirrors simple-draw's line-hover pattern).
 
+> **Why `setObject3D` (and why `object3D.add` wouldn't work).** A-Frame raycasts
+> an object iff it is an `object3DMap` entry (registered via `setObject3D`) **or a
+> descendant of one** — `raycaster.js` builds its target list from each entity's
+> `object3DMap` and recurses into their children. Multi-part GLTF parts qualify:
+> they're descendants of the `setObject3D('mesh', …)` scene. An object added via
+> `el.object3D.add(...)` is a *sibling* of the named entries — a child of the
+> entity's root group, which is never itself in the list — so it is **not**
+> raycast. That's why `connecting-line2` registers its pick line via `setObject3D`.
+> (Note: A-Frame also never sets `raycaster.camera`, so the `px`/screen-space path
+> sources the camera from `sceneEl.camera` itself.)
+
 **One raycaster, one detection model.** `params.Line2.threshold` is a single
 value per raycaster, so keep a given raycaster's targets homogeneous (a VR
 controller's targets should all be `m`-detecting). Dashed lines pick as **one**
@@ -204,10 +215,10 @@ back-referencing the host entity), just like the stock `Line2` raycast path.
 Developer test harnesses live in [`test/`](./test/): `width.html`,
 `length-factor.html`, `event-updates.html`, `start-end-disappear.html`,
 `dashed.html`, `units-ortho.html`, `units-perspective.html`, `legacy-compat.html`,
-`raycast-vr-ray.html` (perspective, `raycastUnits:m` 1px ray — grabbable at any
-depth), `raycast-screen.html` (orthographic, `raycastUnits:px`/`auto`). The two
-raycast harnesses carry a version-floor note: swap the A-Frame `<script>` to
-`1.5.0` to confirm `params.Line2.threshold` picking at the supported floor.
+`raycast-perspective.html` (`raycastUnits:m` 1px ray — grabbable at any depth),
+`raycast-orthographic.html` (`raycastUnits:px`/`auto`). The two raycast harnesses
+carry a version-floor note: swap the A-Frame `<script>` to `1.5.0` to confirm
+`params.Line2.threshold` picking at the supported floor.
 
 ## Building
 
@@ -247,7 +258,7 @@ npm run dist:prod   # minified build only
 
 - **New `raycastUnits: px | m | auto`** — controls hover/click **detection**,
   **independent of render `units`**. `m` runs a custom exact world-distance
-  raycast (depth-correct under perspective; the 1px VR-ray case), `px` delegates
+  raycast (depth-correct under perspective; the 1px controller-ray case), `px` delegates
   to stock screen-space, `auto` mirrors `dashUnits: auto` (px under ortho, m
   under perspective). Raycasting now targets a single dedicated pick line, so a
   dashed line registers one hit, not one per dash overlay. The pick band comes

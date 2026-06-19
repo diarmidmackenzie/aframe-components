@@ -12,7 +12,7 @@
   <script src="../../raycaster-thresholds/index.js"></script>
   <link rel="stylesheet" href="../../../styles.css">
   <style>
-    .text-overlay { max-height: 42vh; max-width: 30rem; overflow-y: auto; }
+    .text-overlay { max-width: 46rem; }
   </style>
   <script>
     // Tint the line on hover so the m-distance pick band is visible without a
@@ -51,54 +51,45 @@
 </head>
 
 <body>
+  <!-- DETAIL (kept out of the on-screen text). The cursor carries
+       raycaster-thresholds="line:0.05", so params.Line2.threshold = 0.05 m (via
+       the default matchLine mode). The cyan stroke is width:1 units:px (a 1px
+       controller-ray primitive) with raycastUnits:m, so its pick band is a fixed
+       0.05 m WORLD distance that does NOT shrink as you back away (unlike a px
+       band). px is deliberately not shown here: one raycaster carries a single
+       params.Line2.threshold, which a px line would read as 0.05 PIXELS
+       (unpickable) — the px case has its own cursor in raycast-orthographic.html.
+       Use WASD to walk toward / away from the far end. -->
   <div class="text-overlay">
-    <p>connecting-line2: <b>VR ray — m-distance raycast</b> (perspective camera)</p>
-    <p><b>Move the mouse over the line; WASD to walk toward / away.</b> It is a
-       <code>width:1 units:px</code> 1px stroke (a controller-ray primitive).
-       The cursor carries <code>raycaster-thresholds="line:0.05"</code>, so
-       <code>params.Line2.threshold = 0.05m</code> (via the default
-       <code>matchLine</code> mode).</p>
-    <ul>
-      <li><b>cyan</b> — <code>raycastUnits:m</code>: a fixed <em>world</em> pick
-        band (~5cm). Grabbable at near <em>and</em> far depth; the tolerance does
-        not shrink as you back away. This is the headline VR-ray proof.</li>
-    </ul>
-    <p><b>px is not shown here.</b> A single raycaster carries one
-       <code>params.Line2.threshold</code> (0.05 from <code>line:0.05</code>),
-       which a <code>raycastUnits:px</code> line would read as 0.05 <em>pixels</em>
-       — unpickable at every depth, and it can't share this m-cursor anyway. The
-       px path needs its own px-threshold cursor; see
-       <code>raycast-screen.html</code>.</p>
-    <p>Hover tints the line yellow and updates the status line below. Walk up close
-       to the far end and back away — the world-constant (cyan) band stays
-       grabbable the whole way.</p>
+    <p><b>connecting-line2 — m-distance raycast (perspective camera)</b></p>
+    <p>Hover the thin cyan line: it turns <b>yellow</b> when picked (watch Status).
+       It stays grabbable at <b>both</b> the near and far ends — even where it
+       shrinks to a hairline in the distance.</p>
     <p>Status: <b id="status">—</b></p>
   </div>
   <a class="code-link" target="_blank"
-    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/raycast-vr-ray.html">
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/raycast-perspective.html">
     view code
   </a>
 
   <a-scene background="color:#001">
-    <a-entity camera look-controls wasd-controls position="0 1.6 4">
+    <a-entity camera look-controls wasd-controls position="0 1.6 2">
       <!-- Mouse-driven cursor. raycaster-thresholds sets params.Line/Line2 to
-           5cm so the thin lines have a real pick band. -->
+           5cm so the thin line has a real pick band. -->
       <a-entity cursor="rayOrigin:mouse"
-                raycaster="objects:.pickable; far:50"
+                raycaster="objects:.pickable; far:60"
                 raycaster-thresholds="line:0.05"></a-entity>
     </a-entity>
 
-    <!-- The line runs AWAY from the camera in depth so near vs far grabbing is
-         exercised along a single stroke. -->
-    <a-sphere id="ma" position="0 1.6  1" radius="0.03" color="#888"></a-sphere>
-    <a-sphere id="mb" position="0 1.6 -8" radius="0.03" color="#888"></a-sphere>
+    <!-- The cyan line recedes DIAGONALLY (near-left → far-right) so it reads
+         clearly as a line from the default camera — a line running straight down
+         the view axis would foreshorten to a dot — while still exercising
+         near-vs-far grabbing along one 1px stroke. -->
+    <a-sphere id="ma" position="-1.5 1.6 -1"  radius="0.03" color="#888"></a-sphere>
+    <a-sphere id="mb" position=" 2.5 1.6 -18" radius="0.06" color="#888"></a-sphere>
 
-    <a-text color="white" value="raycastUnits:m (world band)" position="-0.4 1.9  1" scale="0.5 0.5 0.5"></a-text>
-
-    <!-- Depth cues at the two endpoints: the 1px stroke must be grabbable at
-         BOTH near (z=1) and far (z=-8) — the world-constant-band proof. -->
-    <a-text color="#0ff" value="near" position="0.15 1.45  1" scale="0.4 0.4 0.4"></a-text>
-    <a-text color="#0ff" value="far"  position="0.15 1.45 -8" scale="0.4 0.4 0.4"></a-text>
+    <a-text color="#0ff" value="near" position="-1.9 1.45 -1"  scale="0.4 0.4 0.4"></a-text>
+    <a-text color="#0ff" value="far"  position=" 2.5 1.95 -18" scale="1.4 1.4 1.4"></a-text>
 
     <a-entity class="pickable"
       connecting-line2__m="start:#ma; end:#mb; color:cyan; width:1; units:px; raycastUnits:m"

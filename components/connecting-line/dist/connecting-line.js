@@ -218,7 +218,7 @@ AFRAME.registerComponent('connecting-line2', {
     dashUnits: { default: 'auto', oneOf: ['auto', 'px', 'm'] },
     // Detection (raycast) unit, ORTHOGONAL to render `units`. `px` => THREE's
     // stock screen-space raycast (2D mouse). `m` => a custom world-distance
-    // raycast (exact, depth-correct under perspective — the 1px VR-ray case).
+    // raycast (exact, depth-correct under perspective — the 1px controller-ray case).
     // `auto` mirrors dashUnits:auto's camera-awareness: px under an
     // orthographic camera, m under perspective. The m threshold is read from
     // raycaster.params.Line2.threshold (set via raycaster-thresholds).
