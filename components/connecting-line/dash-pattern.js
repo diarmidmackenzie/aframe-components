@@ -72,6 +72,9 @@ export function sanitiseDash(raw, attrName) {
 // The caller's public dashOffset (wrapped mod period) is added to every
 // overlay's offset so the whole pattern shifts in phase together. Returns [] for
 // the solid case (the caller renders a single non-dashed line).
+//
+// PRECONDITION: `dash` must already be sanitised (even-length, finite,
+// non-negative — via sanitiseDash). This function does NOT re-validate.
 export function decomposeDash(dash, dashOffset) {
   const overlays = [];
   let period = 0;

@@ -63,6 +63,21 @@ creation from the renderer's current drawing-buffer size. Without it, a
 the invisible `THREE.Line` pick proxy, not the `LineMaterial`.) The seed is a
 fallback; the per-pass sync takes over from the first frame onward.
 
+## Pick proxy
+
+Picking does not raycast the visible stroke. The visible stroke is N render-only
+overlay `Line2`s; picking targets a separate invisible 2-vertex `THREE.Line`
+registered via `setObject3D`, raycast by the **stock `THREE.Line.raycast`**.
+
+This is chosen deliberately over a custom point-segment `.raycast` on a render
+overlay. A standalone `THREE.Line` keeps raycasting on THREE's built-in,
+maintained, camera-independent code path — `raycaster.params.Line.threshold` in
+world units, no bespoke intersection math, no dependence on resolution or
+camera. The cost is one extra invisible object kept in lockstep with the
+endpoints, plus a `boundingSphere = null` on each move: `THREE.Line` caches the
+bounding sphere and never re-derives it, so without the reset a moved line is
+rejected at the broad-phase stage and goes silently un-pickable.
+
 ## Build / THREE setup
 
 A-Frame exposes a global `THREE`, but that global does **not** include the

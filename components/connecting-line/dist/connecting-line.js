@@ -130,8 +130,8 @@ __webpack_require__.r(__webpack_exports__);
 //  - rich dash patterns (single dash/gap, or multi-element dash-dot/-dot-dot
 //    via overlay decomposition),
 //  - an optional solid tube (cylinder) rendered in addition to the line,
-//  - the position-tracking / offset / length-adjustment / updateEvent
-//    machinery lifted from the legacy connecting-line component.
+//  - position-tracking / offset / length-adjustment / updateEvent machinery
+//    that keeps the stroke anchored between two moving entities.
 //
 // `three` is externalized to the page's global THREE by webpack; the deep
 // `three/examples/jsm/lines/...` imports are bundled (resolved out of
@@ -280,7 +280,6 @@ AFRAME.registerComponent('connecting-line2', {
   // but the host entity must also MATCH the raycaster's `objects` selector
   // (e.g. give it a `raycast-target` class) for any picking to occur. The
   // library exposes the pick object; the consumer makes the entity raycastable.
-  // (Mirrors simple-draw's line-hover pattern.)
   createPickLine() {
     if (this.pickLine) return;
     // A 2-vertex BufferGeometry whose positions track the endpoints. Seeded to
@@ -292,7 +291,6 @@ AFRAME.registerComponent('connecting-line2', {
     const material = new three__WEBPACK_IMPORTED_MODULE_0__.LineBasicMaterial();
     const pickLine = new three__WEBPACK_IMPORTED_MODULE_0__.Line(geometry, material);
     pickLine.visible = false;          // pick-only; never drawn.
-    pickLine.userData.clPickLine = true;
 
     this.pickLine = pickLine;
     // Register via setObject3D (NOT object3D.add) so A-Frame's raycaster, which
@@ -474,9 +472,6 @@ AFRAME.registerComponent('connecting-line2', {
       // Override the stock LineSegments2 onBeforeRender so resolution and
       // dashScale share a single getViewport() basis (see DESIGN-NOTES.md).
       line.onBeforeRender = this.onBeforeRender;
-      // Stash a back-reference so the shared hook can find this overlay's
-      // material + descriptor.
-      line.userData.clOverlayIndex = i;
       // Keep frustum culling ON — do not blanket-disable.
       this.overlayLineGroup.add(line);
       this.overlays.push({ line, material });
@@ -503,6 +498,8 @@ AFRAME.registerComponent('connecting-line2', {
       if (!o) continue;
       o.material.dashSize = params[i].dashSize;
       o.material.gapSize = params[i].gapSize;
+      // dashOffset is intentionally in the SAME unit space as dashSize/gapSize
+      // (dash units) — dashScale converts all three together at render time.
       o.material.dashOffset = params[i].dashOffset;
     }
   },
@@ -561,7 +558,9 @@ AFRAME.registerComponent('connecting-line2', {
         visible: data.visible
       });
     } else if (this.cylinder) {
-      this.el.removeChild(this.cylinder);
+      // Guard: A-Frame may already have detached the child (removeChild on a
+      // non-child throws NotFoundError). Mirrors the guard in remove().
+      if (this.cylinder.parentNode === this.el) this.el.removeChild(this.cylinder);
       this.cylinder = null;
     }
   },
@@ -604,16 +603,16 @@ AFRAME.registerComponent('connecting-line2', {
     }
     if (!cam) return;
 
-    const effective = data.dashUnits === 'auto'
+    const effectiveDashUnits = data.dashUnits === 'auto'
       ? ((data.units === 'px' && cam.isOrthographicCamera) ? 'px' : 'm')
       : data.dashUnits;
 
-    if (effective === 'm') {
+    if (effectiveDashUnits === 'm') {
       material.dashScale = 1;
       return;
     }
 
-    // effective === 'px' — convert the px period to world units via the
+    // effectiveDashUnits === 'px' — convert the px period to world units via the
     // viewport's world-per-pixel scale at the line midpoint.
     if (cam.isPerspectiveCamera) cam.updateMatrixWorld();
     // _prevStart/_prevEnd are the endpoints in the el's LOCAL space; the
@@ -621,27 +620,27 @@ AFRAME.registerComponent('connecting-line2', {
     // approximation evaluates at.
     _midpointWorld.addVectors(this._prevStart, this._prevEnd).multiplyScalar(0.5);
     this.el.object3D.localToWorld(_midpointWorld);
-    const wpp = (0,_line_math_js__WEBPACK_IMPORTED_MODULE_5__.worldPerPixel)(cam, viewportHeightPx, _midpointWorld);
+    const worldPerPx = (0,_line_math_js__WEBPACK_IMPORTED_MODULE_5__.worldPerPixel)(cam, viewportHeightPx, _midpointWorld);
 
-    // Require viewportHeightPx > 0 && wpp > 0 before syncing; otherwise skip
-    // and keep the previous value (never write NaN).
-    if (!(viewportHeightPx > 0) || !(wpp > 0) || !Number.isFinite(wpp)) {
+    // Require viewportHeightPx > 0 && worldPerPx > 0 before syncing; otherwise
+    // skip and keep the previous value (never write NaN).
+    if (!(viewportHeightPx > 0) || !(worldPerPx > 0) || !Number.isFinite(worldPerPx)) {
       return;
     }
 
-    let dashScale = 1 / wpp;
+    let dashScale = 1 / worldPerPx;
 
-    // Bound the ON-SCREEN period — (period / dashScale) / wpp, in px — to
+    // Bound the ON-SCREEN period — (period / dashScale) / worldPerPx, in px — to
     // ~[0.5px, viewportHeightPx], so extreme zoom degrades gracefully (toward
     // solid at one rail, a single screen-tall dash at the other) instead of
-    // collapsing or overflowing. The bounds MUST include wpp: in the normal
+    // collapsing or overflowing. The bounds MUST include worldPerPx: in the normal
     // range this is then a no-op — a px dash's on-screen period is `period` px
-    // by construction, so dashScale stays at 1/wpp and the dashes track the
+    // by construction, so dashScale stays at 1/worldPerPx and the dashes track the
     // camera (screen-constant) rather than being pinned to a fixed world size.
     const period = (0,_dash_pattern_js__WEBPACK_IMPORTED_MODULE_4__.getPeriod)(this.overlayParams);
     if (period > 0) {
-      const minScale = period / (viewportHeightPx * wpp); // on-screen period == viewport height
-      const maxScale = period / (0.5 * wpp);              // on-screen period == 0.5px
+      const minScale = period / (viewportHeightPx * worldPerPx); // on-screen period == viewport height
+      const maxScale = period / (0.5 * worldPerPx);              // on-screen period == 0.5px
       if (dashScale < minScale) dashScale = minScale;
       if (dashScale > maxScale) dashScale = maxScale;
     }
@@ -658,6 +657,10 @@ AFRAME.registerComponent('connecting-line2', {
   initResolutionUniform(material) {
     const renderer = this.el.sceneEl && this.el.sceneEl.renderer;
     if (renderer && material.uniforms && material.uniforms.resolution) {
+      // This one-shot seed uses the drawing-buffer size as a coarse
+      // pre-first-frame fallback; the per-frame onBeforeRender uses
+      // getViewport() instead. The two bases differ only for non-full-canvas
+      // viewports (split-screen, scissored, per-eye XR).
       const size = renderer.getDrawingBufferSize(new three__WEBPACK_IMPORTED_MODULE_0__.Vector2());
       if (size.x > 0 && size.y > 0) {
         material.uniforms.resolution.value.set(size.x, size.y);
@@ -666,7 +669,8 @@ AFRAME.registerComponent('connecting-line2', {
   },
 
   // -------------------------------------------------------------------------
-  // Event-listener machinery (lifted from the legacy component).
+  // Event-listener machinery — re-binds updateLinePosition on updateEvent /
+  // start / end entity change, and tears the bindings down on removal.
   // -------------------------------------------------------------------------
   updateEventListeners() {
     const { data, listenerData } = this;
@@ -754,7 +758,8 @@ AFRAME.registerComponent('connecting-line2', {
   },
 
   // -------------------------------------------------------------------------
-  // Length adjustment (lifted verbatim from legacy).
+  // Length adjustment — extends/scales the endpoints per the lengthAdjustment
+  // mode (none / scale / extend / absolute) before the geometry is written.
   // -------------------------------------------------------------------------
   adjustLength(start, end) {
     const { lengthAdjustment } = this.data;
@@ -996,6 +1001,9 @@ function sanitiseDash(raw, attrName) {
 // The caller's public dashOffset (wrapped mod period) is added to every
 // overlay's offset so the whole pattern shifts in phase together. Returns [] for
 // the solid case (the caller renders a single non-dashed line).
+//
+// PRECONDITION: `dash` must already be sanitised (even-length, finite,
+// non-negative — via sanitiseDash). This function does NOT re-validate.
 function decomposeDash(dash, dashOffset) {
   const overlays = [];
   let period = 0;
