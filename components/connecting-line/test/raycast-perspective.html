@@ -2,11 +2,13 @@
 <html>
 
 <head>
-  <!-- VERSION-FLOOR NOTE (manual): the Line2 raycast threshold mechanism
-       (params.Line2.threshold) works on A-Frame >= 1.5.0 (three r158+). To
-       prove the floor rather than just the installed r183, swap the A-Frame
-       src below for https://aframe.io/releases/1.5.0/aframe.min.js and confirm
-       the thin line is still grabbable. -->
+  <!-- VERSION-FLOOR NOTE (manual): connecting-line2 needs A-Frame >= 1.5.0
+       (three r158+) to render its Line2 stroke. The pick proxy is a plain
+       THREE.Line, picked by raycaster.params.Line.threshold, which works on any
+       A-Frame. To prove the render floor rather than just the installed r183,
+       swap the A-Frame src below for
+       https://aframe.io/releases/1.5.0/aframe.min.js and confirm the thin line
+       still renders AND is grabbable. -->
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
   <script src="../dist/connecting-line.js"></script>
   <script src="../../raycaster-thresholds/index.js"></script>
@@ -15,8 +17,8 @@
     .text-overlay { max-width: 46rem; }
   </style>
   <script>
-    // Tint the line on hover so the m-distance pick band is visible without a
-    // real grab interaction. A-Frame's cursor emits mouseenter / mouseleave on
+    // Tint the line on hover so the world-distance pick band is visible without
+    // a real grab interaction. A-Frame's cursor emits mouseenter / mouseleave on
     // the intersected entity (the entity carrying the connecting-line2). `base`
     // and `tint` are the colours to swap between; `attr` names the
     // connecting-line2 instance to recolour.
@@ -51,20 +53,22 @@
 </head>
 
 <body>
-  <!-- DETAIL (kept out of the on-screen text). The cursor carries
-       raycaster-thresholds="line:0.05", so params.Line2.threshold = 0.05 m (via
-       the default matchLine mode). The cyan stroke is width:1 units:px (a 1px
-       controller-ray primitive) with raycastUnits:m, so its pick band is a fixed
-       0.05 m WORLD distance that does NOT shrink as you back away (unlike a px
-       band). px is deliberately not shown here: one raycaster carries a single
-       params.Line2.threshold, which a px line would read as 0.05 PIXELS
-       (unpickable) — the px case has its own cursor in raycast-orthographic.html.
-       Use WASD to walk toward / away from the far end. -->
+  <!-- DETAIL (kept out of the on-screen text). connecting-line2 maintains an
+       invisible THREE.Line pick proxy whose 2 vertices track the rendered
+       endpoints. Picking uses the stock THREE.Line.raycast — world-distance, no
+       camera, no resolution sync — with the pick band read from
+       raycaster.params.Line.threshold (WORLD units). The cursor carries
+       raycaster-thresholds="line:0.05", so params.Line.threshold = 0.05 m. The
+       cyan stroke renders at width:1 units:px (a 1px controller-ray primitive),
+       but its pick band is the fixed 0.05 m WORLD distance — it does NOT shrink
+       as you back away, and works under any camera. Use WASD to walk toward /
+       away from the far end. -->
   <div class="text-overlay">
-    <p><b>connecting-line2 — m-distance raycast (perspective camera)</b></p>
+    <p><b>connecting-line2 — world-distance picking (THREE.Line proxy)</b></p>
     <p>Hover the thin cyan line: it turns <b>yellow</b> when picked (watch Status).
-       It stays grabbable at <b>both</b> the near and far ends — even where it
-       shrinks to a hairline in the distance.</p>
+       The pick band is set by <code>raycaster-thresholds="line:0.05"</code>
+       (0.05 m). It stays grabbable at <b>both</b> the near and far ends — even
+       where it shrinks to a hairline in the distance.</p>
     <p>Status: <b id="status">—</b></p>
   </div>
   <a class="code-link" target="_blank"
@@ -74,8 +78,8 @@
 
   <a-scene background="color:#001">
     <a-entity camera look-controls wasd-controls position="0 1.6 2">
-      <!-- Mouse-driven cursor. raycaster-thresholds sets params.Line/Line2 to
-           5cm so the thin line has a real pick band. -->
+      <!-- Mouse-driven cursor. raycaster-thresholds sets params.Line to 5cm so
+           the thin pick proxy has a real world-distance pick band. -->
       <a-entity cursor="rayOrigin:mouse"
                 raycaster="objects:.pickable; far:60"
                 raycaster-thresholds="line:0.05"></a-entity>
@@ -92,8 +96,8 @@
     <a-text color="#0ff" value="far"  position=" 2.5 1.95 -18" scale="1.4 1.4 1.4"></a-text>
 
     <a-entity class="pickable"
-      connecting-line2__m="start:#ma; end:#mb; color:cyan; width:1; units:px; raycastUnits:m"
-      hover-tint="attr:connecting-line2__m; base:cyan; tint:yellow; label:m-line"></a-entity>
+      connecting-line2__m="start:#ma; end:#mb; color:cyan; width:1; units:px"
+      hover-tint="attr:connecting-line2__m; base:cyan; tint:yellow; label:proxy-line"></a-entity>
   </a-scene>
 </body>
 

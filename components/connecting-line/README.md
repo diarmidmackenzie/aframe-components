@@ -99,7 +99,6 @@ on the new `connecting-line2` component (schema below). New work should use
 | **units**             | px / m          | **px**    | Unit for the **width**. `px` = screen-constant; `m` = world units (scales with zoom). |
 | **dash**              | array of number | **[]**    | Dash pattern `[dashA, gapA, dashB, gapB, …]` in `dashUnits`. Empty ⇒ solid. An odd-length array drops its trailing element (`[1,1,1]`→`[1,1]`; `[5]`→solid). Multi-element arrays produce dash-dot / dash-dot-dot patterns (decomposed into overlaid lines internally). |
 | **dashUnits**         | auto / px / m   | **auto**  | Unit for the **dash** pattern. `auto` matches `units` — except under a perspective camera, where a `px` width's dash upgrades to world units (avoids disorienting shrink-on-approach in VR). Net: `auto` → `px` only when `units: px` **and** an orthographic camera, else `m`. Resolved per render from the active camera. |
-| **raycastUnits**      | px / m / auto   | **auto**  | Unit for **raycast (hover/click) detection** — **independent of render `units`** (see below). `px` = stock screen-space pick (2D mouse). `m` = a custom world-distance pick, exact and depth-correct under perspective (the VR controller-ray case). `auto` mirrors `dashUnits: auto`: `px` under an orthographic camera, `m` under perspective. The threshold (pick band) comes from `raycaster.params.Line2.threshold` — set it via [`raycaster-thresholds`](../raycaster-thresholds/). |
 | **dashOffset**        | number          | **0**     | Phase offset into the pattern, in `dashUnits`. |
 | **tubeRadius**        | number          | **0**     | Optional solid cylinder radius (world units), rendered **in addition to** the line. `0` = no tube. Always solid; never dashes. |
 | **segments**          | int             | **4**     | Tube radial segments (only used when `tubeRadius > 0`). |
@@ -130,40 +129,32 @@ with more than one (dash-dot, dash-dot-dot) are decomposed into **N overlaid
 \* Dashes are butt-capped (`LineMaterial` has no cap option), so a "dot"
 renders as a small square, not a round dot.
 
-### Raycast detection — independent of render width
+### Raycast detection — world-distance, via an invisible pick proxy
 
-`raycastUnits` controls how the line is **picked** (hover / click), and it is
-**orthogonal to render `units`**. THREE's stock `Line2` raycast welds the two —
-it picks the screen-space (`px`) or world-space (`m`) path off
-`material.worldUnits`, a *render* setting — so a `px`-width line is forced into
-`px` detection. `connecting-line2` decouples them by raycasting against a single
-dedicated pick line with a custom `.raycast`:
+Picking (hover / click) is handled by an **invisible `THREE.Line` pick proxy**
+the component maintains: a 2-vertex line whose endpoints track the rendered
+stroke. It raycasts with the **stock `THREE.Line.raycast`** — world-distance,
+camera-independent, no resolution sync — so picking works the same under any
+camera (perspective, orthographic, VR). The pick band is
+`raycaster.params.Line.threshold` (**world units**), set via
+[`raycaster-thresholds`](../raycaster-thresholds/)'s `line` property.
 
-- `raycastUnits: m` runs an exact **world-distance** test (`THREE.Line`-style: the
-  render width contributes nothing to the pick band). This makes a **1px stroke
-  picked by world distance** — a thin ray visible into the far distance but not
-  bloated up close, picked by a fixed physical tolerance — a legal, exact
-  combination. This is the common VR controller-ray primitive:
+Because the pick is by world distance, the **render width contributes nothing to
+the pick band**: a 1px stroke is picked by a fixed physical tolerance — a thin
+ray visible into the far distance but not bloated up close — the common VR
+controller-ray primitive:
 
-  ```html
-  <!-- 1px ray, picked by a fixed ~5cm world band, exact at any depth -->
-  <a-entity connecting-line2="start:#a; end:#b; width:1; units:px; raycastUnits:m"></a-entity>
-  <!-- the cursor's raycaster needs a metres Line2 threshold: -->
-  <a-entity cursor="rayOrigin:mouse" raycaster="objects:.line"
-            raycaster-thresholds="line:0.05"></a-entity>
-  ```
+```html
+<!-- 1px ray, picked by a fixed ~5cm world band, exact at any depth -->
+<a-entity class="line" connecting-line2="start:#a; end:#b; width:1; units:px"></a-entity>
+<!-- the cursor's raycaster sets the world pick band via params.Line.threshold: -->
+<a-entity cursor="rayOrigin:mouse" raycaster="objects:.line"
+          raycaster-thresholds="line:0.05"></a-entity>
+```
 
-- `raycastUnits: px` delegates to THREE's stock screen-space raycast (2D mouse;
-  the threshold is in pixels — set `raycaster-thresholds="line2Mode:set; line2:8"`).
-- `raycastUnits: auto` resolves to `px` under an orthographic camera, `m` under
-  perspective.
-
-The pick band itself is `raycaster.params.Line2.threshold` — set it with
-[`raycaster-thresholds`](../raycaster-thresholds/). **You must set a threshold to
-pick:** with none set the band is zero-width — only an *exact* on-line hit
-registers, which is effectively unpickable for a thin stroke. (`connecting-line2`
-`console.warn`s once if an `m`-detect pick runs with no threshold, so this
-dead-zone isn't silent.)
+**You must set a threshold to pick:** with none set, `params.Line.threshold`
+defaults to 1 (THREE's default) — usually you'll want a deliberate value via
+`raycaster-thresholds`.
 
 **The host entity must be raycastable.** `connecting-line2` exposes a pick
 object, but picking only happens if the **host entity matches the raycaster's
@@ -171,7 +162,7 @@ object, but picking only happens if the **host entity matches the raycaster's
 
 ```html
 <a-entity class="raycast-target"
-  connecting-line2="start:#a; end:#b; raycastUnits:m"></a-entity>
+  connecting-line2="start:#a; end:#b"></a-entity>
 <a-entity cursor="rayOrigin:mouse" raycaster="objects:.raycast-target"
           raycaster-thresholds="line:0.05"></a-entity>
 ```
@@ -186,16 +177,13 @@ raycast-*ed* (mirrors simple-draw's line-hover pattern).
 > they're descendants of the `setObject3D('mesh', …)` scene. An object added via
 > `el.object3D.add(...)` is a *sibling* of the named entries — a child of the
 > entity's root group, which is never itself in the list — so it is **not**
-> raycast. That's why `connecting-line2` registers its pick line via `setObject3D`.
-> (Note: A-Frame also never sets `raycaster.camera`, so the `px`/screen-space path
-> sources the camera from `sceneEl.camera` itself.)
+> raycast. That's why `connecting-line2` registers its pick proxy via `setObject3D`.
 
-**One raycaster, one detection model.** `params.Line2.threshold` is a single
-value per raycaster, so keep a given raycaster's targets homogeneous (a VR
-controller's targets should all be `m`-detecting). Dashed lines pick as **one**
-hit (the N dash overlays are render-only; raycasting targets a single pick line).
-Hits return the standard `{ point, distance, object }` shape (with `object.el`
-back-referencing the host entity), just like the stock `Line2` raycast path.
+Dashed lines pick as **one** hit (the N dash overlays are render-only and are
+added via `object3D.add`, so the raycaster never tests them; raycasting targets
+the single pick proxy). Hits return the standard `{ point, distance, object }`
+shape (with `object.el` back-referencing the host entity), just like any
+`THREE.Line` raycast.
 
 ### Length adjustment
 
@@ -215,10 +203,10 @@ back-referencing the host entity), just like the stock `Line2` raycast path.
 Developer test harnesses live in [`test/`](./test/): `width.html`,
 `length-factor.html`, `event-updates.html`, `start-end-disappear.html`,
 `dashed.html`, `units-ortho.html`, `units-perspective.html`, `legacy-compat.html`,
-`raycast-perspective.html` (`raycastUnits:m` 1px ray — grabbable at any depth),
-`raycast-orthographic.html` (`raycastUnits:px`/`auto`). The two raycast harnesses
-carry a version-floor note: swap the A-Frame `<script>` to `1.5.0` to confirm
-`params.Line2.threshold` picking at the supported floor.
+`raycast-perspective.html` (a 1px stroke picked by world distance — grabbable at
+any depth via the THREE.Line pick proxy). It carries a version-floor note: swap
+the A-Frame `<script>` to `1.5.0` to confirm the line still renders and picks at
+the supported floor.
 
 ## Building
 
@@ -256,22 +244,19 @@ npm run dist:prod   # minified build only
 
 ### Unreleased
 
-- **New `raycastUnits: px | m | auto`** — controls hover/click **detection**,
-  **independent of render `units`**. `m` runs a custom exact world-distance
-  raycast (depth-correct under perspective; the 1px controller-ray case), `px` delegates
-  to stock screen-space, `auto` mirrors `dashUnits: auto` (px under ortho, m
-  under perspective). Raycasting now targets a single dedicated pick line, so a
-  dashed line registers one hit, not one per dash overlay. The pick band comes
-  from `raycaster.params.Line2.threshold` (set via `raycaster-thresholds`).
-- **`raycaster-thresholds`** (sibling component) now drives
-  `params.Line2.threshold`: its `line` (m) sets **both** `params.Line` and
-  `params.Line2` under the new default `matchLine` mode, plus `line2Mode` /
-  `line2` for px targets. THREE's `Raycaster` doesn't define `Line2`, so this is
-  what makes `connecting-line2` lines pickable at all. **Bump both components
-  together** — pinning an old `raycaster-thresholds` silently loses Line2
-  picking.
-- Minimum A-Frame unchanged: works on **A-Frame ≥ 1.5.0** (three r158+);
-  `params.Line2.threshold` is honoured across the 1.5.0 → 1.7.0 window.
+- **Hover/click picking now uses an invisible `THREE.Line` pick proxy.** The
+  component maintains a 2-vertex `THREE.Line` whose endpoints track the rendered
+  stroke and raycasts it with the **stock `THREE.Line.raycast`** —
+  world-distance, camera-independent, no custom raycast / camera-sourcing /
+  resolution-sync code. The pick band is `raycaster.params.Line.threshold`
+  (world units), so it's **zero-touch with the existing
+  [`raycaster-thresholds`](../raycaster-thresholds/) `line` property** — no
+  `params.Line2` plumbing required. The render width contributes nothing to the
+  pick band (a 1px stroke is still picked by a fixed world tolerance, exact at
+  any depth — the VR controller-ray case). Dashed lines register **one** hit
+  (the N dash overlays are render-only and never raycast).
+- Minimum A-Frame unchanged: works on **A-Frame ≥ 1.5.0** (three r158+); the
+  pick proxy is a plain `THREE.Line` and picks on any A-Frame version.
 
 > Versioning note: these entries are written now; the **npm publish** of the
 > bundle is a later, post-integration step. simple-draw consumes the
