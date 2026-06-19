@@ -76,6 +76,11 @@ v0.4.0 delivers a new component `connecting-line2` with a revised schema, and ad
 
 The component `connecting-line` preserves the v0.3.x schema.
 
+### Changes in 0.4.0
+
+For the full list of changes in this release, see
+[RELEASE-NOTES.md](./RELEASE-NOTES.md).
+
 
 
 ## `connecting-line2` schema
