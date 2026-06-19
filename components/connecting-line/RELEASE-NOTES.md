@@ -27,8 +27,6 @@
 
 ### Fixed
 
-- The base stroke is antialiased and no longer renders too thin on high-resolution
-  export.
 - The `updateEvent` end-entity listener is removed on teardown (previously leaked).
 - `updateEvent` listeners rebind when the `start` / `end` **entity** is swapped at
   runtime (previously they stayed on the old entity).
