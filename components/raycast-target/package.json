@@ -8,7 +8,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/diarmidmackenzie/aframe-components/tree/main/components/raycast-target"
+    "url": "git+https://github.com/diarmidmackenzie/aframe-components.git",
+    "directory": "components/raycast-target"
   },
   "keywords": [
     "A-Frame",

@@ -20,5 +20,10 @@
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.15.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diarmidmackenzie/aframe-components.git",
+    "directory": "components/head-tracking"
   }
 }

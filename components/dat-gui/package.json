@@ -24,5 +24,10 @@
   },
   "dependencies": {
     "dat.gui": "^0.7.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diarmidmackenzie/aframe-components.git",
+    "directory": "components/dat-gui"
   }
 }
