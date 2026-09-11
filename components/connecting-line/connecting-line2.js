@@ -51,92 +51,60 @@ const _viewport = new Vector4();
 // ---------------------------------------------------------------------------
 // World-unit extrusion under an orthographic camera.
 //
-// LineMaterial's WORLD_UNITS vertex path picks the extrusion basis by facing
-// the camera POSITION -- it takes the camera-space segment midpoint as the
-// forward vector, which assumes every viewing ray converges there. That is
-// true under perspective and false under orthographic projection, where rays
-// are parallel to camera-space -z. The error is a band narrowed by
-// |d| / length( midpoint ), so it grows with distance from the image centre:
-// at depth 2 and 8 units off-axis a stroke renders at ~24% of its width, and
-// an axis-aligned hairline can vanish from an un-multisampled capture
-// entirely.
+// LineMaterial's WORLD_UNITS vertex path builds its extrusion basis from the
+// camera-space segment midpoint, which assumes viewing rays converge on the
+// camera position. That is true under perspective and false under orthographic
+// projection, where rays are parallel to camera-space -z -- so the stroke
+// narrows with distance from the image centre and an axis-aligned hairline can
+// vanish from an un-multisampled capture.
 //
-// This is a three.js bug rather than anything specific to this component; the
-// fix here is a vendored workaround pending an upstream change. It is applied
-// as a per-material-instance vertexShader override -- NOT by mutating the
-// page-global THREE.ShaderLib['line'], which would change rendering for every
-// other consumer on the page.
+// This is a three.js bug, fixed upstream by mrdoob/three.js#34540 (milestone
+// r187). What follows is that exact one-line patch, applied per LineMaterial
+// INSTANCE because a component cannot patch the three.js it is handed. Keeping
+// it byte-identical to the upstream line is the point: it is visibly the same
+// fix, and when the bundled three carries it this whole block becomes a no-op
+// that can be deleted without changing a pixel.
 //
-// The perspective/orthographic split is exhaustive on its axis: off-axis and
-// asymmetric orthographic frusta and Camera.setViewOffset tiling all leave
-// camera-space rays parallel to -z, and WebXR's per-eye matrices are
-// perspective. So the branch needs no third case.
-//
-// The branch is a GLSL runtime branch on the shader's own `perspective`
-// classification, NOT a JavaScript branch on the camera at construction time:
-// one material outlives camera changes (entering and leaving an export view,
-// an orthographic-to-VR transition), so a construction-time decision would be
-// stale the moment the camera type changed.
+// NOT by mutating the page-global THREE.ShaderLib['line'] -- that would change
+// rendering for every other Line2 consumer on the page.
 // ---------------------------------------------------------------------------
 
-// The stock line, verbatim from super-three's LineMaterial vertex shader. A
-// single occurrence.
 const STOCK_WORLD_UNITS_FORWARD =
   'vec3 tmpFwd = normalize( mix( start.xyz, end.xyz, 0.5 ) );';
 
-// Present in the overridden shader source only. The comment is stripped by the
-// GPU compiler but survives in the JavaScript `material.vertexShader` string,
-// so a consumer can assert that the material it is rendering with actually
-// carries the override.
-const ORTHO_EXTRUSION_MARKER = 'CL2_ORTHO_EXTRUSION';
+const FIXED_WORLD_UNITS_FORWARD =
+  'vec3 tmpFwd = perspective ? normalize( mix( start.xyz, end.xyz, 0.5 ) ) : vec3( 0.0, 0.0, - 1.0 );';
 
-const ORTHO_AWARE_WORLD_UNITS_FORWARD = `vec3 tmpFwd;
-				if ( perspective ) {
-					// ${ORTHO_EXTRUSION_MARKER}: perspective rays converge on the camera
-					// position, so the extrusion faces the segment midpoint.
-					tmpFwd = normalize( mix( start.xyz, end.xyz, 0.5 ) );
-				} else {
-					// Orthographic rays are parallel to camera-space -z. Facing the
-					// camera POSITION shrinks the band away from the image centre;
-					// face the view DIRECTION instead.
-					tmpFwd = vec3( 0.0, 0.0, - 1.0 );
-					// A segment running along the view axis makes
-					// cross( worldDir, tmpFwd ) zero, and normalize( vec3( 0.0 ) ) is
-					// NaN -- which produces driver-dependent garbage rather than a
-					// clean disappearance. Such a segment projects to a point, so any
-					// perpendicular will do.
-					if ( abs( worldDir.z ) > 0.999999 ) tmpFwd = vec3( 0.0, 1.0, 0.0 );
-				}`;
-
-// Computed ONCE, at module evaluation, so a super-three bump that renames or
-// reflows the target line fails at load rather than at the first LineMaterial
-// construction. Deferring it to construction would mean a broken bump passed
-// `npm run dist` and a smoke load of an empty drawing, and only surfaced the
-// first time someone opened a drawing containing a world-unit line. (It also
-// keeps a ~9 KB string operation off the overlay-rebuild path, which runs on
-// every dash-pattern change.)
+// Resolved once, at module evaluation, so a three.js that has reflowed this
+// line fails when the bundle loads rather than the first time someone opens a
+// drawing with a world-unit line in it. Three outcomes, never two:
 //
-// The source is read from a freshly-constructed material's own `vertexShader`,
-// not from an imported ShaderLib: that is provably the string this component's
-// materials would otherwise compile, and it adds no import and no dependency
-// on the page global.
-function buildOrthoAwareVertexShader() {
+//   already fixed -> use the shader as-is (the upstream patch has landed)
+//   stock         -> apply the patch
+//   neither       -> throw; we no longer know what we are patching
+//
+// The source is read from a freshly-constructed material's own vertexShader,
+// so it is provably the string this component's materials would compile.
+function resolveVertexShader() {
   const probe = new LineMaterial();
   const source = probe.vertexShader;
   probe.dispose();
-  if (typeof source !== 'string' || source.indexOf(STOCK_WORLD_UNITS_FORWARD) === -1) {
-    throw new Error(
-      'aframe-connecting-line: the LineMaterial world-unit extrusion line this ' +
-      'component overrides is not present in the bundled three.js shader source. ' +
-      'The bundled three (super-three) has probably changed. Re-check the ' +
-      'WORLD_UNITS block in LineMaterial and update STOCK_WORLD_UNITS_FORWARD / ' +
-      'ORTHO_AWARE_WORLD_UNITS_FORWARD in connecting-line2.js.'
-    );
+  if (typeof source === 'string') {
+    if (source.indexOf(FIXED_WORLD_UNITS_FORWARD) !== -1) return source;
+    if (source.indexOf(STOCK_WORLD_UNITS_FORWARD) !== -1) {
+      return source.replace(STOCK_WORLD_UNITS_FORWARD, FIXED_WORLD_UNITS_FORWARD);
+    }
   }
-  return source.replace(STOCK_WORLD_UNITS_FORWARD, ORTHO_AWARE_WORLD_UNITS_FORWARD);
+  throw new Error(
+    'aframe-connecting-line: the LineMaterial world-unit extrusion line is ' +
+    'neither the stock form nor the fixed one from mrdoob/three.js#34540, so ' +
+    'the orthographic correction cannot be applied. The bundled three.js has ' +
+    'changed; re-read the WORLD_UNITS block in LineMaterial and update the two ' +
+    'constants above.'
+  );
 }
 
-const ORTHO_AWARE_VERTEX_SHADER = buildOrthoAwareVertexShader();
+const WORLD_UNITS_VERTEX_SHADER = resolveVertexShader();
 
 AFRAME.registerComponent('connecting-line2', {
 
@@ -433,16 +401,13 @@ AFRAME.registerComponent('connecting-line2', {
       // Assigned before the material is ever rendered, so the corrected source
       // is what gets compiled -- no recompile, no needsUpdate.
       //
-      // INVARIANT this override depends on: every material here is constructed
-      // with `dashed: true` (see above), so USE_DASH is defined in every
-      // configuration this component can produce. That puts the WORLD_UNITS
-      // *fragment* ray calculation out of reach -- it sits under
-      // `#ifndef USE_DASH`. If `dashed` is ever flipped to false for the solid
-      // case, that block comes alive and computes a perspective ray from the
-      // origin, discarding fragments by a position-dependent factor: the same
-      // bug this override fixes, one shader stage later. Fix it there too
-      // before making that change.
-      material.vertexShader = ORTHO_AWARE_VERTEX_SHADER;
+      // INVARIANT: every material here is constructed with `dashed: true`, so
+      // USE_DASH is defined in every configuration this component produces,
+      // which puts the WORLD_UNITS *fragment* ray calculation out of reach (it
+      // sits under `#ifndef USE_DASH`). Flip `dashed` to false for the solid
+      // case and that block comes alive computing a perspective ray from the
+      // origin -- the same bug, one shader stage later. Fix it there too.
+      material.vertexShader = WORLD_UNITS_VERTEX_SHADER;
 
       this.initResolutionUniform(material);
 

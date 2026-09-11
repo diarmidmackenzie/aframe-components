@@ -99,75 +99,48 @@ dependency to match and re-confirm the built bundle still contains the
 
 ## World-unit extrusion under an orthographic camera
 
-`LineMaterial`'s `WORLD_UNITS` vertex path picks the direction it extrudes the
-stroke in by facing the camera **position**: it takes the camera-space segment
-midpoint as the forward vector, which assumes every viewing ray converges
-there. That holds under a perspective camera and is false under an
-orthographic one, whose rays are parallel to camera-space `-z`.
+`LineMaterial`'s `WORLD_UNITS` vertex path builds its extrusion basis from the
+camera-space segment **midpoint**, which assumes viewing rays converge on the
+camera position. True under perspective; false under an orthographic camera,
+whose rays are parallel to camera-space `-z`. The stroke is narrowed by
+`|d| / length(midpoint)`, so it looks right at the image centre and wrong at the
+edges — at depth 2, 8 units off-axis, about 24% of its width, and an
+axis-aligned hairline disappears from an un-multisampled capture.
 
-The consequence is a band narrowed by `|d| / length(midpoint)`, so the error
-grows with distance from the image centre while the stroke at the centre looks
-correct. At depth 2 with the segment 8 units off-axis the stroke renders at
-about 24% of its width; an axis-aligned hairline can disappear from an
-un-multisampled capture altogether.
+This is a three.js bug, not something specific to this component. It is fixed
+upstream by [mrdoob/three.js#34540](https://github.com/mrdoob/three.js/pull/34540)
+(milestone r187).
 
-This is a three.js bug rather than anything specific to this component. Until
-it is fixed upstream we carry a **vendored workaround**: the corrected vertex
-shader source is assigned per `LineMaterial` **instance**, at construction, in
-`rebuildOverlays()`.
+**We carry that exact one-line patch, applied per `LineMaterial` instance** at
+construction in `rebuildOverlays()` — a component cannot patch the three.js it
+is handed, and mutating the page-global `THREE.ShaderLib['line']` would change
+rendering for every other `Line2` consumer on the page.
 
-### Why per-instance, and not the alternatives
+Two properties make it safe to carry:
 
-- **Not `THREE.ShaderLib['line']`.** Mutating it changes rendering for every
-  other consumer of `Line2` on the page — a library has no business doing that.
-- **Not a patch to the pinned `super-three`.** That puts a three.js patch under
-  a devDependency that has to be re-verified on every bump, and it would not
-  reach a consumer building against their own three.
-- **Not `onBeforeCompile` + `customProgramCacheKey`**, which is three's
-  supported hook for this and participates properly in the program cache. It
-  moves the failure below into the render loop, which is a strictly worse place
-  to fail than construction.
+- **Byte-identical to upstream.** Not a variant of the fix — the same line. So
+  when the bundled three ships r187, `resolveVertexShader()` finds the fixed
+  line already present and returns the shader untouched. Removing this block
+  then changes nothing, and needs no coordination with a super-three bump.
+- **It resolves to three outcomes, never two.** Already-fixed, stock, or
+  neither — and *neither* throws, at module evaluation, so a three.js that has
+  reflowed the line fails when the bundle loads rather than the first time
+  someone opens a drawing containing a world-unit line.
 
-### The two properties that keep it honest
-
-**The branch is a GLSL runtime branch**, on the shader's own `perspective`
-classification (`projectionMatrix[2][3] == -1.0`), not a JavaScript branch on
-the camera at construction time. One material outlives camera changes — a
+The branch inside the shader is a **GLSL runtime branch** on three's own
+`perspective` classification (`projectionMatrix[2][3] == -1.0`), not a
+JavaScript branch on the camera. One material outlives camera changes — a
 consumer entering and leaving an orthographic export view, or an
 orthographic-to-VR transition — so a construction-time decision would be stale
-the moment the camera type changed.
-
-The perspective/orthographic split is **exhaustive on its axis**: off-axis and
+the moment the camera type changed. The split is exhaustive: off-axis and
 asymmetric orthographic frusta and `Camera.setViewOffset` tiling all leave
 camera-space rays parallel to `-z`, and WebXR's per-eye matrices are
-perspective. There is no third case.
+perspective.
 
-**The substitution throws when its target is absent.** It is a string
-replacement against the bundled shader source, and a silent no-op would mean
-orthographic exports quietly regressing with nothing to show for it. So:
-
-- the corrected source is computed **once, at module evaluation** — a load-time
-  failure, not one deferred to the first `LineMaterial` a drawing happens to
-  need. (It also keeps a ~9 KB string operation off the overlay-rebuild path,
-  which runs on every dash-pattern change.)
-- `check-shader-target.mjs` runs as part of `npm run dist`, so a `super-three`
-  bump that breaks the override fails the **build**, earlier still. That is the
-  mechanical form of the re-confirmation the section above asks for.
-
-A degenerate case the fixed forward vector introduces: a segment running along
-the view axis makes `cross(worldDir, tmpFwd)` zero, and `normalize(vec3(0.0))`
-is NaN — driver-dependent garbage rather than a clean disappearance. Such a
-segment projects to a point, so the override falls back to any perpendicular.
-
-### Reading the shader override from outside
-
-The corrected source carries the marker comment `CL2_ORTHO_EXTRUSION`. The GPU
-compiler strips it, but it survives in the JavaScript `material.vertexShader`
-string — so a consumer verifying a build can assert on
-`overlays[0].material.vertexShader`. Assert on the **running material**, not on
-the contents of `dist/`: `LineMaterial` reads its shader source at
-construction, so whether the override reached the compiled program is a runtime
-ordering property, not a bundling one.
+Verifying a build: assert on `overlays[0].material.vertexShader`, not on the
+contents of `dist/`. `LineMaterial` reads its shader source at construction, so
+whether the fix reached the compiled program is a runtime ordering property
+rather than a bundling one.
 
 ## Dash overlay decomposition
 
