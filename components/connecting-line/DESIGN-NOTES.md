@@ -115,6 +115,68 @@ mismatch). If a future A-Frame bumps its `super-three`, re-pin the dev
 dependency to match and re-confirm the built bundle still contains the
 `LineMaterial` shader source.
 
+## World-unit extrusion under an orthographic camera
+
+`LineMaterial`'s `WORLD_UNITS` vertex path builds its extrusion basis from the
+camera-space segment **midpoint**, which assumes viewing rays converge on the
+camera position. True under perspective; false under an orthographic camera,
+whose rays are parallel to camera-space `-z`. The stroke is narrowed by
+`|d| / length(midpoint)`, so it looks right at the image centre and wrong at the
+edges — at depth 2, 8 units off-axis, about 24% of its width, and an
+axis-aligned hairline disappears from an un-multisampled capture.
+
+This is a three.js bug, not something specific to this component. It is fixed
+upstream by [mrdoob/three.js#34540](https://github.com/mrdoob/three.js/pull/34540)
+(milestone r187).
+
+**We carry that exact one-line patch, applied per `LineMaterial` instance** at
+construction in `rebuildOverlays()` — a component cannot patch the three.js it
+is handed, and mutating the page-global `THREE.ShaderLib['line']` would change
+rendering for every other `Line2` consumer on the page.
+
+Two properties make it safe to carry:
+
+- **The line we substitute in is upstream's, verbatim** — a variant would be a
+  second fix to reason about, and reviewing it would mean diffing GLSL against
+  a PR.
+- **What we match on is deliberately not exact.** We do not control when the
+  bundled three.js picks the fix up, nor in what form — reformatted, minified,
+  or restructured as an `if`/`else` by a reviewer — so the extrusion basis is
+  located by the two declarations that bracket it (`worldDir` above,
+  `worldUp` below) rather than by the text between them. `tmpFwd` occurs
+  exactly twice in the entire shader, so those anchors stay tight.
+- **It resolves to three outcomes, never two.** A bracketed region that already
+  consults `perspective` is handling the orthographic case in whatever form, so
+  it is left alone; a region carrying the stock declaration is patched;
+  anything else is **reported and skipped**, at module evaluation, so an
+  unrecognisable shader is named when the bundle loads rather than the first
+  time someone opens a drawing containing a world-unit line.
+
+The last case degrades rather than throwing, on purpose. The correction only
+affects `units: m` strokes under an orthographic camera, so killing the
+component would punish every consumer drawing px-unit lines under a perspective
+camera for a shader change that could not have affected them. The
+`console.error` fires once, before anything renders, and states what will now
+render wrongly.
+
+When the fix does land, this block becomes a no-op and can be deleted without
+changing a pixel — but nothing forces that to happen on the same bump.
+
+The branch inside the shader is a **GLSL runtime branch** on three's own
+`perspective` classification (`projectionMatrix[2][3] == -1.0`), not a
+JavaScript branch on the camera. One material outlives camera changes — a
+consumer entering and leaving an orthographic export view, or an
+orthographic-to-VR transition — so a construction-time decision would be stale
+the moment the camera type changed. The split is exhaustive: off-axis and
+asymmetric orthographic frusta and `Camera.setViewOffset` tiling all leave
+camera-space rays parallel to `-z`, and WebXR's per-eye matrices are
+perspective.
+
+Verifying a build: assert on `overlays[0].material.vertexShader`, not on the
+contents of `dist/`. `LineMaterial` reads its shader source at construction, so
+whether the fix reached the compiled program is a runtime ordering property
+rather than a bundling one.
+
 ## Dash overlay decomposition
 
 A single `LineMaterial` can express only **one** dash/gap pair. Patterns with

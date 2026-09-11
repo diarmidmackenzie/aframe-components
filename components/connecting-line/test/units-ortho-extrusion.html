@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script src="../dist/connecting-line.js"></script>
+  <link rel="stylesheet" href="../../../styles.css">
+  <style>
+    /* Deliberately NO max-height + overflow-y here. A scrolling overlay over
+       the fixed WebGL canvas makes Chromium composite a hole through the canvas
+       in headless screenshots -- the page background shows through as a solid
+       block. Keep the copy short enough not to need a scrollbar instead. */
+    .text-overlay { max-width: 26rem; font-size: 17px; }
+    .controls {
+      position: absolute; bottom: 1rem; left: 1rem; z-index: 10;
+      font-family: sans-serif; color: white;
+    }
+    .controls button {
+      font: inherit; padding: 0.4rem 0.8rem; margin-right: 0.5rem; cursor: pointer;
+    }
+    #state { font-weight: bold; }
+    #broken { color: #ff6b6b; }
+    #fixed { color: #6bff9a; }
+    .error { color: #ff6b6b; font-weight: bold; }
+  </style>
+  <script>
+    // An orthographic camera placed CLOSE to the drawing plane. Both parts
+    // matter: the stock extrusion error is |d| / sqrt(d*d + r*r), where d is the
+    // camera-to-content distance and r is how far off-axis the stroke is. A
+    // distant camera hides the bug; a nearby one over a wide area makes it
+    // impossible to miss. Here d = 0.5 and r reaches 8, so the worst strokes
+    // render at about a sixteenth of their width.
+    AFRAME.registerComponent('near-ortho-camera', {
+      schema: { height: { default: 18 }, near: { default: 0.01 }, far: { default: 100 } },
+      init() {
+        const sceneEl = this.el.sceneEl;
+        const setup = () => {
+          const h = this.data.height / 2;
+          const aspect = () => window.innerWidth / window.innerHeight;
+          const cam = new THREE.OrthographicCamera(
+            -h * aspect(), h * aspect(), h, -h, this.data.near, this.data.far);
+          cam.updateProjectionMatrix();
+          this.el.setObject3D('camera', cam);
+          sceneEl.camera = cam;
+          if (this.el.components.camera) this.el.components.camera.camera = cam;
+          this.onResize = () => {
+            cam.left = -h * aspect(); cam.right = h * aspect();
+            cam.updateProjectionMatrix();
+          };
+          window.addEventListener('resize', this.onResize);
+        };
+        if (sceneEl.hasLoaded && sceneEl.canvas) setup(); else sceneEl.addEventListener('loaded', setup);
+      },
+      remove() { if (this.onResize) window.removeEventListener('resize', this.onResize); }
+    });
+
+    // Lays out a field of short, equal-length, world-unit strokes across a wide
+    // area: one orientation per ROW, five positions per row. The axis-aligned
+    // rows (0 and 90 degrees) are the dramatic cases -- under the stock shader
+    // they vanish outright rather than merely thinning.
+    //
+    // The endpoint entities are created first and the line components added only
+    // once they have loaded. A connecting-line2 whose selector resolves before
+    // A-Frame has applied the endpoint's `position` reads both ends at the
+    // origin, and a stroke built from that is not merely misplaced -- it can
+    // extrude into a screen-filling quad.
+    AFRAME.registerComponent('line-field', {
+      schema: {
+        xs: { default: [-8, -4, 0, 4, 8] },
+        ys: { default: [8, 4, 0, -4, -8] },
+        angles: { default: [0, 30, 45, 60, 90] },
+        length: { default: 2.4 },
+        width: { default: 0.04 },    // WORLD units -- the whole point
+        color: { default: '#ffffff' }
+      },
+      init() {
+        const d = this.data;
+        const specs = [];
+        let n = 0;
+
+        d.ys.forEach((cy, row) => {
+          const rad = Number(d.angles[row % d.angles.length]) * Math.PI / 180;
+          const hx = Math.cos(rad) * d.length / 2;
+          const hy = Math.sin(rad) * d.length / 2;
+          d.xs.forEach((cx) => {
+            specs.push({
+              n: n++,
+              ax: Number(cx) - hx, ay: Number(cy) - hy,
+              bx: Number(cx) + hx, by: Number(cy) + hy
+            });
+          });
+        });
+
+        const pending = [];
+        specs.forEach((sp) => {
+          ['A', 'B'].forEach((end) => {
+            const e = document.createElement('a-entity');
+            e.id = `lf${end}${sp.n}`;
+            e.setAttribute('position',
+              end === 'A' ? `${sp.ax} ${sp.ay} 0` : `${sp.bx} ${sp.by} 0`);
+            this.el.appendChild(e);
+            pending.push(new Promise((res) => {
+              if (e.hasLoaded) res(); else e.addEventListener('loaded', res, { once: true });
+            }));
+          });
+        });
+
+        Promise.all(pending).then(() => {
+          const host = document.createElement('a-entity');
+          this.el.appendChild(host);
+          specs.forEach((sp) => {
+            host.setAttribute(`connecting-line2__${sp.n}`,
+              `start:#lfA${sp.n}; end:#lfB${sp.n}; color:${d.color}; ` +
+              `width:${d.width}; units:m`);
+          });
+          this.el.emit('line-field-ready', { count: specs.length });
+        });
+      }
+    });
+
+    // ---------------------------------------------------------------------
+    // The before/after toggle.
+    //
+    // The component ships the corrected shader, so showing the BUG means
+    // substituting the stock line back in. If that substitution ever stops
+    // matching -- because the bundled three.js changed, or because the fix
+    // landed upstream and the component no longer patches anything -- this page
+    // must SAY SO rather than silently render the same thing under both
+    // labels. A toggle that cannot toggle is worse than no toggle.
+    // ---------------------------------------------------------------------
+    const STOCK_DECL = 'vec3 tmpFwd = normalize( mix( start.xyz, end.xyz, 0.5 ) );';
+    const FWD_REGION = /vec3\s+worldDir\s*=[\s\S]*?vec3\s+worldUp\s*=/;
+
+    window.addEventListener('load', () => {
+      const sceneEl = document.querySelector('a-scene');
+      const statusEl = document.getElementById('status');
+      let showingFixed = true;
+
+      const eachMaterial = (fn) => {
+        const host = document.querySelector('[line-field]');
+        if (!host) return 0;
+        let seen = 0;
+        host.querySelectorAll('a-entity').forEach((el) => {
+          Object.keys(el.components || {}).forEach((name) => {
+            if (name.indexOf('connecting-line2') !== 0) return;
+            (el.components[name].overlays || []).forEach((o) => { fn(o.material); seen++; });
+          });
+        });
+        return seen;
+      };
+
+      const start = () => {
+        // Capture both shader variants once, from a real material.
+        let fixedSrc = null;
+        eachMaterial((m) => { if (!fixedSrc) fixedSrc = m.vertexShader; });
+
+        if (!fixedSrc) {
+          statusEl.innerHTML = '<span class="error">Could not find any line material to inspect — ' +
+            'this page verified nothing.</span>';
+          return;
+        }
+
+        const region = fixedSrc.match(FWD_REGION);
+        if (!region) {
+          statusEl.innerHTML = '<span class="error">Could not locate the extrusion basis in the ' +
+            'shader, so the before/after comparison cannot be built. This page verified nothing.</span>';
+          return;
+        }
+        if (region[0].indexOf('perspective') === -1) {
+          statusEl.innerHTML = '<span class="error">The shader in use does NOT consult the ' +
+            'projection type, so the correction is not active — both views below would be the ' +
+            '"before" case. This page verified nothing.</span>';
+          return;
+        }
+
+        const brokenSrc = fixedSrc.replace(region[0], region[0].replace(
+          /vec3\s+tmpFwd\s*=[\s\S]*?;/, STOCK_DECL));
+        if (brokenSrc === fixedSrc) {
+          statusEl.innerHTML = '<span class="error">Could not construct the "before" shader — ' +
+            'both buttons would render the same thing. This page verified nothing.</span>';
+          return;
+        }
+
+        const apply = (fixed) => {
+          showingFixed = fixed;
+          const n = eachMaterial((m) => {
+            m.vertexShader = fixed ? fixedSrc : brokenSrc;
+            m.needsUpdate = true;
+          });
+          document.getElementById('state').innerHTML = fixed
+            ? '<span id="fixed">FIXED — extrusion faces the view direction</span>'
+            : '<span id="broken">BEFORE — extrusion faces the camera position</span>';
+          statusEl.textContent = `${n} strokes.`;
+        };
+
+        document.getElementById('toggle').addEventListener('click', () => apply(!showingFixed));
+        document.getElementById('toggle').disabled = false;
+        apply(true);
+      };
+
+      // Wait for line-field to have built and attached every stroke, so that
+      // "no material found" below means a real failure rather than a race.
+      const field = document.querySelector('[line-field]');
+      if (!field) {
+        statusEl.innerHTML = '<span class="error">No line field on the page.</span>';
+        return;
+      }
+      field.addEventListener('line-field-ready', () => setTimeout(start, 250), { once: true });
+    });
+  </script>
+</head>
+
+<body>
+  <div class="text-overlay">
+    <p>connecting-line2: <b>world-unit extrusion, orthographic camera</b></p>
+
+    <p>Every stroke below is the same width — <code>width:0.04</code>,
+      <code>units:m</code> — spread over a wide area, with the orthographic
+      camera just <b>0.5 world units</b> in front of the drawing plane.</p>
+
+    <p><b>Press Toggle</b> and watch the strokes away from the centre.</p>
+
+    <ul>
+      <li><b>BEFORE</b> — the extrusion faces the camera <em>position</em>, so a
+        stroke is narrowed by <code>|d| / sqrt(d² + r²)</code>: right at the
+        centre, a sixteenth of its width at the corners, and the axis-aligned
+        rows <b>vanish outright</b>.</li>
+      <li><b>FIXED</b> — under an orthographic projection the extrusion faces the
+        view <em>direction</em>. Same width everywhere.</li>
+    </ul>
+
+    <p>Antialiasing is off on purpose: that is what an offscreen PNG capture
+      renders under, and what turns a thinned stroke into a missing one.
+      Multisampling hides the effect entirely — which is why this looked like an
+      export-only bug.</p>
+
+    <p>A three.js bug, fixed upstream by
+      <a href="https://github.com/mrdoob/three.js/pull/34540" target="_blank">#34540</a>
+      (r187); carried here per material until the bundled three has it.
+      See also <a href="units-ortho.html">units-ortho.html</a>.</p>
+  </div>
+
+  <div class="controls">
+    <button id="toggle" disabled>Toggle</button>
+    <span id="state">loading…</span>
+    <div id="status"></div>
+  </div>
+
+  <a class="code-link" target="_blank"
+    href="https://github.com/diarmidmackenzie/aframe-components/blob/main/components/connecting-line/test/units-ortho-extrusion.html">
+    view code
+  </a>
+
+  <a-scene background="color:black" renderer="antialias: false">
+    <!-- 0.5 units in front of the plane the strokes live on. -->
+    <a-entity camera near-ortho-camera position="0 0 0.5"></a-entity>
+    <a-entity line-field="length:2.4; width:0.04; color:#ffffff"></a-entity>
+  </a-scene>
+</body>
+
+</html>

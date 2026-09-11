@@ -170,6 +170,91 @@ const _up = new three__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 1, 0);
 // externalized, so this import costs nothing in the bundle.
 const _viewport = new three__WEBPACK_IMPORTED_MODULE_0__.Vector4();
 
+// ---------------------------------------------------------------------------
+// World-unit extrusion under an orthographic camera.
+//
+// LineMaterial's WORLD_UNITS vertex path builds its extrusion basis from the
+// camera-space segment midpoint, which assumes viewing rays converge on the
+// camera position. That is true under perspective and false under orthographic
+// projection, where rays are parallel to camera-space -z -- so the stroke
+// narrows with distance from the image centre and an axis-aligned hairline can
+// vanish from an un-multisampled capture.
+//
+// This is a three.js bug, fixed upstream by mrdoob/three.js#34540 (milestone
+// r187). What follows is that exact one-line patch, applied per LineMaterial
+// INSTANCE because a component cannot patch the three.js it is handed. Keeping
+// it byte-identical to the upstream line is the point: it is visibly the same
+// fix, and when the bundled three carries it this whole block becomes a no-op
+// that can be deleted without changing a pixel.
+//
+// NOT by mutating the page-global THREE.ShaderLib['line'] -- that would change
+// rendering for every other Line2 consumer on the page.
+// ---------------------------------------------------------------------------
+
+// The fix, verbatim from the upstream PR.
+const FIXED_WORLD_UNITS_FORWARD =
+  'vec3 tmpFwd = perspective ? normalize( mix( start.xyz, end.xyz, 0.5 ) ) : vec3( 0.0, 0.0, - 1.0 );';
+
+// The extrusion-basis computation, located by the two declarations that bracket
+// it rather than by the exact text of the line between them. Deliberately not
+// an exact-string match: we do not control when the bundled three.js picks the
+// fix up, nor in what form -- reformatted, restructured as an if/else, or
+// written differently by a reviewer -- and an exact match would treat every one
+// of those as an unrecognisable shader. `tmpFwd` occurs exactly twice in the
+// whole shader (this declaration and its single use on the next line), so the
+// anchors are tight despite being loose about what sits between them.
+const FWD_REGION = /vec3\s+worldDir\s*=[\s\S]*?vec3\s+worldUp\s*=/;
+const STOCK_DECL = /vec3\s+tmpFwd\s*=\s*normalize\(\s*mix\([\s\S]*?\)\s*\)\s*;/;
+
+// Resolved once, at module evaluation, so an unrecognisable shader is reported
+// when the bundle loads rather than the first time someone opens a drawing with
+// a world-unit line in it. Three outcomes, never two:
+//
+//   region already mentions `perspective` -> the fix has landed; use as-is
+//   region carries the stock declaration  -> apply the fix
+//   neither                               -> report loudly, use as-is
+//
+// The last case DEGRADES RATHER THAN THROWS, deliberately. This correction only
+// affects world-unit (`units: m`) strokes under an orthographic camera; a
+// consumer drawing px-unit lines under a perspective camera is unaffected by
+// the bug and should not have the component die on them because a shader we
+// could not parse might have mattered to somebody else. So the failure is
+// console.error at load -- once, before anything renders, naming what is now
+// wrong -- and world-unit orthographic strokes render as three.js draws them.
+//
+// The source is read from a freshly-constructed material's own vertexShader, so
+// it is provably the string this component's materials would compile.
+function resolveVertexShader() {
+  const probe = new three_examples_jsm_lines_LineMaterial_js__WEBPACK_IMPORTED_MODULE_3__.LineMaterial();
+  const source = probe.vertexShader;
+  probe.dispose();
+
+  const region = typeof source === 'string' ? source.match(FWD_REGION) : null;
+  if (region) {
+    // Whatever form it takes, a region that consults the projection type is
+    // already handling the orthographic case -- leave it alone.
+    if (region[0].indexOf('perspective') !== -1) return source;
+    if (STOCK_DECL.test(region[0])) {
+      return source.replace(STOCK_DECL, FIXED_WORLD_UNITS_FORWARD);
+    }
+  }
+
+  console.error(
+    'aframe-connecting-line: cannot locate the LineMaterial world-unit ' +
+    'extrusion basis, so the orthographic correction (mrdoob/three.js#34540) ' +
+    'has NOT been applied. The bundled three.js has changed shape. ' +
+    'CONSEQUENCE: `units: m` strokes under an orthographic camera will render ' +
+    'narrower the further they are from the centre of the image, and ' +
+    'axis-aligned hairlines may disappear from un-antialiased captures ' +
+    'entirely. Everything else is unaffected. FIX: re-read the WORLD_UNITS ' +
+    'block in LineMaterial and update FWD_REGION / STOCK_DECL in ' +
+    'connecting-line2.js.'
+  );
+  return typeof source === 'string' ? source : '';
+}
+
+const WORLD_UNITS_VERTEX_SHADER = resolveVertexShader();
+
 AFRAME.registerComponent('connecting-line2', {
 
   schema: {
@@ -207,7 +292,12 @@ AFRAME.registerComponent('connecting-line2', {
     dashOffset: { type: 'number', default: 0 },
     tubeRadius: { type: 'number', default: 0 },
     segments: { type: 'number', default: 4 },
-    shader: { type: 'string', default: 'flat' }
+    shader: { type: 'string', default: 'flat' },
+    // THREE render layer for the visible overlay Line2(s). Default 0 is the
+    // normal layer-0 mask, so this is a no-op unless set. Set it (e.g. to 4)
+    // to place the stroke on a layer a capture pass excludes, keeping a
+    // highlight or indicator line out of screenshots.
+    layer: { type: 'number', default: 0 }
   },
 
   multiple: true,
@@ -462,6 +552,17 @@ AFRAME.registerComponent('connecting-line2', {
         transparent: true
       });
 
+      // Assigned before the material is ever rendered, so the corrected source
+      // is what gets compiled -- no recompile, no needsUpdate.
+      //
+      // INVARIANT: every material here is constructed with `dashed: true`, so
+      // USE_DASH is defined in every configuration this component produces,
+      // which puts the WORLD_UNITS *fragment* ray calculation out of reach (it
+      // sits under `#ifndef USE_DASH`). Flip `dashed` to false for the solid
+      // case and that block comes alive computing a perspective ray from the
+      // origin -- the same bug, one shader stage later. Fix it there too.
+      material.vertexShader = WORLD_UNITS_VERTEX_SHADER;
+
       this.initResolutionUniform(material);
 
       const line = new three_examples_jsm_lines_Line2_js__WEBPACK_IMPORTED_MODULE_1__.Line2(this.lineGeometry, material);
@@ -535,6 +636,16 @@ AFRAME.registerComponent('connecting-line2', {
       // visibility is also gated by the degenerate (zero-length) guard,
       // applied in updateLinePosition.
       this.overlays[i].line.visible = lineVisible && !this._degenerate;
+      // Assert the render layer here, not at construction. Object3D.layers does
+      // NOT inherit through the overlay Group, so it must be set per overlay
+      // Line2 — and rebuildOverlays() creates fresh Line2s, which default to
+      // layer 0. update() calls resolveDashOverlays() (which may rebuild) and
+      // then this method, so re-asserting here is what survives a rebuild. The
+      // other three `line.visible` writes (hideAll, and the degenerate hide and
+      // recovery in updateLinePosition) need no layer assertion: they mutate an
+      // existing Line2, and a visibility write does not reset `layers`.
+      // set() replaces the mask, so the line is on layer N only.
+      this.overlays[i].line.layers.set(data.layer);
     }
   },
 
@@ -574,6 +685,20 @@ AFRAME.registerComponent('connecting-line2', {
     if (!material || !material.uniforms || !material.uniforms.resolution) return;
 
     renderer.getViewport(_viewport);
+    // An offscreen screenshot / thumbnail pass renders into a
+    // WebGLRenderTarget WITHOUT calling setViewport, so getViewport() still
+    // reports the on-screen size — which scales px widths and dash sizes by
+    // (target size / screen size) in the captured image. When a target is
+    // bound, prefer its own dimensions as the pass basis.
+    //
+    // EXCEPT under WebXR: there the bound target is the whole (both-eye) XR
+    // framebuffer, while the per-eye viewport is the correct basis, and the
+    // renderer does set it per eye.
+    const renderTarget = renderer.getRenderTarget();
+    if (renderTarget && !(renderer.xr && renderer.xr.isPresenting)) {
+      _viewport.z = renderTarget.width;
+      _viewport.w = renderTarget.height;
+    }
     const viewportWidthPx = _viewport.z;
     const viewportHeightPx = _viewport.w;
 

@@ -48,6 +48,91 @@ const _up = new Vector3(0, 1, 0);
 // externalized, so this import costs nothing in the bundle.
 const _viewport = new Vector4();
 
+// ---------------------------------------------------------------------------
+// World-unit extrusion under an orthographic camera.
+//
+// LineMaterial's WORLD_UNITS vertex path builds its extrusion basis from the
+// camera-space segment midpoint, which assumes viewing rays converge on the
+// camera position. That is true under perspective and false under orthographic
+// projection, where rays are parallel to camera-space -z -- so the stroke
+// narrows with distance from the image centre and an axis-aligned hairline can
+// vanish from an un-multisampled capture.
+//
+// This is a three.js bug, fixed upstream by mrdoob/three.js#34540 (milestone
+// r187). What follows is that exact one-line patch, applied per LineMaterial
+// INSTANCE because a component cannot patch the three.js it is handed. Keeping
+// it byte-identical to the upstream line is the point: it is visibly the same
+// fix, and when the bundled three carries it this whole block becomes a no-op
+// that can be deleted without changing a pixel.
+//
+// NOT by mutating the page-global THREE.ShaderLib['line'] -- that would change
+// rendering for every other Line2 consumer on the page.
+// ---------------------------------------------------------------------------
+
+// The fix, verbatim from the upstream PR.
+const FIXED_WORLD_UNITS_FORWARD =
+  'vec3 tmpFwd = perspective ? normalize( mix( start.xyz, end.xyz, 0.5 ) ) : vec3( 0.0, 0.0, - 1.0 );';
+
+// The extrusion-basis computation, located by the two declarations that bracket
+// it rather than by the exact text of the line between them. Deliberately not
+// an exact-string match: we do not control when the bundled three.js picks the
+// fix up, nor in what form -- reformatted, restructured as an if/else, or
+// written differently by a reviewer -- and an exact match would treat every one
+// of those as an unrecognisable shader. `tmpFwd` occurs exactly twice in the
+// whole shader (this declaration and its single use on the next line), so the
+// anchors are tight despite being loose about what sits between them.
+const FWD_REGION = /vec3\s+worldDir\s*=[\s\S]*?vec3\s+worldUp\s*=/;
+const STOCK_DECL = /vec3\s+tmpFwd\s*=\s*normalize\(\s*mix\([\s\S]*?\)\s*\)\s*;/;
+
+// Resolved once, at module evaluation, so an unrecognisable shader is reported
+// when the bundle loads rather than the first time someone opens a drawing with
+// a world-unit line in it. Three outcomes, never two:
+//
+//   region already mentions `perspective` -> the fix has landed; use as-is
+//   region carries the stock declaration  -> apply the fix
+//   neither                               -> report loudly, use as-is
+//
+// The last case DEGRADES RATHER THAN THROWS, deliberately. This correction only
+// affects world-unit (`units: m`) strokes under an orthographic camera; a
+// consumer drawing px-unit lines under a perspective camera is unaffected by
+// the bug and should not have the component die on them because a shader we
+// could not parse might have mattered to somebody else. So the failure is
+// console.error at load -- once, before anything renders, naming what is now
+// wrong -- and world-unit orthographic strokes render as three.js draws them.
+//
+// The source is read from a freshly-constructed material's own vertexShader, so
+// it is provably the string this component's materials would compile.
+function resolveVertexShader() {
+  const probe = new LineMaterial();
+  const source = probe.vertexShader;
+  probe.dispose();
+
+  const region = typeof source === 'string' ? source.match(FWD_REGION) : null;
+  if (region) {
+    // Whatever form it takes, a region that consults the projection type is
+    // already handling the orthographic case -- leave it alone.
+    if (region[0].indexOf('perspective') !== -1) return source;
+    if (STOCK_DECL.test(region[0])) {
+      return source.replace(STOCK_DECL, FIXED_WORLD_UNITS_FORWARD);
+    }
+  }
+
+  console.error(
+    'aframe-connecting-line: cannot locate the LineMaterial world-unit ' +
+    'extrusion basis, so the orthographic correction (mrdoob/three.js#34540) ' +
+    'has NOT been applied. The bundled three.js has changed shape. ' +
+    'CONSEQUENCE: `units: m` strokes under an orthographic camera will render ' +
+    'narrower the further they are from the centre of the image, and ' +
+    'axis-aligned hairlines may disappear from un-antialiased captures ' +
+    'entirely. Everything else is unaffected. FIX: re-read the WORLD_UNITS ' +
+    'block in LineMaterial and update FWD_REGION / STOCK_DECL in ' +
+    'connecting-line2.js.'
+  );
+  return typeof source === 'string' ? source : '';
+}
+
+const WORLD_UNITS_VERTEX_SHADER = resolveVertexShader();
+
 AFRAME.registerComponent('connecting-line2', {
 
   schema: {
@@ -344,6 +429,17 @@ AFRAME.registerComponent('connecting-line2', {
         depthWrite: false,
         transparent: true
       });
+
+      // Assigned before the material is ever rendered, so the corrected source
+      // is what gets compiled -- no recompile, no needsUpdate.
+      //
+      // INVARIANT: every material here is constructed with `dashed: true`, so
+      // USE_DASH is defined in every configuration this component produces,
+      // which puts the WORLD_UNITS *fragment* ray calculation out of reach (it
+      // sits under `#ifndef USE_DASH`). Flip `dashed` to false for the solid
+      // case and that block comes alive computing a perspective ray from the
+      // origin -- the same bug, one shader stage later. Fix it there too.
+      material.vertexShader = WORLD_UNITS_VERTEX_SHADER;
 
       this.initResolutionUniform(material);
 
