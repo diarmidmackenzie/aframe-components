@@ -1,6 +1,6 @@
 {
   "name": "aframe-connecting-line",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Draws a line (with width and dash control) between points on two entities, using THREE.Line2.",
   "main": "dist/connecting-line.js",
   "module": "dist/connecting-line.js",

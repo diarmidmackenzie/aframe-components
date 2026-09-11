@@ -1,5 +1,46 @@
 # Release notes
 
+## 0.5.0
+
+### Fixed
+
+- **World-unit line widths are now correct under an orthographic camera.**
+  `THREE.LineMaterial` builds its extrusion basis by facing the camera
+  *position*, which assumes viewing rays converge there — true under
+  perspective, false under an orthographic projection, whose rays are parallel.
+  A `units: m` stroke was therefore narrowed by `|d| / sqrt(d² + r²)`: correct at
+  the centre of the image and progressively thinner away from it, with
+  axis-aligned hairlines disappearing altogether from captures rendered without
+  multisampling.
+
+  **This changes rendered output.** If you draw `units: m` lines under an
+  orthographic camera, strokes away from the image centre will now be *heavier*
+  than in `0.4.0` — they are rendering at the width you asked for. Nothing
+  changes under a perspective camera, in VR, or for `units: px`.
+
+  This is a three.js bug, fixed upstream by
+  [mrdoob/three.js#34540](https://github.com/mrdoob/three.js/pull/34540)
+  (milestone r187). That one-line patch is applied here per `LineMaterial`
+  instance until the bundled three.js carries it, at which point it becomes a
+  no-op. If a future three.js changes the shader beyond recognition, the
+  component logs an error at load and renders without the correction rather than
+  failing.
+
+- Line width and dash sizes are no longer scaled wrongly when rendering into an
+  offscreen `WebGLRenderTarget` (screenshot / thumbnail passes). The render
+  target's own dimensions are now used as the per-pass basis, except under
+  WebXR, where the per-eye viewport remains correct.
+
+### New
+
+- **`layer`** — sets the THREE render layer of the visible stroke. Defaults to
+  `0`, so existing configurations are unaffected. Use it to keep a stroke out of
+  a render pass that masks layers, e.g. excluding a UI indicator line from a
+  screenshot.
+
+- `test/units-ortho-extrusion.html` demonstrates the orthographic extrusion fix,
+  with a toggle between the old and new behaviour.
+
 ## 0.4.0
 
 ### New
