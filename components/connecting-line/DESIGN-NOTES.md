@@ -118,14 +118,24 @@ rendering for every other `Line2` consumer on the page.
 
 Two properties make it safe to carry:
 
-- **Byte-identical to upstream.** Not a variant of the fix — the same line. So
-  when the bundled three ships r187, `resolveVertexShader()` finds the fixed
-  line already present and returns the shader untouched. Removing this block
-  then changes nothing, and needs no coordination with a super-three bump.
-- **It resolves to three outcomes, never two.** Already-fixed, stock, or
-  neither — and *neither* throws, at module evaluation, so a three.js that has
-  reflowed the line fails when the bundle loads rather than the first time
-  someone opens a drawing containing a world-unit line.
+- **The line we substitute in is upstream's, verbatim** — a variant would be a
+  second fix to reason about, and reviewing it would mean diffing GLSL against
+  a PR.
+- **What we match on is deliberately not exact.** We do not control when the
+  bundled three.js picks the fix up, nor in what form — reformatted, minified,
+  or restructured as an `if`/`else` by a reviewer — so the extrusion basis is
+  located by the two declarations that bracket it (`worldDir` above,
+  `worldUp` below) rather than by the text between them. `tmpFwd` occurs
+  exactly twice in the entire shader, so those anchors stay tight.
+- **It resolves to three outcomes, never two.** A bracketed region that already
+  consults `perspective` is handling the orthographic case in whatever form, so
+  it is left alone; a region carrying the stock declaration is patched;
+  anything else *throws*, at module evaluation, so an unrecognisable shader
+  fails when the bundle loads rather than the first time someone opens a
+  drawing containing a world-unit line.
+
+When the fix does land, this block becomes a no-op and can be deleted without
+changing a pixel — but nothing forces that to happen on the same bump.
 
 The branch inside the shader is a **GLSL runtime branch** on three's own
 `perspective` classification (`projectionMatrix[2][3] == -1.0`), not a

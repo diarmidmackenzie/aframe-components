@@ -69,38 +69,50 @@ const _viewport = new Vector4();
 // rendering for every other Line2 consumer on the page.
 // ---------------------------------------------------------------------------
 
-const STOCK_WORLD_UNITS_FORWARD =
-  'vec3 tmpFwd = normalize( mix( start.xyz, end.xyz, 0.5 ) );';
-
+// The fix, verbatim from the upstream PR.
 const FIXED_WORLD_UNITS_FORWARD =
   'vec3 tmpFwd = perspective ? normalize( mix( start.xyz, end.xyz, 0.5 ) ) : vec3( 0.0, 0.0, - 1.0 );';
 
-// Resolved once, at module evaluation, so a three.js that has reflowed this
-// line fails when the bundle loads rather than the first time someone opens a
-// drawing with a world-unit line in it. Three outcomes, never two:
+// The extrusion-basis computation, located by the two declarations that bracket
+// it rather than by the exact text of the line between them. Deliberately not
+// an exact-string match: we do not control when the bundled three.js picks the
+// fix up, nor in what form -- reformatted, restructured as an if/else, or
+// written differently by a reviewer -- and an exact match would treat every one
+// of those as an unrecognisable shader. `tmpFwd` occurs exactly twice in the
+// whole shader (this declaration and its single use on the next line), so the
+// anchors are tight despite being loose about what sits between them.
+const FWD_REGION = /vec3\s+worldDir\s*=[\s\S]*?vec3\s+worldUp\s*=/;
+const STOCK_DECL = /vec3\s+tmpFwd\s*=\s*normalize\(\s*mix\([\s\S]*?\)\s*\)\s*;/;
+
+// Resolved once, at module evaluation, so an unrecognisable shader fails when
+// the bundle loads rather than the first time someone opens a drawing with a
+// world-unit line in it. Three outcomes, never two:
 //
-//   already fixed -> use the shader as-is (the upstream patch has landed)
-//   stock         -> apply the patch
-//   neither       -> throw; we no longer know what we are patching
+//   region already mentions `perspective` -> the fix has landed; use as-is
+//   region carries the stock declaration  -> apply the fix
+//   neither                               -> throw
 //
-// The source is read from a freshly-constructed material's own vertexShader,
-// so it is provably the string this component's materials would compile.
+// The source is read from a freshly-constructed material's own vertexShader, so
+// it is provably the string this component's materials would compile.
 function resolveVertexShader() {
   const probe = new LineMaterial();
   const source = probe.vertexShader;
   probe.dispose();
-  if (typeof source === 'string') {
-    if (source.indexOf(FIXED_WORLD_UNITS_FORWARD) !== -1) return source;
-    if (source.indexOf(STOCK_WORLD_UNITS_FORWARD) !== -1) {
-      return source.replace(STOCK_WORLD_UNITS_FORWARD, FIXED_WORLD_UNITS_FORWARD);
+
+  const region = typeof source === 'string' ? source.match(FWD_REGION) : null;
+  if (region) {
+    // Whatever form it takes, a region that consults the projection type is
+    // already handling the orthographic case -- leave it alone.
+    if (region[0].indexOf('perspective') !== -1) return source;
+    if (STOCK_DECL.test(region[0])) {
+      return source.replace(STOCK_DECL, FIXED_WORLD_UNITS_FORWARD);
     }
   }
   throw new Error(
-    'aframe-connecting-line: the LineMaterial world-unit extrusion line is ' +
-    'neither the stock form nor the fixed one from mrdoob/three.js#34540, so ' +
-    'the orthographic correction cannot be applied. The bundled three.js has ' +
-    'changed; re-read the WORLD_UNITS block in LineMaterial and update the two ' +
-    'constants above.'
+    'aframe-connecting-line: cannot locate the LineMaterial world-unit ' +
+    'extrusion basis, so the orthographic correction (mrdoob/three.js#34540) ' +
+    'cannot be applied. The bundled three.js has changed shape; re-read the ' +
+    'WORLD_UNITS block in LineMaterial and update the patterns above.'
   );
 }
 
