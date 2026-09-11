@@ -105,6 +105,7 @@ For the full list of changes in this release, see
 | tubeRadius        | number      | 0     | Optional solid cylinder radius (world units), rendered in addition to the line. `0` = no tube. Always solid; never dashes. |
 | segments          | int         | 4     | Tube radial segments (only used when `tubeRadius > 0`). |
 | shader            | string      | flat  | Tube material shader (only used when `tubeRadius > 0`). |
+| layer             | int         | 0     | [THREE render layer](https://threejs.org/docs/#api/en/core/Layers) for the stroke. `0` is the default layer, so leaving this alone changes nothing. Set it to keep the stroke out of a render pass that masks that layer (e.g. a screenshot camera that excludes UI indicators). |
 
 ### Width vs dash units
 

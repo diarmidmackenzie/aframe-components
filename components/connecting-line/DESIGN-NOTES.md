@@ -37,6 +37,24 @@ and feed both computations from it. Using two different bases (e.g. drawing
 buffer size for one, viewport for the other) would desynchronise width and
 dash scaling whenever they disagree (split-screen, XR, scissored viewports).
 
+### Offscreen render targets — why `getViewport()` alone is not enough
+
+A screenshot or thumbnail pass binds an offscreen `WebGLRenderTarget` and
+renders into it **without** calling `setViewport`. The renderer's viewport is
+then still the on-screen one, so `getViewport()` reports the wrong size for the
+pass — and because that size is the basis for both values above, px widths and
+dash periods come out scaled by (target size / screen size) in the captured
+image.
+
+So when a render target is bound we take its `width`/`height` as the pass basis
+instead. This is still a *single* basis feeding both computations; it just
+selects the right one.
+
+The exception is WebXR. There the bound target is the whole framebuffer
+covering both eyes, while the correct basis is the per-eye viewport — which the
+renderer does set. So the substitution is skipped while `renderer.xr` is
+presenting.
+
 ### Perspective `px` dash — known approximation
 
 Under an **orthographic** camera, world-units-per-pixel is exact and constant

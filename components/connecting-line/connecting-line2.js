@@ -170,7 +170,12 @@ AFRAME.registerComponent('connecting-line2', {
     dashOffset: { type: 'number', default: 0 },
     tubeRadius: { type: 'number', default: 0 },
     segments: { type: 'number', default: 4 },
-    shader: { type: 'string', default: 'flat' }
+    shader: { type: 'string', default: 'flat' },
+    // THREE render layer for the visible overlay Line2(s). Default 0 is the
+    // normal layer-0 mask, so this is a no-op unless set. Set it (e.g. to 4)
+    // to place the stroke on a layer a capture pass excludes, keeping a
+    // highlight or indicator line out of screenshots.
+    layer: { type: 'number', default: 0 }
   },
 
   multiple: true,
@@ -509,6 +514,16 @@ AFRAME.registerComponent('connecting-line2', {
       // visibility is also gated by the degenerate (zero-length) guard,
       // applied in updateLinePosition.
       this.overlays[i].line.visible = lineVisible && !this._degenerate;
+      // Assert the render layer here, not at construction. Object3D.layers does
+      // NOT inherit through the overlay Group, so it must be set per overlay
+      // Line2 — and rebuildOverlays() creates fresh Line2s, which default to
+      // layer 0. update() calls resolveDashOverlays() (which may rebuild) and
+      // then this method, so re-asserting here is what survives a rebuild. The
+      // other three `line.visible` writes (hideAll, and the degenerate hide and
+      // recovery in updateLinePosition) need no layer assertion: they mutate an
+      // existing Line2, and a visibility write does not reset `layers`.
+      // set() replaces the mask, so the line is on layer N only.
+      this.overlays[i].line.layers.set(data.layer);
     }
   },
 
@@ -548,6 +563,20 @@ AFRAME.registerComponent('connecting-line2', {
     if (!material || !material.uniforms || !material.uniforms.resolution) return;
 
     renderer.getViewport(_viewport);
+    // An offscreen screenshot / thumbnail pass renders into a
+    // WebGLRenderTarget WITHOUT calling setViewport, so getViewport() still
+    // reports the on-screen size — which scales px widths and dash sizes by
+    // (target size / screen size) in the captured image. When a target is
+    // bound, prefer its own dimensions as the pass basis.
+    //
+    // EXCEPT under WebXR: there the bound target is the whole (both-eye) XR
+    // framebuffer, while the per-eye viewport is the correct basis, and the
+    // renderer does set it per eye.
+    const renderTarget = renderer.getRenderTarget();
+    if (renderTarget && !(renderer.xr && renderer.xr.isPresenting)) {
+      _viewport.z = renderTarget.width;
+      _viewport.w = renderTarget.height;
+    }
     const viewportWidthPx = _viewport.z;
     const viewportHeightPx = _viewport.w;
 
