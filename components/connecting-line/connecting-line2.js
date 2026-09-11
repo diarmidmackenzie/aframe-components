@@ -84,13 +84,21 @@ const FIXED_WORLD_UNITS_FORWARD =
 const FWD_REGION = /vec3\s+worldDir\s*=[\s\S]*?vec3\s+worldUp\s*=/;
 const STOCK_DECL = /vec3\s+tmpFwd\s*=\s*normalize\(\s*mix\([\s\S]*?\)\s*\)\s*;/;
 
-// Resolved once, at module evaluation, so an unrecognisable shader fails when
-// the bundle loads rather than the first time someone opens a drawing with a
-// world-unit line in it. Three outcomes, never two:
+// Resolved once, at module evaluation, so an unrecognisable shader is reported
+// when the bundle loads rather than the first time someone opens a drawing with
+// a world-unit line in it. Three outcomes, never two:
 //
 //   region already mentions `perspective` -> the fix has landed; use as-is
 //   region carries the stock declaration  -> apply the fix
-//   neither                               -> throw
+//   neither                               -> report loudly, use as-is
+//
+// The last case DEGRADES RATHER THAN THROWS, deliberately. This correction only
+// affects world-unit (`units: m`) strokes under an orthographic camera; a
+// consumer drawing px-unit lines under a perspective camera is unaffected by
+// the bug and should not have the component die on them because a shader we
+// could not parse might have mattered to somebody else. So the failure is
+// console.error at load -- once, before anything renders, naming what is now
+// wrong -- and world-unit orthographic strokes render as three.js draws them.
 //
 // The source is read from a freshly-constructed material's own vertexShader, so
 // it is provably the string this component's materials would compile.
@@ -108,12 +116,19 @@ function resolveVertexShader() {
       return source.replace(STOCK_DECL, FIXED_WORLD_UNITS_FORWARD);
     }
   }
-  throw new Error(
+
+  console.error(
     'aframe-connecting-line: cannot locate the LineMaterial world-unit ' +
     'extrusion basis, so the orthographic correction (mrdoob/three.js#34540) ' +
-    'cannot be applied. The bundled three.js has changed shape; re-read the ' +
-    'WORLD_UNITS block in LineMaterial and update the patterns above.'
+    'has NOT been applied. The bundled three.js has changed shape. ' +
+    'CONSEQUENCE: `units: m` strokes under an orthographic camera will render ' +
+    'narrower the further they are from the centre of the image, and ' +
+    'axis-aligned hairlines may disappear from un-antialiased captures ' +
+    'entirely. Everything else is unaffected. FIX: re-read the WORLD_UNITS ' +
+    'block in LineMaterial and update FWD_REGION / STOCK_DECL in ' +
+    'connecting-line2.js.'
   );
+  return typeof source === 'string' ? source : '';
 }
 
 const WORLD_UNITS_VERTEX_SHADER = resolveVertexShader();

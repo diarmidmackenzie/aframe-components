@@ -130,9 +130,16 @@ Two properties make it safe to carry:
 - **It resolves to three outcomes, never two.** A bracketed region that already
   consults `perspective` is handling the orthographic case in whatever form, so
   it is left alone; a region carrying the stock declaration is patched;
-  anything else *throws*, at module evaluation, so an unrecognisable shader
-  fails when the bundle loads rather than the first time someone opens a
-  drawing containing a world-unit line.
+  anything else is **reported and skipped**, at module evaluation, so an
+  unrecognisable shader is named when the bundle loads rather than the first
+  time someone opens a drawing containing a world-unit line.
+
+The last case degrades rather than throwing, on purpose. The correction only
+affects `units: m` strokes under an orthographic camera, so killing the
+component would punish every consumer drawing px-unit lines under a perspective
+camera for a shader change that could not have affected them. The
+`console.error` fires once, before anything renders, and states what will now
+render wrongly.
 
 When the fix does land, this block becomes a no-op and can be deleted without
 changing a pixel — but nothing forces that to happen on the same bump.
